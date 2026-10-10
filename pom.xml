@@ -29,6 +29,7 @@
 	<properties>
 		<java.version>25</java.version>
 		<spring-modulith.version>2.1.1</spring-modulith.version>
+		<sonar.organization>anderson776-co</sonar.organization>
 	</properties>
 	<dependencies>
 		<dependency>
