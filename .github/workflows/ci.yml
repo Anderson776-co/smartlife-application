@@ -31,8 +31,9 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=Anderson776-co_smartlife-application
+
   security:
-    name: Securiry analysis (trivy)
+    name: Security analysis (trivy)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -45,3 +46,36 @@ jobs:
           severity: HIGH,CRITICAL
           ignore-unfixed: true
           exit-code: '1'
+
+  deploy:
+    name: Deploy to Cloud Run
+    needs: [build, security]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Deploy
+        run: |
+          gcloud run deploy smartlife-application \
+            --source . \
+            --region us-central1 \
+            --project ${{ vars.GCP_PROJECT_ID }}
