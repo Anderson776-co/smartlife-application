@@ -133,13 +133,10 @@ jobs:
         run: docker push "$IMAGEN:$GITHUB_SHA"
 
       - name: Deploy
-        run: |
-          args=( 
-            run deploy "$CLOUD_RUN_SERVICE" \
-            --image "$IMAGEN:$GITHUB_SHA" \
-            --region "$GCP_REGION" \
-            --project "${{ vars.GCP_PROJECT_ID }}" \
-            --service-account "smartlife-runtime@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com" \ 
-            --quiet
-          )
-          gcloud "${args[@]}"
+        uses: google-github-actions/deploy-cloudrun@2028e2d7d30a78c6910e0632e48dd561b064884d  #v3.0.1
+        with:
+          service: ${{ vars.CLOUD_RUN_SERVICE }}
+          image: ${{ env.IMAGEN }}:${{ github.sha }}
+          region: ${{ vars.GCP_REGION }}
+          project_id: ${{ vars.GCP_PROJECT_ID }}
+          flags: --service-account=smartlife-runtime@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com
