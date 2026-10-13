@@ -134,9 +134,12 @@ jobs:
 
       - name: Deploy
         run: |
-          gcloud run deploy "$CLOUD_RUN_SERVICE" \
+          args=( 
+            run deploy "$CLOUD_RUN_SERVICE" \
             --image "$IMAGEN:$GITHUB_SHA" \
             --region "$GCP_REGION" \
             --project "${{ vars.GCP_PROJECT_ID }}" \
             --service-account "smartlife-runtime@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com" \ 
             --quiet
+          )
+          gcloud "${args[@]}"
