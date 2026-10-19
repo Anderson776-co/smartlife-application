@@ -33,6 +33,7 @@
 		<sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
 		<tomcat.version>11.0.25</tomcat.version>
   		<jackson-bom.version>3.1.7</jackson-bom.version>
+		<aws-sdk.version>2.31.0</aws-sdk.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -82,6 +83,11 @@
 			<groupId>com.google.zxing</groupId>
 			<artifactId>javase</artifactId>
 			<version>3.5.3</version>
+		</dependency>
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>s3</artifactId>
+			<version>${aws-sdk.version}</version>
 		</dependency>
 	</dependencies>
 	<dependencyManagement>
