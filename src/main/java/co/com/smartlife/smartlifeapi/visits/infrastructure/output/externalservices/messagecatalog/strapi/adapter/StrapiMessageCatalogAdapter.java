@@ -2,6 +2,7 @@ package co.com.smartlife.smartlifeapi.visits.infrastructure.output.externalservi
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -34,6 +35,7 @@ public class StrapiMessageCatalogAdapter implements MessageCatalogOutputPort {
 	}
 
 	@Override
+	@Cacheable(value = "message-catalog", key = "#code + ':' + #locale")
 	public MessageCatalogDTO findByCodeAndLocale(final String code, final String locale) {
 		if (baseUrl.isBlank()) {
 			throw new IllegalStateException("La URL de Strapi no está configurada (strapi.url)");
