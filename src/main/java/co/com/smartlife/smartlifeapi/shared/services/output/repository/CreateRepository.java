@@ -1,5 +1,5 @@
 package co.com.smartlife.smartlifeapi.shared.services.output.repository;
 
-public interface UrbanizationRepository {
-
+public interface CreateRepository <E>{
+	void create(E entity);
 }

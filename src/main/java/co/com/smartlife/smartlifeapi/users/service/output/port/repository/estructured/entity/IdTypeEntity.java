@@ -1,9 +1,8 @@
-package co.com.smartlife.smartlifeapi.shared.services.output.repository.entity;
+package co.com.smartlife.smartlifeapi.users.service.output.port.repository.estructured.entity;
 
 import java.util.UUID;
 
 public class IdTypeEntity {
-	
 	private UUID id;
     private String name;
 
@@ -11,10 +10,6 @@ public class IdTypeEntity {
         setId(id);
         setName(name);
     }
-    
-    public IdTypeEntity() {
-		super();
-	}
 
     public UUID getId() {
         return id;

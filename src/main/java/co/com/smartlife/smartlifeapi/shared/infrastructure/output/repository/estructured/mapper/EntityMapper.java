@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.visits.infrastructure.output.repository.estructured.mapper;
+package co.com.smartlife.smartlifeapi.shared.infrastructure.output.repository.estructured.mapper;
 
 import java.util.List;
 

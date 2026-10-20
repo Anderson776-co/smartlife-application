@@ -16,7 +16,7 @@ import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 
 import co.com.smartlife.smartlifeapi.users.service.output.dto.AuthenticatedUserDTO;
-import co.com.smartlife.smartlifeapi.users.service.output.port.IdentityProviderOutputPort;
+import co.com.smartlife.smartlifeapi.users.service.output.port.externalservices.IdentityProviderOutputPort;
 
 @Component
 public class FirebaseIdentityProviderAdapter implements IdentityProviderOutputPort {

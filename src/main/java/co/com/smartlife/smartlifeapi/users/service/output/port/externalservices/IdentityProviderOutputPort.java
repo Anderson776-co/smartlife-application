@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.users.service.output.port;
+package co.com.smartlife.smartlifeapi.users.service.output.port.externalservices;
 
 import co.com.smartlife.smartlifeapi.users.service.output.dto.AuthenticatedUserDTO;
 
