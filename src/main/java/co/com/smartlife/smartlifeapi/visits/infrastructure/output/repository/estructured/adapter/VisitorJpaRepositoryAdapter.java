@@ -49,8 +49,8 @@ public class VisitorJpaRepositoryAdapter implements VisitorRepository{
 
 	@Override
 	public void update(UUID id, VisitorEntity entity) {
-		// TODO Auto-generated method stub
-		
+		VisitorEntityJpa entityJpa = mapper.toJpaEntity(entity);
+		repository.save(entityJpa);
 	}
 
 	@Override

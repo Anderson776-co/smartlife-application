@@ -50,8 +50,8 @@ public class VisitAuthorizationJpaRepositoryAdapter implements VisitAuthorizatio
 
 	@Override
 	public void update(UUID id, VisitAuthorizationEntity entity) {
-		// TODO Auto-generated method stub
-		
+		VisitAuthorizationEntityJpa entityJpa = mapper.toJpaEntity(entity);
+		repository.save(entityJpa);
 	}
 
 }
