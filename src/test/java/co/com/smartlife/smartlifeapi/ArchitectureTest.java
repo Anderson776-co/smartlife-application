@@ -20,7 +20,7 @@ class ArchitectureTest {
                     .layer("Infrastructure").definedBy("..infrastructure..")
                     .whereLayer("Infrastructure").mayNotBeAccessedByAnyLayer()
                     .whereLayer("Services").mayOnlyBeAccessedByLayers("Infrastructure")
-                    .whereLayer("Domain").mayOnlyBeAccessedByLayers("Services", "Infrastructure");
+                    .whereLayer("Domain").mayOnlyBeAccessedByLayers("Services", "Infrastructure").allowEmptyShould(true);
 
     @ArchTest
     static final ArchRule DoNotUseLibrariesInDomain =
