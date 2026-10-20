@@ -35,7 +35,7 @@
 		<tomcat.version>11.0.25</tomcat.version>
   		<jackson-bom.version>3.1.7</jackson-bom.version>
 		<aws-sdk.version>2.31.0</aws-sdk.version>
-		<firebase-admin.version>9.4.3</firebase-admin.version>
+		<firebase-admin.version>9.11.0</firebase-admin.version>
 	</properties>
 	
 	<dependencies>
