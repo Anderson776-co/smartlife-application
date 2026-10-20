@@ -12,7 +12,7 @@ class FirebaseIdentityProviderAdapterTest {
 	@Test
 	void verifyTokenShouldReturnTheAuthenticatedUser() {
 		FirebaseIdentityProviderAdapter adapter = new FirebaseIdentityProviderAdapter(
-				idToken -> new AuthenticatedUserDTO("uid-123", "residente@test.com"));
+				_ -> new AuthenticatedUserDTO("uid-123", "residente@test.com"));
 
 		AuthenticatedUserDTO result = adapter.verifyToken("token-valido");
 
@@ -23,7 +23,7 @@ class FirebaseIdentityProviderAdapterTest {
 	@Test
 	void verifyTokenShouldFailWhenTheTokenIsEmpty() {
 		FirebaseIdentityProviderAdapter adapter = new FirebaseIdentityProviderAdapter(
-				idToken -> new AuthenticatedUserDTO("uid-123", "residente@test.com"));
+				_ -> new AuthenticatedUserDTO("uid-123", "residente@test.com"));
 
 		assertThrows(IllegalArgumentException.class, () -> adapter.verifyToken(" "));
 	}
@@ -31,14 +31,14 @@ class FirebaseIdentityProviderAdapterTest {
 	@Test
 	void verifyTokenShouldFailWhenTheTokenIsNull() {
 		FirebaseIdentityProviderAdapter adapter = new FirebaseIdentityProviderAdapter(
-				idToken -> new AuthenticatedUserDTO("uid-123", "residente@test.com"));
+				_ -> new AuthenticatedUserDTO("uid-123", "residente@test.com"));
 
 		assertThrows(IllegalArgumentException.class, () -> adapter.verifyToken(null));
 	}
 
 	@Test
 	void verifyTokenShouldFailWhenFirebaseRejectsTheToken() {
-		FirebaseIdentityProviderAdapter adapter = new FirebaseIdentityProviderAdapter(idToken -> {
+		FirebaseIdentityProviderAdapter adapter = new FirebaseIdentityProviderAdapter(_ -> {
 			throw new IllegalArgumentException("El token de Firebase no es válido");
 		});
 
