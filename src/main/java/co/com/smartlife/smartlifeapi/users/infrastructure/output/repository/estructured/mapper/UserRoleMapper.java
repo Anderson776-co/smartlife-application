@@ -6,7 +6,7 @@ import co.com.smartlife.smartlifeapi.shared.infrastructure.output.repository.est
 import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.jpa.entity.UserRoleJpaEntity;
 import co.com.smartlife.smartlifeapi.users.service.output.port.repository.entity.UserRoleEntity;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = UserMapper.class)
 public interface UserRoleMapper extends EntityMapper<UserRoleEntity, UserRoleJpaEntity>{
 
 }

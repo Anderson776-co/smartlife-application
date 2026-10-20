@@ -39,13 +39,13 @@ public class UserJpaEntity {
     private String 	email;
 	
 	@Column(name = "is_email_confirmed")
-    private Boolean isEmailConfirmed;
+    private Boolean emailConfirmed;
 	
 	@Column(name = "is_email_confirmed_default_value")
-    private Boolean isEmailConfirmedDefaultValue;
+    private Boolean emailConfirmedDefaultValue;
 	
 	@Column(name = "is_active")
-    private Boolean isActive;
+    private Boolean active;
 	
 	@ManyToOne
 	@JoinColumn(name = "id_type", referencedColumnName = "id")
@@ -60,12 +60,11 @@ public class UserJpaEntity {
             final String middleName,
             final String lastName,
             final String secondLastName,
-            final String password,
             final String documentNumber,
             final String email,
-            final Boolean isEmailConfirmed,
-            final Boolean isEmailConfirmedDefaultValue,
-            final Boolean isActive,
+            final Boolean emailConfirmed,
+            final Boolean emailConfirmedDefaultValue,
+            final Boolean active,
             final IdTypeJpaEntity idType,
             final UrbanizationUserJpaEntity urbanization) {
 		setId(id);
@@ -75,11 +74,11 @@ public class UserJpaEntity {
         setSecondLastName(secondLastName);
         setDocumentNumber(documentNumber);
         setEmail(email);
-        setIsEmailConfirmed(isEmailConfirmed);
-        setIsActive(isActive);
+        setEmailConfirmed(emailConfirmed);
+        setActive(active);
         setIdType(idType);
         setUrbanization(urbanization);
-        setIsEmailConfirmedDefaultValue(isEmailConfirmedDefaultValue);
+        setEmailConfirmedDefaultValue(emailConfirmedDefaultValue);
     }
 
     public UUID getId() {
@@ -138,28 +137,28 @@ public class UserJpaEntity {
 		this.email = email;
 	}
 
-	public Boolean getIsEmailConfirmed() {
-		return isEmailConfirmed;
+	public Boolean getEmailConfirmed() {
+		return emailConfirmed;
 	}
 
-	public void setIsEmailConfirmed(Boolean isEmailConfirmed) {
-		this.isEmailConfirmed = isEmailConfirmed;
+	public void setEmailConfirmed(Boolean emailConfirmed) {
+		this.emailConfirmed = emailConfirmed;
 	}
 
-	public Boolean getIsEmailConfirmedDefaultValue() {
-		return isEmailConfirmedDefaultValue;
+	public Boolean getEmailConfirmedDefaultValue() {
+		return emailConfirmedDefaultValue;
 	}
 
-	public void setIsEmailConfirmedDefaultValue(Boolean isEmailConfirmedDefaultValue) {
-		this.isEmailConfirmedDefaultValue = isEmailConfirmedDefaultValue;
+	public void setEmailConfirmedDefaultValue(Boolean emailConfirmedDefaultValue) {
+		this.emailConfirmedDefaultValue = emailConfirmedDefaultValue;
 	}
 
-	public Boolean getIsActive() {
-		return isActive;
+	public Boolean getActive() {
+		return active;
 	}
 
-	public void setIsActive(Boolean isActive) {
-		this.isActive = isActive;
+	public void setActive(Boolean active) {
+		this.active = active;
 	}
 
 	public IdTypeJpaEntity getIdType() {

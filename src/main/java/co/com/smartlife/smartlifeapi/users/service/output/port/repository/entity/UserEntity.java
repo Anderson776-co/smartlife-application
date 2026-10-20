@@ -10,9 +10,9 @@ public class UserEntity {
     private String secondLastName;
     private String documentNumber;
     private String 	email;
-    private Boolean isEmailConfirmed;
-    private Boolean isEmailConfirmedDefaultValue;
-    private Boolean isActive;
+    private Boolean emailConfirmed;
+    private Boolean emailConfirmedDefaultValue;
+    private Boolean active;
     private IdTypeEntity idType;
     private UrbanizationUserEntity urbanization;
 
@@ -24,9 +24,9 @@ public class UserEntity {
             final String secondLastName,
             final String documentNumber,
             final String email,
-            final Boolean isEmailConfirmed,
-            final Boolean isEmailConfirmedDefaultValue,
-            final Boolean isActive,
+            final Boolean emailConfirmed,
+            final Boolean emailConfirmedDefaultValue,
+            final Boolean active,
             final IdTypeEntity idType,
             final UrbanizationUserEntity urbanization) {
 
@@ -37,11 +37,11 @@ public class UserEntity {
         setSecondLastName(secondLastName);
         setDocumentNumber(documentNumber);
         setEmail(email);
-        setIsEmailConfirmed(isEmailConfirmed);
-        setIsActive(isActive);
+        setEmailConfirmed(emailConfirmed);
+        setActive(active);
         setIdType(idType);
         setUrbanization(urbanization);
-        setIsEmailConfirmedDefaultValue(isEmailConfirmedDefaultValue);
+        setEmailConfirmedDefaultValue(emailConfirmedDefaultValue);
     }
 
 	public UUID getId() {
@@ -100,28 +100,28 @@ public class UserEntity {
 		this.email = email;
 	}
 
-	public Boolean getIsEmailConfirmed() {
-		return isEmailConfirmed;
+	public Boolean getEmailConfirmed() {
+		return emailConfirmed;
 	}
 
-	public void setIsEmailConfirmed(Boolean isEmailConfirmed) {
-		this.isEmailConfirmed = isEmailConfirmed;
+	public void setEmailConfirmed(Boolean emailConfirmed) {
+		this.emailConfirmed = emailConfirmed;
 	}
 
-	public Boolean getIsEmailConfirmedDefaultValue() {
-		return isEmailConfirmedDefaultValue;
+	public Boolean getEmailConfirmedDefaultValue() {
+		return emailConfirmedDefaultValue;
 	}
 
-	public void setIsEmailConfirmedDefaultValue(Boolean isEmailConfirmedDefaultValue) {
-		this.isEmailConfirmedDefaultValue = isEmailConfirmedDefaultValue;
+	public void setEmailConfirmedDefaultValue(Boolean emailConfirmedDefaultValue) {
+		this.emailConfirmedDefaultValue = emailConfirmedDefaultValue;
 	}
 
-	public Boolean getIsActive() {
-		return isActive;
+	public Boolean getActive() {
+		return active;
 	}
 
-	public void setIsActive(Boolean isActive) {
-		this.isActive = isActive;
+	public void setActive(Boolean active) {
+		this.active = active;
 	}
 
 	public IdTypeEntity getIdType() {
