@@ -5,19 +5,19 @@ import java.util.UUID;
 
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.repository.estructured.jpa.PropertyVisitJpaRepository;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.repository.estructured.jpa.entity.PropertyVisitEntityJpa;
-import co.com.smartlife.smartlifeapi.visits.infrastructure.output.repository.estructured.mapper.EntityMapper;
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.repository.estructured.mapper.PropertyVisitMapper;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.PropertyVisitRepository;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.PropertyVisitEntity;
 
 public class PropertyVisitJpaRepositoryAdapter implements PropertyVisitRepository{
 	
 	private final PropertyVisitJpaRepository repository;
-	private final EntityMapper<PropertyVisitEntity, PropertyVisitEntityJpa> mapper;
+	private final PropertyVisitMapper mapper;
 	
 	
 
 	public PropertyVisitJpaRepositoryAdapter(final PropertyVisitJpaRepository repository,
-			final EntityMapper<PropertyVisitEntity, PropertyVisitEntityJpa> mapper) {
+			final PropertyVisitMapper mapper) {
 		this.repository = repository;
 		this.mapper = mapper;
 	}

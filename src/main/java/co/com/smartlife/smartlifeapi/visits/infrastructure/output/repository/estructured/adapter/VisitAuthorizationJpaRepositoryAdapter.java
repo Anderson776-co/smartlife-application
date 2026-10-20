@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.repository.estructured.jpa.VisitAuthorizationJpaRepository;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.repository.estructured.jpa.entity.VisitAuthorizationEntityJpa;
-import co.com.smartlife.smartlifeapi.visits.infrastructure.output.repository.estructured.mapper.EntityMapper;
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.repository.estructured.mapper.VisitAuthorizationMapper;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.VisitAuthorizationRepository;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitAuthorizationEntity;
 
@@ -15,12 +15,12 @@ import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entit
 public class VisitAuthorizationJpaRepositoryAdapter implements VisitAuthorizationRepository{
 	
 	private final VisitAuthorizationJpaRepository repository;
-	private final EntityMapper<VisitAuthorizationEntity, VisitAuthorizationEntityJpa> mapper;
+	private final VisitAuthorizationMapper mapper;
 	
 	
 
-	public VisitAuthorizationJpaRepositoryAdapter(VisitAuthorizationJpaRepository repository,
-			EntityMapper<VisitAuthorizationEntity, VisitAuthorizationEntityJpa> mapper) {
+	public VisitAuthorizationJpaRepositoryAdapter(final VisitAuthorizationJpaRepository repository,
+			final VisitAuthorizationMapper mapper) {
 		this.repository = repository;
 		this.mapper = mapper;
 	}

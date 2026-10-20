@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.repository.estructured.jpa.AuthorizingOwnerJpaRepository;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.repository.estructured.jpa.entity.AuthorizingOwnerEntityJpa;
-import co.com.smartlife.smartlifeapi.visits.infrastructure.output.repository.estructured.mapper.EntityMapper;
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.repository.estructured.mapper.AuthorizingOwnerMapper;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.AuthorizatingOwnerRepository;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.AuthorizingOwnerEntity;
 
@@ -15,10 +15,10 @@ import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entit
 public class AuthorizingOwnerJpaRepositoryAdapter implements AuthorizatingOwnerRepository{
 	
 	private final AuthorizingOwnerJpaRepository repository;
-	private final EntityMapper<AuthorizingOwnerEntity, AuthorizingOwnerEntityJpa> mapper;
+	private final AuthorizingOwnerMapper mapper;
 	
 	public AuthorizingOwnerJpaRepositoryAdapter(final AuthorizingOwnerJpaRepository repository,
-			final EntityMapper<AuthorizingOwnerEntity, AuthorizingOwnerEntityJpa> mapper) {
+			final AuthorizingOwnerMapper mapper) {
 		this.repository = repository;
 		this.mapper = mapper;
 	}

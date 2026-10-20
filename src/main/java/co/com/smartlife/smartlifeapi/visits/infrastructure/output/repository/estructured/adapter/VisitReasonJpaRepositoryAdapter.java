@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.repository.estructured.jpa.VisitReasonJpaRepository;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.repository.estructured.jpa.entity.VisitReasonEntityJpa;
-import co.com.smartlife.smartlifeapi.visits.infrastructure.output.repository.estructured.mapper.EntityMapper;
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.repository.estructured.mapper.VisitReasonMapper;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.VisitReasonRepository;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitReasonEntity;
 
@@ -15,12 +15,12 @@ import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entit
 public class VisitReasonJpaRepositoryAdapter implements VisitReasonRepository{
 	
 	private final VisitReasonJpaRepository repository;
-	private final EntityMapper<VisitReasonEntity, VisitReasonEntityJpa> mapper;
+	private final VisitReasonMapper mapper;
 	
 	
 
-	public VisitReasonJpaRepositoryAdapter(VisitReasonJpaRepository repository,
-			EntityMapper<VisitReasonEntity, VisitReasonEntityJpa> mapper) {
+	public VisitReasonJpaRepositoryAdapter(final VisitReasonJpaRepository repository,
+			final VisitReasonMapper mapper) {
 		this.repository = repository;
 		this.mapper = mapper;
 	}
