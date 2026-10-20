@@ -16,11 +16,11 @@ class ArchitectureTest {
             layeredArchitecture().consideringOnlyDependenciesInLayers()
                     .withOptionalLayers(true)   // many folders are still empty
                     .layer("Domain").definedBy("..domain..")
-                    .layer("Services").definedBy("..services..")
+                    .layer("Services").definedBy("..service..")
                     .layer("Infrastructure").definedBy("..infrastructure..")
                     .whereLayer("Infrastructure").mayNotBeAccessedByAnyLayer()
                     .whereLayer("Services").mayOnlyBeAccessedByLayers("Infrastructure")
-                    .whereLayer("Domain").mayOnlyBeAccessedByLayers("Services", "Infrastructure").allowEmptyShould(true);
+                    .whereLayer("Domain").mayOnlyBeAccessedByLayers("Services", "Infrastructure");
 
     @ArchTest
     static final ArchRule DoNotUseLibrariesInDomain =
