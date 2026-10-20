@@ -2,8 +2,8 @@ package co.com.smartlife.smartlifeapi.visits.service.output.port.repository;
 
 import java.util.List;
 
-public interface ReadRepository <ID, E>{
-	E findById(ID id);
+public interface ReadRepository <I, E>{
+	E findById(I id);
 	
 	List<E> findAll();
 	
