@@ -9,7 +9,7 @@ import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estr
 import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.jpa.entity.UrbanizationUserJpaEntity;
 import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.mapper.UrbanizationUserMapper;
 import co.com.smartlife.smartlifeapi.users.service.output.port.repository.UrbanizationUserRepository;
-import co.com.smartlife.smartlifeapi.users.service.output.port.repository.estructured.entity.UrbanizationUserEntity;
+import co.com.smartlife.smartlifeapi.users.service.output.port.repository.entity.UrbanizationUserEntity;
 
 @Repository
 public class UrbanizationUserRepositoryAdapter implements UrbanizationUserRepository{

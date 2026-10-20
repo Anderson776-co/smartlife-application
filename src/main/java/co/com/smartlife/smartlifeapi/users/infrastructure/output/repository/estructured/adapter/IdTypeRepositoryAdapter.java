@@ -9,7 +9,7 @@ import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estr
 import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.jpa.entity.IdTypeJpaEntity;
 import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.mapper.IdTypeMapper;
 import co.com.smartlife.smartlifeapi.users.service.output.port.repository.IdTypeRepository;
-import co.com.smartlife.smartlifeapi.users.service.output.port.repository.estructured.entity.IdTypeEntity;
+import co.com.smartlife.smartlifeapi.users.service.output.port.repository.entity.IdTypeEntity;
 
 @Repository
 public class IdTypeRepositoryAdapter implements IdTypeRepository{

@@ -9,7 +9,7 @@ import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estr
 import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.jpa.entity.RoleJpaEntity;
 import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.mapper.RoleMapper;
 import co.com.smartlife.smartlifeapi.users.service.output.port.repository.RoleRepository;
-import co.com.smartlife.smartlifeapi.users.service.output.port.repository.estructured.entity.RoleEntity;
+import co.com.smartlife.smartlifeapi.users.service.output.port.repository.entity.RoleEntity;
 
 @Repository
 public class RoleRepositoryAdapter implements RoleRepository{

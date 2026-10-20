@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.users.service.output.port.repository.estructured.entity;
+package co.com.smartlife.smartlifeapi.users.service.output.port.repository.entity;
 
 import java.util.UUID;
 

@@ -8,7 +8,7 @@ import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estr
 import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.jpa.entity.UserJpaEntity;
 import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.mapper.UserMapper;
 import co.com.smartlife.smartlifeapi.users.service.output.port.repository.UserRepository;
-import co.com.smartlife.smartlifeapi.users.service.output.port.repository.estructured.entity.UserEntity;
+import co.com.smartlife.smartlifeapi.users.service.output.port.repository.entity.UserEntity;
 
 public class UserRepositoryAdapter implements UserRepository {
 	

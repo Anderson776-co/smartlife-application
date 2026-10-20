@@ -1,13 +1,12 @@
-package co.com.smartlife.smartlifeapi.users.service.output.port.repository.estructured.entity;
+package co.com.smartlife.smartlifeapi.users.service.output.port.repository.entity;
 
 import java.util.UUID;
 
-public class RoleEntity {
-	
+public class IdTypeEntity {
 	private UUID id;
     private String name;
 
-    public RoleEntity(final UUID id, final String name) {
+    public IdTypeEntity(final UUID id, final String name) {
         setId(id);
         setName(name);
     }
@@ -27,5 +26,4 @@ public class RoleEntity {
     private void setName(final String name) {
         this.name = name;
     }
-
 }

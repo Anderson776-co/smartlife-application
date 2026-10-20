@@ -10,7 +10,7 @@ import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estr
 import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.jpa.entity.UserRoleJpaEntity;
 import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.mapper.UserRoleMapper;
 import co.com.smartlife.smartlifeapi.users.service.output.port.repository.UserRoleRepository;
-import co.com.smartlife.smartlifeapi.users.service.output.port.repository.estructured.entity.UserRoleEntity;
+import co.com.smartlife.smartlifeapi.users.service.output.port.repository.entity.UserRoleEntity;
 
 @Repository
 public class UserRoleRepositoryAdapter implements UserRoleRepository{
@@ -58,9 +58,4 @@ public class UserRoleRepositoryAdapter implements UserRoleRepository{
 		Optional<UserRoleJpaEntity> jpaEntity = repository.findByRoleId(roleId);
 		return jpaEntity.map(mapper::toEntity);
 	}
-	
-	
-	
-
-
 }
