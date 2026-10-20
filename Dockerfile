@@ -4,6 +4,7 @@ COPY target/smartlife.jar app.jar
 RUN java -Djarmode=tools -jar app.jar extract --layers --launcher --destination extraido
 
 FROM eclipse-temurin:25-jre-alpine
+RUN apk upgrade --no-cache expat
 RUN addgroup -S smartlife && adduser -S smartlife -G smartlife
 WORKDIR /app
 COPY --from=capas /app/extraido/dependencies/ ./
