@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.visits.infrastructure.output.repository.estructured.jpa.entity;
+package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa.entity;
 
 import java.time.Instant;
 import java.util.UUID;

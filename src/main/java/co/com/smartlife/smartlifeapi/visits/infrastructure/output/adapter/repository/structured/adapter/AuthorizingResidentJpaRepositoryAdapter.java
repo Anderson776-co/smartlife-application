@@ -1,13 +1,13 @@
-package co.com.smartlife.smartlifeapi.visits.infrastructure.output.repository.estructured.adapter;
+package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.adapter;
 
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
 
-import co.com.smartlife.smartlifeapi.visits.infrastructure.output.repository.estructured.jpa.AuthorizingResidentJpaRepository;
-import co.com.smartlife.smartlifeapi.visits.infrastructure.output.repository.estructured.jpa.entity.AuthorizingResidentEntityJpa;
-import co.com.smartlife.smartlifeapi.visits.infrastructure.output.repository.estructured.mapper.AuthorizingResidentMapper;
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa.AuthorizingResidentJpaRepository;
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa.entity.AuthorizingResidentEntityJpa;
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.mapper.AuthorizingResidentMapper;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.AuthorizatingResidentRepository;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.AuthorizingResidentEntity;
 

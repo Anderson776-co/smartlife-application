@@ -1,13 +1,13 @@
-package co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.adapter;
+package co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.repository.structured.adapter;
 
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
 
-import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.jpa.UrbanizationUserJpaRepository;
-import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.jpa.entity.UrbanizationUserJpaEntity;
-import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.mapper.UrbanizationUserMapper;
+import co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.repository.structured.jpa.UrbanizationUserJpaRepository;
+import co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.repository.structured.jpa.entity.UrbanizationUserJpaEntity;
+import co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.repository.structured.mapper.UrbanizationUserMapper;
 import co.com.smartlife.smartlifeapi.users.service.output.port.repository.UrbanizationUserRepository;
 import co.com.smartlife.smartlifeapi.users.service.output.port.repository.entity.UrbanizationUserEntity;
 

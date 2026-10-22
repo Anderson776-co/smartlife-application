@@ -15,18 +15,23 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.client.RequestMatcher;
 import org.springframework.web.client.RestClient;
 
-import co.com.smartlife.smartlifeapi.visits.service.output.dto.MessageCatalogDTO;
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.messagecatalog.strapi.StrapiMessageCatalogAdapter;
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.messagecatalog.strapi.mapper.MessageCatalogMapper;
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.messagecatalog.strapi.mapper.MessageCatalogMapperImpl;
+import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.MessageCatalogDTO;
 
 class StrapiMessageCatalogAdapterTest {
 
 	private MockRestServiceServer server;
 	private StrapiMessageCatalogAdapter adapter;
+	private MessageCatalogMapper mapper;
 
 	@BeforeEach
 	void setUp() {
 		RestClient.Builder builder = RestClient.builder();
 		server = MockRestServiceServer.bindTo(builder).build();
-		adapter = new StrapiMessageCatalogAdapter(builder, "http://strapi.test", "test-token");
+		mapper = new MessageCatalogMapperImpl();
+		adapter = new StrapiMessageCatalogAdapter(builder, "http://strapi.test", "test-token",mapper);
 	}
 
 	private static RequestMatcher urlContains(final String text) {
@@ -68,7 +73,7 @@ class StrapiMessageCatalogAdapterTest {
 
 	@Test
 	void findByCodeAndLocaleShouldFailWhenStrapiUrlIsNotConfigured() {
-		StrapiMessageCatalogAdapter withoutUrl = new StrapiMessageCatalogAdapter("", "");
+		StrapiMessageCatalogAdapter withoutUrl = new StrapiMessageCatalogAdapter("", "",mapper);
 
 		assertThrows(IllegalStateException.class, () -> withoutUrl.findByCodeAndLocale("VISIT_AUTHORIZED", "es"));
 	}

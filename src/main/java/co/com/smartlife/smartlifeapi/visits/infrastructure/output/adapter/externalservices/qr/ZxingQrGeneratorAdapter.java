@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.visits.infrastructure.output.externalservices.qr;
+package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.qr;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -12,7 +12,7 @@ import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
-import co.com.smartlife.smartlifeapi.visits.service.output.port.QrGeneratorOutputPort;
+import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.QrGeneratorOutputPort;
 
 @Component
 public class ZxingQrGeneratorAdapter implements QrGeneratorOutputPort {

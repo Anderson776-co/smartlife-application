@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.visits.service.output.dto;
+package co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto;
 
 import java.io.Serializable;
 

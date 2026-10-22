@@ -1,12 +1,12 @@
-package co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.adapter;
+package co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.repository.structured.adapter;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.jpa.UserJpaRepository;
-import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.jpa.entity.UserJpaEntity;
-import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.mapper.UserMapper;
+import co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.repository.structured.jpa.UserJpaRepository;
+import co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.repository.structured.jpa.entity.UserJpaEntity;
+import co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.repository.structured.mapper.UserMapper;
 import co.com.smartlife.smartlifeapi.users.service.output.port.repository.UserRepository;
 import co.com.smartlife.smartlifeapi.users.service.output.port.repository.entity.UserEntity;
 

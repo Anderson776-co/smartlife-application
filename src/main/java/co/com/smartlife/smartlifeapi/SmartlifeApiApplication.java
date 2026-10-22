@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.Initializer;
+package co.com.smartlife.smartlifeapi;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

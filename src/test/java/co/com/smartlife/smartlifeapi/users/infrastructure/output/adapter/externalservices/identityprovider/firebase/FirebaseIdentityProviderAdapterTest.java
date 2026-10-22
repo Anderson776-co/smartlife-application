@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.users.infrastructure.output.externalservices.identityprovider.firebase.adapter;
+package co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.externalservices.identityprovider.firebase;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;

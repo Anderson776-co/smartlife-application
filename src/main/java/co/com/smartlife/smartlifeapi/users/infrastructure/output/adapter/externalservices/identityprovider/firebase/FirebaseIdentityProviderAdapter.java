@@ -42,7 +42,7 @@ public class FirebaseIdentityProviderAdapter implements IdentityProviderOutputPo
 		this.credentialsBase64 = credentialsBase64;
 	}
 
-	FirebaseIdentityProviderAdapter(final TokenVerifier verifier) {
+	public FirebaseIdentityProviderAdapter(final TokenVerifier verifier) {
 		this.projectId = "";
 		this.credentialsBase64 = "";
 		this.verifier = verifier;

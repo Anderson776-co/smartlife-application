@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.visits.infrastructure.output.externalservices.notificationcatalog.strapi.adapter;
+package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.notificationcatalog.strapi.adapter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -6,10 +6,10 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
-import co.com.smartlife.smartlifeapi.visits.infrastructure.output.externalservices.notificationcatalog.strapi.dto.StrapiNotificationCatalogData;
-import co.com.smartlife.smartlifeapi.visits.infrastructure.output.externalservices.notificationcatalog.strapi.dto.StrapiNotificationCatalogResponse;
-import co.com.smartlife.smartlifeapi.visits.service.output.dto.NotificationCatalogDTO;
-import co.com.smartlife.smartlifeapi.visits.service.output.port.NotificationCatalogOutputPort;
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.notificationcatalog.strapi.dto.StrapiNotificationCatalogData;
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.notificationcatalog.strapi.dto.StrapiNotificationCatalogResponse;
+import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.NotificationCatalogOutputPort;
+import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.NotificationCatalogDTO;
 
 @Component
 public class StrapiNotificationCatalogAdapter implements NotificationCatalogOutputPort {
@@ -25,7 +25,7 @@ public class StrapiNotificationCatalogAdapter implements NotificationCatalogOutp
 		this(RestClient.builder(), baseUrl, apiToken);
 	}
 
-	StrapiNotificationCatalogAdapter(final RestClient.Builder builder, final String baseUrl,
+	public StrapiNotificationCatalogAdapter(final RestClient.Builder builder, final String baseUrl,
 			final String apiToken) {
 		this.baseUrl = baseUrl;
 		this.restClient = builder.baseUrl(baseUrl).defaultHeaders(headers -> {

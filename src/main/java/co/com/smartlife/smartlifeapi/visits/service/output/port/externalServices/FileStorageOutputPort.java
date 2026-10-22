@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.visits.service.output.port;
+package co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices;
 
 public interface FileStorageOutputPort {
 

@@ -1,11 +1,11 @@
-package co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.jpa;
+package co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.repository.structured.jpa;
 
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.jpa.entity.UserRoleJpaEntity;
+import co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.repository.structured.jpa.entity.UserRoleJpaEntity;
 
 public interface UserRoleJpaRepository extends JpaRepository<UserRoleJpaEntity, UUID> {
 	

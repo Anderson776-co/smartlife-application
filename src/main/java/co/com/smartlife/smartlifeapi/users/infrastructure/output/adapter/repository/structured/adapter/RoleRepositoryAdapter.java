@@ -1,13 +1,13 @@
-package co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.adapter;
+package co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.repository.structured.adapter;
 
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
 
-import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.jpa.RoleJpaRepository;
-import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.jpa.entity.RoleJpaEntity;
-import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.mapper.RoleMapper;
+import co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.repository.structured.jpa.RoleJpaRepository;
+import co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.repository.structured.jpa.entity.RoleJpaEntity;
+import co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.repository.structured.mapper.RoleMapper;
 import co.com.smartlife.smartlifeapi.users.service.output.port.repository.RoleRepository;
 import co.com.smartlife.smartlifeapi.users.service.output.port.repository.entity.RoleEntity;
 

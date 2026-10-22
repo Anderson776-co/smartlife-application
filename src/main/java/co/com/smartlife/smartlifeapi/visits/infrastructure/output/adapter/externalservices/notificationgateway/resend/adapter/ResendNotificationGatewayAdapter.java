@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.visits.infrastructure.output.externalservices.notificationgateway.resend.adapter;
+package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.notificationgateway.resend.adapter;
 
 import java.util.List;
 
@@ -8,10 +8,10 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
-import co.com.smartlife.smartlifeapi.visits.infrastructure.output.externalservices.notificationgateway.resend.dto.ResendEmailRequest;
-import co.com.smartlife.smartlifeapi.visits.infrastructure.output.externalservices.notificationgateway.resend.dto.ResendEmailResponse;
-import co.com.smartlife.smartlifeapi.visits.service.output.dto.EmailNotificationDTO;
-import co.com.smartlife.smartlifeapi.visits.service.output.port.NotificationGatewayOutputPort;
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.notificationgateway.resend.dto.ResendEmailRequest;
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.notificationgateway.resend.dto.ResendEmailResponse;
+import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.NotificationGatewayOutputPort;
+import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.EmailNotificationDTO;
 
 @Component
 public class ResendNotificationGatewayAdapter implements NotificationGatewayOutputPort {
@@ -29,7 +29,7 @@ public class ResendNotificationGatewayAdapter implements NotificationGatewayOutp
 		this(RestClient.builder(), baseUrl, apiKey, from);
 	}
 
-	ResendNotificationGatewayAdapter(final RestClient.Builder builder, final String baseUrl, final String apiKey,
+	public ResendNotificationGatewayAdapter(final RestClient.Builder builder, final String baseUrl, final String apiKey,
 			final String from) {
 		this.apiKey = apiKey;
 		this.from = from;

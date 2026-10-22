@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.shared.service.output.repository;
+package co.com.smartlife.smartlifeapi.shared.repository;
 
 import java.util.List;
 

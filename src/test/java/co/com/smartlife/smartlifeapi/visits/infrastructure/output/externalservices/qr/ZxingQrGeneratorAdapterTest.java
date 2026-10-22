@@ -7,6 +7,8 @@ import java.util.Base64;
 
 import org.junit.jupiter.api.Test;
 
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.qr.ZxingQrGeneratorAdapter;
+
 class ZxingQrGeneratorAdapterTest {
 
 	private final ZxingQrGeneratorAdapter adapter = new ZxingQrGeneratorAdapter();

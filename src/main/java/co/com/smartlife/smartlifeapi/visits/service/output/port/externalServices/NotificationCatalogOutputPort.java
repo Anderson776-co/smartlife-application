@@ -1,6 +1,6 @@
-package co.com.smartlife.smartlifeapi.visits.service.output.port;
+package co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices;
 
-import co.com.smartlife.smartlifeapi.visits.service.output.dto.NotificationCatalogDTO;
+import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.NotificationCatalogDTO;
 
 public interface NotificationCatalogOutputPort {
 

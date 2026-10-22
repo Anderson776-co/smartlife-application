@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.visits.infrastructure.output.externalservices.filestorage.r2.adapter;
+package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.filestorage.r2.adapter;
 
 import java.net.URI;
 
@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import co.com.smartlife.smartlifeapi.visits.service.output.port.FileStorageOutputPort;
+import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.FileStorageOutputPort;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
 import software.amazon.awssdk.core.checksums.RequestChecksumCalculation;
@@ -38,7 +38,7 @@ public class R2FileStorageAdapter implements FileStorageOutputPort {
 		this.bucket = bucket;
 	}
 
-	R2FileStorageAdapter(final S3Client s3Client, final String bucket) {
+	public R2FileStorageAdapter(final S3Client s3Client, final String bucket) {
 		this.endpoint = "";
 		this.accessKey = "";
 		this.secretKey = "";

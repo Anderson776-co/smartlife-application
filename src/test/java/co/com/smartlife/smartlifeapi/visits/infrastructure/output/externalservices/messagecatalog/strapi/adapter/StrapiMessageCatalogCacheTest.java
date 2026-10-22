@@ -19,8 +19,11 @@ import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
 
-import co.com.smartlife.smartlifeapi.visits.service.output.dto.MessageCatalogDTO;
-import co.com.smartlife.smartlifeapi.visits.service.output.port.MessageCatalogOutputPort;
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.messagecatalog.strapi.StrapiMessageCatalogAdapter;
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.messagecatalog.strapi.dto.StrapiMessageCatalogData;
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.messagecatalog.strapi.mapper.MessageCatalogMapper;
+import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.MessageCatalogOutputPort;
+import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.MessageCatalogDTO;
 
 class StrapiMessageCatalogCacheTest {
 
@@ -48,12 +51,48 @@ class StrapiMessageCatalogCacheTest {
 			return new ConcurrentMapCacheManager("message-catalog");
 		}
 
-		@Bean
-		MessageCatalogOutputPort messageCatalogOutputPort(final RestClient.Builder builder,
-				final MockRestServiceServer strapiServer) {
-			return new StrapiMessageCatalogAdapter(builder, "http://strapi.test", "test-token");
-		}
-	}
+		 @Bean
+	        MessageCatalogMapper messageCatalogMapper() {
+	            return new MessageCatalogMapper() {
+
+	                @Override
+	                public MessageCatalogDTO toDTO(
+	                        final StrapiMessageCatalogData domain) {
+	                    return new MessageCatalogDTO(
+	                            domain.code(),
+	                            domain.title(),
+	                            domain.content(),
+	                            domain.locale());
+	                }
+
+	                @Override
+	                public StrapiMessageCatalogData toDomain(
+	                        final MessageCatalogDTO dto) {
+	                    throw new UnsupportedOperationException(
+	                            "Este test no necesita convertir DTO a dominio");
+	                }
+
+	                @Override
+	                public java.util.List<MessageCatalogDTO> toDTO(
+	                        final java.util.List<StrapiMessageCatalogData> domainList) {
+	                    return domainList.stream()
+	                            .map(this::toDTO)
+	                            .toList();
+	                }
+	            };
+	        }
+
+	        @Bean
+	        MessageCatalogOutputPort messageCatalogOutputPort(
+	                final RestClient.Builder builder,
+	                final MessageCatalogMapper mapper) {
+	            return new StrapiMessageCatalogAdapter(
+	                    builder,
+	                    "http://strapi.test",
+	                    "test-token",
+	                    mapper);
+	        }
+	    }
 
 	private AnnotationConfigApplicationContext context;
 	private MockRestServiceServer server;

@@ -1,10 +1,10 @@
-package co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.jpa;
+package co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.repository.structured.jpa;
 
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import co.com.smartlife.smartlifeapi.users.infrastructure.output.repository.estructured.jpa.entity.IdTypeJpaEntity;
+import co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.repository.structured.jpa.entity.IdTypeJpaEntity;
 
 public interface IdTypeJpaRepository extends JpaRepository<IdTypeJpaEntity, UUID> {
 
