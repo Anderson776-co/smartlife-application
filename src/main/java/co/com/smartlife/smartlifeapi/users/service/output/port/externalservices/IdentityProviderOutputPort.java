@@ -1,8 +1,12 @@
 package co.com.smartlife.smartlifeapi.users.service.output.port.externalservices;
 
-import co.com.smartlife.smartlifeapi.users.service.output.dto.AuthenticatedUserDTO;
+import java.time.Duration;
+
+import co.com.smartlife.smartlifeapi.users.service.output.port.externalservices.dto.AuthenticatedUserDTO;
 
 public interface IdentityProviderOutputPort {
 
 	AuthenticatedUserDTO verifyToken(String idToken);
+	String createSessionCookie(String idToken, Duration expiration);
+	AuthenticatedUserDTO verifySessionCookie(String sessionCookie);
 }

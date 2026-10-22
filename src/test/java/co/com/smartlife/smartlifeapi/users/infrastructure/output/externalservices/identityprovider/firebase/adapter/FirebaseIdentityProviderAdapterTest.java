@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
-import co.com.smartlife.smartlifeapi.users.service.output.dto.AuthenticatedUserDTO;
+import co.com.smartlife.smartlifeapi.users.service.output.port.externalservices.dto.AuthenticatedUserDTO;
 
 class FirebaseIdentityProviderAdapterTest {
 
