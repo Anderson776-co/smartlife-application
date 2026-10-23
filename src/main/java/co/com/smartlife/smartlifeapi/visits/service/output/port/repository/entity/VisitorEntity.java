@@ -11,7 +11,7 @@ public class VisitorEntity {
 	private String secondLastName;
 	private String email;
 	private String vehiclePlate;
-
+	
 	public VisitorEntity(
 		final UUID id,
 		final String firstName,

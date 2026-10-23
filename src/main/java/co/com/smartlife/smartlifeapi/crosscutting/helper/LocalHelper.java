@@ -6,7 +6,8 @@ import org.springframework.context.i18n.LocaleContextHolder;
 
 public final class LocalHelper {
 
-	public LocalHelper() {
+	private LocalHelper() {
+		throw new IllegalStateException("Utility class");
 	}
 	
 	public static String getCurrentLocal() {
