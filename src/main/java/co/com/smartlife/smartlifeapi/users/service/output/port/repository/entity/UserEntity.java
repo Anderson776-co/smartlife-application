@@ -4,15 +4,15 @@ import java.util.UUID;
 
 public class UserEntity {
 	private UUID id;
+	private String documentNumber;
     private String firstName;
     private String middleName;
     private String lastName;
     private String secondLastName;
-    private String documentNumber;
+    private Boolean isActive;
     private String 	email;
     private Boolean emailConfirmed;
     private Boolean emailConfirmedDefaultValue;
-    private Boolean active;
     private IdTypeEntity idType;
     private UrbanizationUserEntity urbanization;
 
@@ -26,7 +26,7 @@ public class UserEntity {
             final String email,
             final Boolean emailConfirmed,
             final Boolean emailConfirmedDefaultValue,
-            final Boolean active,
+            final Boolean isActive,
             final IdTypeEntity idType,
             final UrbanizationUserEntity urbanization) {
 
@@ -38,7 +38,7 @@ public class UserEntity {
         setDocumentNumber(documentNumber);
         setEmail(email);
         setEmailConfirmed(emailConfirmed);
-        setActive(active);
+        setIsActive(isActive);
         setIdType(idType);
         setUrbanization(urbanization);
         setEmailConfirmedDefaultValue(emailConfirmedDefaultValue);
@@ -50,6 +50,14 @@ public class UserEntity {
 
 	public void setId(UUID id) {
 		this.id = id;
+	}
+
+	public String getDocumentNumber() {
+		return documentNumber;
+	}
+
+	public void setDocumentNumber(String documentNumber) {
+		this.documentNumber = documentNumber;
 	}
 
 	public String getFirstName() {
@@ -84,12 +92,12 @@ public class UserEntity {
 		this.secondLastName = secondLastName;
 	}
 
-	public String getDocumentNumber() {
-		return documentNumber;
+	public Boolean getIsActive() {
+		return isActive;
 	}
 
-	public void setDocumentNumber(String documentNumber) {
-		this.documentNumber = documentNumber;
+	public void setIsActive(Boolean isActive) {
+		this.isActive = isActive;
 	}
 
 	public String getEmail() {
@@ -116,14 +124,6 @@ public class UserEntity {
 		this.emailConfirmedDefaultValue = emailConfirmedDefaultValue;
 	}
 
-	public Boolean getActive() {
-		return active;
-	}
-
-	public void setActive(Boolean active) {
-		this.active = active;
-	}
-
 	public IdTypeEntity getIdType() {
 		return idType;
 	}
@@ -135,7 +135,7 @@ public class UserEntity {
 	public UrbanizationUserEntity getUrbanization() {
 		return urbanization;
 	}
-    
+
 	public void setUrbanization(UrbanizationUserEntity urbanization) {
 		this.urbanization = urbanization;
 	}

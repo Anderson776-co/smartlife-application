@@ -1,12 +1,13 @@
 package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.adapter;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
 
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa.VisitAuthorizationJpaRepository;
-import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa.entity.VisitAuthorizationEntityJpa;
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa.entity.VisitAuthorizationJpaEntity;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.mapper.VisitAuthorizationMapper;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.VisitAuthorizationRepository;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitAuthorizationEntity;
@@ -27,19 +28,19 @@ public class VisitAuthorizationJpaRepositoryAdapter implements VisitAuthorizatio
 
 	@Override
 	public void create(VisitAuthorizationEntity entity) {
-		VisitAuthorizationEntityJpa entityJpa = mapper.toJpaEntity(entity);
+		VisitAuthorizationJpaEntity entityJpa = mapper.toJpaEntity(entity);
 		repository.save(entityJpa);
 	}
 
 	@Override
-	public VisitAuthorizationEntity findById(UUID id) {
-		VisitAuthorizationEntityJpa entityJpa = repository.findById(id).orElse(new VisitAuthorizationEntityJpa());
-		return mapper.toEntity(entityJpa);
+	public Optional<VisitAuthorizationEntity> findById(UUID id) {
+		Optional<VisitAuthorizationJpaEntity> entityJpa = repository.findById(id);
+		return entityJpa.map(mapper::toEntity);
 	}
 
 	@Override
 	public List<VisitAuthorizationEntity> findAll() {
-		List<VisitAuthorizationEntityJpa> entityJpaList = repository.findAll();
+		List<VisitAuthorizationJpaEntity> entityJpaList = repository.findAll();
 		return mapper.toEntity(entityJpaList);
 	}
 
@@ -50,8 +51,6 @@ public class VisitAuthorizationJpaRepositoryAdapter implements VisitAuthorizatio
 
 	@Override
 	public void update(UUID id, VisitAuthorizationEntity entity) {
-		VisitAuthorizationEntityJpa entityJpa = mapper.toJpaEntity(entity);
-		repository.save(entityJpa);
+		//pendiente
 	}
-
 }

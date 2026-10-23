@@ -7,7 +7,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Repository;
 
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa.VisitorJpaRepository;
-import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa.entity.VisitorEntityJpa;
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa.entity.VisitorJpaEntity;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.mapper.VisitorMapper;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.VisitorRepository;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitorEntity;
@@ -26,19 +26,19 @@ public class VisitorJpaRepositoryAdapter implements VisitorRepository{
 
 	@Override
 	public void create(VisitorEntity entity) {
-		VisitorEntityJpa entityJpa = mapper.toJpaEntity(entity);
+		VisitorJpaEntity entityJpa = mapper.toJpaEntity(entity);
 		repository.save(entityJpa);
 	}
 
 	@Override
-	public VisitorEntity findById(UUID id) {
-		VisitorEntityJpa entityJpa = repository.findById(id).orElse(new VisitorEntityJpa());
-		return mapper.toEntity(entityJpa);
+	public Optional<VisitorEntity> findById(UUID id) {
+		Optional<VisitorJpaEntity> entityJpa = repository.findById(id);
+		return entityJpa.map(mapper::toEntity);
 	}
 
 	@Override
 	public List<VisitorEntity> findAll() {
-		List<VisitorEntityJpa> entityJpaList = repository.findAll();
+		List<VisitorJpaEntity> entityJpaList = repository.findAll();
 		return mapper.toEntity(entityJpaList);
 	}
 
@@ -49,19 +49,18 @@ public class VisitorJpaRepositoryAdapter implements VisitorRepository{
 
 	@Override
 	public void update(UUID id, VisitorEntity entity) {
-		VisitorEntityJpa entityJpa = mapper.toJpaEntity(entity);
-		repository.save(entityJpa);
+		//pendiente
 	}
 
 	@Override
 	public Optional<VisitorEntity> findByEmail(String email) {
-		Optional<VisitorEntityJpa> entityJpa = repository.findByEmail(email);
+		Optional<VisitorJpaEntity> entityJpa = repository.findByEmail(email);
 		return entityJpa.map(mapper::toEntity);
 	}
 
 	@Override
 	public Optional<VisitorEntity> findByDocumentNumber(String documentNumber) {
-		Optional<VisitorEntityJpa> entityJpa = repository.findByDocumentNumber(documentNumber);
+		Optional<VisitorJpaEntity> entityJpa = repository.findByDocumentNumber(documentNumber);
 		return entityJpa.map(mapper::toEntity);
 	}
 

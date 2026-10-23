@@ -25,20 +25,20 @@ public class UserRepositoryAdapter implements UserRepository {
 
 	@Override
 	public void create(UserEntity entity) {
-		UserJpaEntity jpaEntity = mapper.toJpaEntity(entity);
-		repository.save(jpaEntity);	
+		UserJpaEntity entityJpa = mapper.toJpaEntity(entity);
+		repository.save(entityJpa);	
 	}
 
 	@Override
-	public UserEntity findById(UUID id) {
-		UserJpaEntity jpaEntity = repository.findById(id).orElse(null);
-		return mapper.toEntity(jpaEntity);
+	public Optional<UserEntity> findById(UUID id) {
+		Optional<UserJpaEntity> entityJpa = repository.findById(id);
+		return entityJpa.map(mapper::toEntity);
 	}
 
 	@Override
 	public List<UserEntity> findAll() {
-		List<UserJpaEntity> jpaEntityList = repository.findAll();
-		return mapper.toEntity(jpaEntityList);
+		List<UserJpaEntity> entityJpaList = repository.findAll();
+		return mapper.toEntity(entityJpaList);
 	}
 
 	@Override
@@ -48,29 +48,29 @@ public class UserRepositoryAdapter implements UserRepository {
 
 	@Override
 	public void update(UUID id, UserEntity entity) {
-		UserJpaEntity jpaEntity = repository.findById(id).orElseThrow(()-> new RuntimeException("Visitante no encontrado"));
+		UserJpaEntity entityJpa = repository.findById(id).orElseThrow(()-> new RuntimeException("Visitante no encontrado"));
 		
-		jpaEntity.setFirstName(entity.getFirstName());
-	    jpaEntity.setMiddleName(entity.getMiddleName());
-	    jpaEntity.setLastName(entity.getLastName());
-	    jpaEntity.setSecondLastName(entity.getSecondLastName());
-	    jpaEntity.setDocumentNumber(entity.getDocumentNumber());
-	    jpaEntity.setEmail(entity.getEmail());
-	    jpaEntity.setEmailConfirmed(entity.getEmailConfirmed());
-	    jpaEntity.setEmailConfirmedDefaultValue(entity.getEmailConfirmedDefaultValue());
-	    jpaEntity.setActive(entity.getActive());
+		entityJpa.setFirstName(entity.getFirstName());
+		entityJpa.setMiddleName(entity.getMiddleName());
+		entityJpa.setLastName(entity.getLastName());
+		entityJpa.setSecondLastName(entity.getSecondLastName());
+		entityJpa.setDocumentNumber(entity.getDocumentNumber());
+		entityJpa.setEmail(entity.getEmail());
+		entityJpa.setEmailConfirmed(entity.getEmailConfirmed());
+		entityJpa.setEmailConfirmedDefaultValue(entity.getEmailConfirmedDefaultValue());
+		entityJpa.setIsActive(entity.getIsActive());
 	}
 
 	@Override
 	public Optional<UserEntity> findByEmail(String email) {
-		Optional<UserJpaEntity> jpaEntity = repository.findByEmail(email);
-		return jpaEntity.map(mapper::toEntity);
+		Optional<UserJpaEntity> entityJpa = repository.findByEmail(email);
+		return entityJpa.map(mapper::toEntity);
 	}
 
 	@Override
 	public Optional<UserEntity> findByDocumentNumber(String documentNumber) {
-		Optional <UserJpaEntity> jpaEntity = repository.findByDocumentNumber(documentNumber);
-		return jpaEntity.map(mapper::toEntity);
+		Optional <UserJpaEntity> entityJpa = repository.findByDocumentNumber(documentNumber);
+		return entityJpa.map(mapper::toEntity);
 	}
 
 }

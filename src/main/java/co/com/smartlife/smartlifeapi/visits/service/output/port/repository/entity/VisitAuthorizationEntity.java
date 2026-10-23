@@ -9,84 +9,115 @@ public class VisitAuthorizationEntity {
 	private Instant authorizationEndDate;
 	private Instant registerDate;
 	private String observation;
-	private VisitReasonEntity visitReason;
+	private String qrCode;
+	private String fileReference;
 	private PropertyVisitEntity property;
+	private AuthorizatorEntity authorizator;
 	private VisitorEntity visitor;
+	private VisitReasonEntity visitReason;
 	
 	public VisitAuthorizationEntity(final UUID id, final Instant authorizationStartDate, final Instant authorizationEndDate,
-			final Instant registerDate, final String observation, final VisitReasonEntity visitReason, final PropertyVisitEntity property) {
+			final Instant registerDate, final String observation, final String qrCode, final String fileReference, final PropertyVisitEntity property, 
+			final AuthorizatorEntity authorizator, final VisitorEntity visitor, final VisitReasonEntity visitReason) {
 		setId(id);
 		setAuthorizationStartDate(authorizationStartDate);
 		setAuthorizationEndDate(authorizationEndDate);
 		setRegisterDate(registerDate);
 		setObservation(observation);
+		setQrCode(qrCode);
+		setFileReference(fileReference);
+		setProperty(property);
+		setAuthorizator(authorizator);
 		setVisitReason(visitReason);
-		setPropertyVisit(property);
 		setVisitor(visitor);
 	}
-	
+
 	public UUID getId() {
 		return id;
 	}
-	
-	private void setId(final UUID id) {
+
+	public void setId(UUID id) {
 		this.id = id;
 	}
-	
-	public Instant getStartDate() {
+
+	public Instant getAuthorizationStartDate() {
 		return authorizationStartDate;
 	}
-	
-	private void setAuthorizationStartDate(final Instant authorizationStartDate) {
+
+	public void setAuthorizationStartDate(Instant authorizationStartDate) {
 		this.authorizationStartDate = authorizationStartDate;
 	}
-	
-	public Instant getExpirationDate() {
+
+	public Instant getAuthorizationEndDate() {
 		return authorizationEndDate;
 	}
-	
-	private void setAuthorizationEndDate(final Instant authorizationEndDate) {
+
+	public void setAuthorizationEndDate(Instant authorizationEndDate) {
 		this.authorizationEndDate = authorizationEndDate;
 	}
-	
+
 	public Instant getRegisterDate() {
 		return registerDate;
 	}
-	
-	private void setRegisterDate(final Instant registerDate) {
+
+	public void setRegisterDate(Instant registerDate) {
 		this.registerDate = registerDate;
 	}
-	
+
 	public String getObservation() {
 		return observation;
 	}
-	
-	private void setObservation(final String observation) {
+
+	public void setObservation(String observation) {
 		this.observation = observation;
 	}
-	
-	public VisitReasonEntity getReasonVisit() {
-		return visitReason;
+
+	public String getQrCode() {
+		return qrCode;
 	}
-	
-	private void setVisitReason(final VisitReasonEntity visitReason) {
-		this.visitReason = visitReason;
+
+	public void setQrCode(String qrCode) {
+		this.qrCode = qrCode;
 	}
-	
-	public PropertyVisitEntity getPropertyVisit() {
+
+	public String getFileReference() {
+		return fileReference;
+	}
+
+	public void setFileReference(String fileReference) {
+		this.fileReference = fileReference;
+	}
+
+	public PropertyVisitEntity getProperty() {
 		return property;
 	}
-	
-	private void setPropertyVisit(final PropertyVisitEntity property) {
+
+	public void setProperty(PropertyVisitEntity property) {
 		this.property = property;
+	}
+
+	public AuthorizatorEntity getAuthorizator() {
+		return authorizator;
+	}
+
+	public void setAuthorizator(AuthorizatorEntity authorizator) {
+		this.authorizator = authorizator;
 	}
 
 	public VisitorEntity getVisitor() {
 		return visitor;
 	}
-	
-	private void setVisitor(final VisitorEntity visitor) {
+
+	public void setVisitor(VisitorEntity visitor) {
 		this.visitor = visitor;
+	}
+
+	public VisitReasonEntity getVisitReason() {
+		return visitReason;
+	}
+
+	public void setVisitReason(VisitReasonEntity visitReason) {
+		this.visitReason = visitReason;
 	}
 	
 }

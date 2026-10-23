@@ -12,13 +12,16 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "user")
+@Table(name = "user",  schema = "users")
 public class UserJpaEntity {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
-	@Column(name = "id", nullable = false, updatable = false)
+	@Column(name = "id", updatable = false)
 	private UUID id;
+	
+	@Column(name = "document_number")
+    private String documentNumber;
 	
 	@Column(name = "first_name")
 	private String firstName;
@@ -26,14 +29,11 @@ public class UserJpaEntity {
 	@Column(name = "middle_name")
     private String middleName;
 	
-	@Column(name = "lastname")
+	@Column(name = "last_name")
     private String lastName;
 	
-	@Column(name = "second_lastname")
+	@Column(name = "second_last_name")
     private String secondLastName;
-	
-	@Column(name = "document_number")
-    private String documentNumber;
 	
 	@Column(name = "email")
     private String 	email;
@@ -45,14 +45,14 @@ public class UserJpaEntity {
     private Boolean emailConfirmedDefaultValue;
 	
 	@Column(name = "is_active")
-    private Boolean active;
+    private Boolean isActive;
 	
 	@ManyToOne
-	@JoinColumn(name = "id_type", referencedColumnName = "id")
+	@JoinColumn(name = "id_type")
     private IdTypeJpaEntity idType;
 	
 	@ManyToOne
-	@JoinColumn(name = "id_urbanization", referencedColumnName = "id")
+	@JoinColumn(name = "id_urbanization")
     private UrbanizationUserJpaEntity urbanization;
 	
 	public UserJpaEntity(final UUID id,
@@ -64,7 +64,7 @@ public class UserJpaEntity {
             final String email,
             final Boolean emailConfirmed,
             final Boolean emailConfirmedDefaultValue,
-            final Boolean active,
+            final Boolean isActive,
             final IdTypeJpaEntity idType,
             final UrbanizationUserJpaEntity urbanization) {
 		setId(id);
@@ -75,19 +75,27 @@ public class UserJpaEntity {
         setDocumentNumber(documentNumber);
         setEmail(email);
         setEmailConfirmed(emailConfirmed);
-        setActive(active);
+        setIsActive(isActive);
         setIdType(idType);
         setUrbanization(urbanization);
         setEmailConfirmedDefaultValue(emailConfirmedDefaultValue);
     }
 
-    public UUID getId() {
-        return id;
-    }
+	public UUID getId() {
+		return id;
+	}
 
-    private void setId(final UUID id) {
-        this.id = id;
-    }
+	public void setId(UUID id) {
+		this.id = id;
+	}
+
+	public String getDocumentNumber() {
+		return documentNumber;
+	}
+
+	public void setDocumentNumber(String documentNumber) {
+		this.documentNumber = documentNumber;
+	}
 
 	public String getFirstName() {
 		return firstName;
@@ -121,14 +129,6 @@ public class UserJpaEntity {
 		this.secondLastName = secondLastName;
 	}
 
-	public String getDocumentNumber() {
-		return documentNumber;
-	}
-
-	public void setDocumentNumber(String documentNumber) {
-		this.documentNumber = documentNumber;
-	}
-
 	public String getEmail() {
 		return email;
 	}
@@ -153,12 +153,12 @@ public class UserJpaEntity {
 		this.emailConfirmedDefaultValue = emailConfirmedDefaultValue;
 	}
 
-	public Boolean getActive() {
-		return active;
+	public Boolean getIsActive() {
+		return isActive;
 	}
 
-	public void setActive(Boolean active) {
-		this.active = active;
+	public void setIsActive(Boolean isActive) {
+		this.isActive = isActive;
 	}
 
 	public IdTypeJpaEntity getIdType() {
@@ -176,6 +176,8 @@ public class UserJpaEntity {
 	public void setUrbanization(UrbanizationUserJpaEntity urbanization) {
 		this.urbanization = urbanization;
 	}
+
+    
     
     
 }

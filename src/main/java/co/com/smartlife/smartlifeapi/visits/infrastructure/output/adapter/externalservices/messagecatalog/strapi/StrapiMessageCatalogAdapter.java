@@ -6,10 +6,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
-import co.com.smartlife.smartlifeapi.crosscutting.helper.LocalHelper;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.messagecatalog.strapi.dto.StrapiMessageCatalogData;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.messagecatalog.strapi.dto.StrapiMessageCatalogResponse;
-import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.messagecatalog.strapi.mapper.MessageCatalogMapper;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.MessageCatalogOutputPort;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.MessageCatalogDTO;
 
@@ -19,18 +17,15 @@ public class StrapiMessageCatalogAdapter implements MessageCatalogOutputPort {
 	private static final String MESSAGES_PATH = "/api/message-catalogs";
 
 	private final RestClient restClient;
-	private final MessageCatalogMapper mapper;
-	
 	private final String baseUrl;
 
 	@Autowired
 	public StrapiMessageCatalogAdapter(@Value("${strapi.url:}") final String baseUrl,
-			@Value("${strapi.api-token:}") final String apiToken, final MessageCatalogMapper mapper) {
-		this(RestClient.builder(), baseUrl, apiToken, mapper);
+			@Value("${strapi.api-token:}") final String apiToken) {
+		this(RestClient.builder(), baseUrl, apiToken);
 	}
 
-	public StrapiMessageCatalogAdapter(final RestClient.Builder builder, final String baseUrl, final String apiToken, final MessageCatalogMapper mapper) {
-		this.mapper = mapper;
+	public StrapiMessageCatalogAdapter(final RestClient.Builder builder, final String baseUrl, final String apiToken) {
 		this.baseUrl = baseUrl;
 		this.restClient = builder.baseUrl(baseUrl).defaultHeaders(headers -> {
 			if (!apiToken.isBlank()) {
@@ -55,10 +50,11 @@ public class StrapiMessageCatalogAdapter implements MessageCatalogOutputPort {
 				.body(StrapiMessageCatalogResponse.class);
 
 		if (response == null || response.data() == null || response.data().isEmpty()) {
-			throw new RuntimeException(MessageCatalogProvider.getMessage("MESSAGE_CATALOG_NOT_FOUND", LocalHelper.getCurrentLocal()).content());
+			throw new IllegalStateException(
+					"No se encontró el mensaje " + code + " (" + locale + ") en el catálogo de Strapi");
 		}
 
 		StrapiMessageCatalogData message = response.data().get(0);
-		return mapper.toDTO(message);
+		return new MessageCatalogDTO(message.code(), message.title(), message.content(), message.locale());
 	}
 }

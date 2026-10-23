@@ -1,6 +1,7 @@
 package co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.repository.structured.adapter;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
@@ -25,15 +26,15 @@ public class IdTypeRepositoryAdapter implements IdTypeRepository{
 	}
 
 	@Override
-	public IdTypeEntity findById(UUID id) {
-		IdTypeJpaEntity jpaEntity = repository.findById(id).orElse(null);
-		return mapper.toEntity(jpaEntity);
+	public Optional<IdTypeEntity> findById(UUID id) {
+		Optional<IdTypeJpaEntity> entityJpa = repository.findById(id);
+		return entityJpa.map(mapper::toEntity);
 	}
 
 	@Override
 	public List<IdTypeEntity> findAll() {
-		List<IdTypeJpaEntity> jpaEntityList = repository.findAll();
-		return mapper.toEntity(jpaEntityList);
+		List<IdTypeJpaEntity> entityJpaList = repository.findAll();
+		return mapper.toEntity(entityJpaList);
 	}
 
 	@Override

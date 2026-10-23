@@ -3,10 +3,10 @@ package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repos
 import org.mapstruct.Mapper;
 
 import co.com.smartlife.smartlifeapi.shared.mapper.EntityMapper;
-import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa.entity.VisitReasonEntityJpa;
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa.entity.VisitReasonJpaEntity;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitReasonEntity;
 
 @Mapper(componentModel = "spring")
-public interface VisitReasonMapper extends EntityMapper<VisitReasonEntity, VisitReasonEntityJpa>{
+public interface VisitReasonMapper extends EntityMapper<VisitReasonEntity, VisitReasonJpaEntity>{
 
 }

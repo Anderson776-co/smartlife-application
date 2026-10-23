@@ -9,5 +9,4 @@ import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entit
 
 public interface VisitAuthorizationRepository extends CreateRepository<VisitAuthorizationEntity>, ReadRepository<UUID, VisitAuthorizationEntity>, 
 UpdateRepository<UUID, VisitAuthorizationEntity>{
-
 }

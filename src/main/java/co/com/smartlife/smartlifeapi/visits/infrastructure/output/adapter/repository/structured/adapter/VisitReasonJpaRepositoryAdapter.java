@@ -1,12 +1,13 @@
 package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.adapter;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
 
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa.VisitReasonJpaRepository;
-import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa.entity.VisitReasonEntityJpa;
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa.entity.VisitReasonJpaEntity;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.mapper.VisitReasonMapper;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.VisitReasonRepository;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitReasonEntity;
@@ -26,14 +27,14 @@ public class VisitReasonJpaRepositoryAdapter implements VisitReasonRepository{
 	}
 
 	@Override
-	public VisitReasonEntity findById(UUID id) {
-		VisitReasonEntityJpa entityJpa = repository.findById(id).orElse(new VisitReasonEntityJpa());
-		return mapper.toEntity(entityJpa);
+	public Optional<VisitReasonEntity> findById(UUID id) {
+		Optional<VisitReasonJpaEntity> entityJpa = repository.findById(id);
+		return entityJpa.map(mapper::toEntity);
 	}
 
 	@Override
 	public List<VisitReasonEntity> findAll() {
-		List<VisitReasonEntityJpa> entityJpaList = repository.findAll();
+		List<VisitReasonJpaEntity> entityJpaList = repository.findAll();
 		return mapper.toEntity(entityJpaList);
 	}
 

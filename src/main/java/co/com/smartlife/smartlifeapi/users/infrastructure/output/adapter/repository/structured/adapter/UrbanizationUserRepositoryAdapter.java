@@ -1,6 +1,7 @@
 package co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.repository.structured.adapter;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
@@ -25,15 +26,15 @@ public class UrbanizationUserRepositoryAdapter implements UrbanizationUserReposi
 	}
 
 	@Override
-	public UrbanizationUserEntity findById(UUID id) {
-		UrbanizationUserJpaEntity jpaEntity = repository.findById(id).orElse(null);
-		return mapper.toEntity(jpaEntity);
+	public Optional<UrbanizationUserEntity> findById(UUID id) {
+		Optional<UrbanizationUserJpaEntity> entityJpa = repository.findById(id);
+		return entityJpa.map(mapper::toEntity);
 	}
 
 	@Override
 	public List<UrbanizationUserEntity> findAll() {
-		List<UrbanizationUserJpaEntity> jpaEntityList = repository.findAll();
-		return mapper.toEntity(jpaEntityList);
+		List<UrbanizationUserJpaEntity> entityJpaList = repository.findAll();
+		return mapper.toEntity(entityJpaList);
 	}
 
 	@Override

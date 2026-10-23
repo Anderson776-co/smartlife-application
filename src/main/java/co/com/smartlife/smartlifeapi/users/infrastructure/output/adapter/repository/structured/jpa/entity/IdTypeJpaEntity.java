@@ -10,11 +10,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "id_type")
+@Table(name = "document_type")
 public class IdTypeJpaEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
-	@Column(name = "id", nullable = false, updatable = false)
+	@Column(name = "id", updatable = false)
 	private UUID id;
 	
 	@Column(name = "name")
@@ -24,10 +24,6 @@ public class IdTypeJpaEntity {
         super();
         setId(id);
         setName(name);
-    }
-    
-    public IdTypeJpaEntity() {
-        super();
     }
 
     public UUID getId() {

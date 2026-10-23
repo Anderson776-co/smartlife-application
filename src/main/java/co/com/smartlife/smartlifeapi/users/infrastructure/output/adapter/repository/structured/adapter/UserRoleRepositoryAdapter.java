@@ -18,26 +18,24 @@ public class UserRoleRepositoryAdapter implements UserRoleRepository{
 	private final UserRoleJpaRepository repository;
 	private final UserRoleMapper mapper;
 	
-	
-	
 	public UserRoleRepositoryAdapter(UserRoleJpaRepository repository, UserRoleMapper mapper) {
 		this.repository = repository;
 		this.mapper = mapper;
 	}
 	@Override
 	public void create(UserRoleEntity entity) {
-		UserRoleJpaEntity jpaEntity = mapper.toJpaEntity(entity);
-		repository.save(jpaEntity);
+		UserRoleJpaEntity entityJpa = mapper.toJpaEntity(entity);
+		repository.save(entityJpa);
 	}
 	@Override
-	public UserRoleEntity findById(UUID id) {
-		UserRoleJpaEntity jpaEntity = repository.findById(id).orElse(null);
-		return mapper.toEntity(jpaEntity);
+	public Optional<UserRoleEntity> findById(UUID id) {
+		Optional<UserRoleJpaEntity> entityJpa = repository.findById(id);
+		return entityJpa.map(mapper::toEntity);
 	}
 	@Override
 	public List<UserRoleEntity> findAll() {
-		List<UserRoleJpaEntity> jpaEntityList = repository.findAll();
-		return mapper.toEntity(jpaEntityList);
+		List<UserRoleJpaEntity> entityJpaList = repository.findAll();
+		return mapper.toEntity(entityJpaList);
 	}
 	@Override
 	public List<UserRoleEntity> findByFilter(UserRoleEntity entity) {
@@ -45,17 +43,16 @@ public class UserRoleRepositoryAdapter implements UserRoleRepository{
 	}
 	@Override
 	public void delete(UUID id, UserRoleEntity entity) {
-		UserRoleJpaEntity jpaEntity = repository.findById(id).orElse(null);
-		repository.delete(jpaEntity);
+		//Pendiente
 	}
 	@Override
 	public Optional<UserRoleEntity> findByUserId(UUID userId) {
-		Optional<UserRoleJpaEntity> jpaEntity = repository.findByUserId(userId);
-		return jpaEntity.map(mapper::toEntity);
+		Optional<UserRoleJpaEntity> entityJpa = repository.findByUserId(userId);
+		return entityJpa.map(mapper::toEntity);
 	}
 	@Override
 	public Optional<UserRoleEntity> findByRoleId(UUID roleId) {
-		Optional<UserRoleJpaEntity> jpaEntity = repository.findByRoleId(roleId);
-		return jpaEntity.map(mapper::toEntity);
+		Optional<UserRoleJpaEntity> entityJpa = repository.findByRoleId(roleId);
+		return entityJpa.map(mapper::toEntity);
 	}
 }

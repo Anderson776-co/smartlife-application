@@ -10,24 +10,19 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "role")
+@Table(name = "role", schema = "users")
 public class RoleJpaEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
-	@Column(name = "id", nullable = false, updatable = false)
+	@Column(name = "id", updatable = false)
 	private UUID id;
 	
 	@Column(name = "name")
 	private String name;
 	
 	public RoleJpaEntity(final UUID id, final String name) {
-        super();
         setId(id);
         setName(name);
-    }
-    
-    public RoleJpaEntity() {
-        super();
     }
 
     public UUID getId() {

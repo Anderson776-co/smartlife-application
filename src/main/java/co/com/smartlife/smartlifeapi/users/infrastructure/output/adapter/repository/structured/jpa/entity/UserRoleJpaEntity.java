@@ -12,19 +12,19 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "user_role")
+@Table(name = "user_role",  schema = "users")
 public class UserRoleJpaEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
-	@Column(name = "id", nullable = false, updatable = false)
+	@Column(name = "id", updatable = false)
 	private UUID id;
 	
 	@ManyToOne
-	@JoinColumn(name = "id_user", referencedColumnName = "id")
+	@JoinColumn(name = "id_user")
 	private UserJpaEntity user;
 	
 	@ManyToOne
-	@JoinColumn(name = "id_role", referencedColumnName = "id")
+	@JoinColumn(name = "id_role")
 	private RoleJpaEntity role;
 	
 	public UserRoleJpaEntity(final UUID id, final UserJpaEntity user, final RoleJpaEntity role) {

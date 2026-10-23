@@ -1,6 +1,7 @@
 package co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.repository.structured.adapter;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
@@ -25,15 +26,15 @@ public class RoleRepositoryAdapter implements RoleRepository{
 	}
 
 	@Override
-	public RoleEntity findById(UUID id) {
-		RoleJpaEntity jpaEntity = repository.findById(id).orElse(null);
-		return mapper.toEntity(jpaEntity);
+	public Optional<RoleEntity> findById(UUID id) {
+		Optional<RoleJpaEntity> entityJpa = repository.findById(id);
+		return entityJpa.map(mapper::toEntity);
 	}
 
 	@Override
 	public List<RoleEntity> findAll() {
-		List<RoleJpaEntity> jpaEntityList = repository.findAll();
-		return mapper.toEntity(jpaEntityList);
+		List<RoleJpaEntity> entityJpaList = repository.findAll();
+		return mapper.toEntity(entityJpaList);
 	}
 
 	@Override
