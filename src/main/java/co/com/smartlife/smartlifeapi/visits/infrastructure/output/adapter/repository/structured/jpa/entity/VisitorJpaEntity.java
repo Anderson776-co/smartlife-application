@@ -4,8 +4,6 @@ import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
@@ -14,7 +12,6 @@ import jakarta.persistence.Table;
 public class VisitorJpaEntity {
 
 	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "id", updatable = false)
 	private UUID id;
 	
@@ -39,8 +36,7 @@ public class VisitorJpaEntity {
 	@Column(name = "vehicle_plate")
 	private String vehiclePlate;
 	
-	public VisitorJpaEntity() {
-	}
+	protected VisitorJpaEntity() {}
 
 	public VisitorJpaEntity(final UUID id, final String documentNumber, final String firstName, final String middleName, 
 			final String lastName, final String secondLastName, final String email, final String vehiclePlate) {

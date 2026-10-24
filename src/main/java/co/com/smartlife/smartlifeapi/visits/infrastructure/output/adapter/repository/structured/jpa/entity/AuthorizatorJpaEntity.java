@@ -2,7 +2,7 @@ package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repos
 
 import java.util.UUID;
 
-import com.google.errorprone.annotations.Immutable;
+import org.hibernate.annotations.Immutable;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -16,16 +16,18 @@ public class AuthorizatorJpaEntity {
 	
 	@Id
 	@Column(name = "id")
-	private final UUID id;
+	private UUID id;
 	
 	@Column(name = "full_name")
-	private final String fullName;
+	private String fullName;
 	
 	@Column(name = "is_active")
-	private final Boolean isActive;
+	private Boolean isActive;
 	
 	@Column(name = "urbanization_id")
-	private final UUID urbanizationId;
+	private UUID urbanizationId;
+
+	protected AuthorizatorJpaEntity() {}
 
 	public AuthorizatorJpaEntity(final UUID id, final String fullName, final Boolean isActive, final UUID urbanizationId) {
 		this.id = id;

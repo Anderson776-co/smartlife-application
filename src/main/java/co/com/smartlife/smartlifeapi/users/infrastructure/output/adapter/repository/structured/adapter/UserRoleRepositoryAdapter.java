@@ -46,13 +46,13 @@ public class UserRoleRepositoryAdapter implements UserRoleRepository{
 		//Pendiente
 	}
 	@Override
-	public Optional<UserRoleEntity> findByUserId(UUID userId) {
-		Optional<UserRoleJpaEntity> entityJpa = repository.findByUserId(userId);
-		return entityJpa.map(mapper::toEntity);
+	public List<UserRoleEntity> findByUserId(UUID userId) {
+		List<UserRoleJpaEntity> entityJpaList = repository.findByUserId(userId);
+		return mapper.toEntity(entityJpaList);
 	}
 	@Override
-	public Optional<UserRoleEntity> findByRoleId(UUID roleId) {
-		Optional<UserRoleJpaEntity> entityJpa = repository.findByRoleId(roleId);
-		return entityJpa.map(mapper::toEntity);
+	public List<UserRoleEntity> findByRoleId(UUID roleId) {
+		List<UserRoleJpaEntity> entityJpaList = repository.findByRoleId(roleId);
+		return mapper.toEntity(entityJpaList);
 	}
 }

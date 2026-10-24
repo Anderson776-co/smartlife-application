@@ -31,5 +31,5 @@ class ArchitectureTest {
     static final ArchRule ServicesDoNotUsePersistenceDirectly =
             noClasses().that().resideInAPackage("..infrastructure.input..")
                     .should().dependOnClassesThat().resideInAnyPackage(
-                            "..services.usecases..", "..services.output..", "..infrastructure.output..").allowEmptyShould(true);
+                            "..service.usecase..", "..service.output..", "..infrastructure.output..").allowEmptyShould(true);
 }

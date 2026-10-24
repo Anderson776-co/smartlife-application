@@ -5,8 +5,6 @@ import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -17,7 +15,6 @@ import jakarta.persistence.Table;
 public class VisitAuthorizationJpaEntity {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "id", updatable = false)
 	private UUID id;
 	
@@ -54,6 +51,8 @@ public class VisitAuthorizationJpaEntity {
 	@ManyToOne
 	@JoinColumn(name = "id_visit_reason")
 	private VisitReasonJpaEntity visitReason;
+	
+	protected VisitAuthorizationJpaEntity() {}
 
 	public VisitAuthorizationJpaEntity(final UUID id, final Instant authorizationStartDate, final Instant authorizationEndDate,
 			final Instant registerDate, final String observation, final String qrCode, final String fileReference, final PropertyVisitJpaEntity property, 

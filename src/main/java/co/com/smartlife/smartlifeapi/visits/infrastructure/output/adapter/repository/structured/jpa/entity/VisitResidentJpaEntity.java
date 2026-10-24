@@ -2,7 +2,7 @@ package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repos
 
 import java.util.UUID;
 
-import com.google.errorprone.annotations.Immutable;
+import org.hibernate.annotations.Immutable;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,12 +18,14 @@ public class VisitResidentJpaEntity {
 	
 	@Id
 	@Column(name = "id")
-	private final UUID id;
+	private UUID id;
 	
 	@ManyToOne
 	@JoinColumn(name = "id_property")
-	private final PropertyVisitJpaEntity property;
-
+	private PropertyVisitJpaEntity property;
+	
+	protected VisitResidentJpaEntity() {}
+	
 	public VisitResidentJpaEntity(final UUID id, final PropertyVisitJpaEntity property) {
 		this.id = id;
 		this.property = property;

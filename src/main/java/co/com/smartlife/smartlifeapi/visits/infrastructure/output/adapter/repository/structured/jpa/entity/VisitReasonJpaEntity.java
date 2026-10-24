@@ -4,8 +4,6 @@ import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
@@ -14,23 +12,28 @@ import jakarta.persistence.Table;
 public class VisitReasonJpaEntity {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "id", updatable = false)
 	private UUID id;
 	
 	@Column(name = "name")
 	private String name;
+	
+	@Column(name = "requires_document")
+	private Boolean requiresDocument;
 
-	public VisitReasonJpaEntity(final UUID id, final String name) {
+	protected VisitReasonJpaEntity() {}
+	
+	public VisitReasonJpaEntity(final UUID id, final String name, final Boolean requiresDocument) {
 		setId(id);
 		setName(name);
+		setRequiresDocument(requiresDocument);
 	}
 	
 	public UUID getId() {
 		return id;
 	}
 	
-	private void setId(final UUID id) {
+	public void setId(final UUID id) {
 		this.id = id;
 	}
 	
@@ -38,8 +41,16 @@ public class VisitReasonJpaEntity {
 		return name;
 	}
 	
-	private void setName(final String name) {
+	public void setName(final String name) {
 		this.name = name;
+	}
+
+	public Boolean getRequiresDocument() {
+		return requiresDocument;
+	}
+
+	public void setRequiresDocument(Boolean requiresDocument) {
+		this.requiresDocument = requiresDocument;
 	}
 
 }

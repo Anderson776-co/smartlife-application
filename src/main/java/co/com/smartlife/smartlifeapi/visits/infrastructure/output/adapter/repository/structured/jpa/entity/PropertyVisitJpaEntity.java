@@ -15,13 +15,15 @@ import jakarta.persistence.Table;
 public class PropertyVisitJpaEntity {
 	@Id
 	@Column(name = "id")
-	private final UUID id;
+	private UUID id;
 	
 	@Column(name = "location")
-	private final String location;
+	private String location;
 	
 	@Column(name = "owner_id")
-	private final UUID ownerId;
+	private UUID ownerId;
+	
+	protected PropertyVisitJpaEntity() {}
 
 	public PropertyVisitJpaEntity(final UUID id, final String location, final UUID ownerId) {
 		this.id = id;
