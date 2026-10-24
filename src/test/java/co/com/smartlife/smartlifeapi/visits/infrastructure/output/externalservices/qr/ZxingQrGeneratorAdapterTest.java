@@ -2,10 +2,14 @@ package co.com.smartlife.smartlifeapi.visits.infrastructure.output.externalservi
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Base64;
 
 import org.junit.jupiter.api.Test;
+
+import com.google.zxing.WriterException;
 
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.qr.ZxingQrGeneratorAdapter;
 
@@ -26,5 +30,15 @@ class ZxingQrGeneratorAdapterTest {
 		assertEquals((byte) 'P', image[1]);
 		assertEquals((byte) 'N', image[2]);
 		assertEquals((byte) 'G', image[3]);
+	}
+
+	@Test
+	void generateBase64ShouldFailWhenTheContentIsTooBigForAQrCode() {
+		String tooBigContent = "x".repeat(10000);
+
+		IllegalStateException exception = assertThrows(IllegalStateException.class,
+				() -> adapter.generateBase64(tooBigContent));
+
+		assertInstanceOf(WriterException.class, exception.getCause());
 	}
 }
