@@ -19,7 +19,7 @@ public class TextHelper {
 	}
 	
 	public static boolean isEmpty(final String value) {
-		return EMPTY.equals(getDefault(value));
+		return value == null || value.isEmpty();
 	}
 	
 	public static boolean isEmptyWithTrim(final String value) {
