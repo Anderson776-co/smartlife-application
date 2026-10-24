@@ -10,7 +10,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "document_type")
+@Table(name = "document_type", schema = "users")
 public class IdTypeJpaEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
