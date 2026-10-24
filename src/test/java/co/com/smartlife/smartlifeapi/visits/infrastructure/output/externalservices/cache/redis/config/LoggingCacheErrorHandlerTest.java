@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.cache.Cache;
 import org.springframework.cache.concurrent.ConcurrentMapCache;
 
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.cache.redis.config.LoggingCacheErrorHandler;
+
 class LoggingCacheErrorHandlerTest {
 
 	private final LoggingCacheErrorHandler handler = new LoggingCacheErrorHandler();

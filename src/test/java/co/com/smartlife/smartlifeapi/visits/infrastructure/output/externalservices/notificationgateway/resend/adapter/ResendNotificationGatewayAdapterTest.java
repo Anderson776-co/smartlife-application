@@ -16,7 +16,8 @@ import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.client.RequestMatcher;
 import org.springframework.web.client.RestClient;
 
-import co.com.smartlife.smartlifeapi.visits.service.output.dto.EmailNotificationDTO;
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.notificationgateway.resend.adapter.ResendNotificationGatewayAdapter;
+import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.EmailNotificationDTO;
 
 class ResendNotificationGatewayAdapterTest {
 
