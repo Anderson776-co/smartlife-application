@@ -89,8 +89,9 @@ CREATE TABLE visits.document_type (
 );
 
 CREATE TABLE visits.visit_reason (
-    id   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(100) NOT NULL UNIQUE
+    id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name               VARCHAR(100) NOT NULL UNIQUE,
+    requires_document  BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE visits.visitor (
