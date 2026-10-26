@@ -8,6 +8,6 @@ public interface IdentityProviderOutputPort {
 
 	AuthenticatedUserDTO verifyToken(String idToken);
 	String createSessionCookie(String idToken, Duration expiration);
-	AuthenticatedUserDTO verifySessionCookie(String sessionCookie, Boolean checkRevoked);
+	AuthenticatedUserDTO verifySessionCookie(String sessionCookie, boolean checkRevoked);
 	void revokeSession(String uid);
 }

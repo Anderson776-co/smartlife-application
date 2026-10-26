@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
 import co.com.smartlife.smartlifeapi.shared.domain.validator.Validator;
-import co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.strapi.MessageCatalogProvider;
+import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogProvider;
 import co.com.smartlife.smartlifeapi.users.service.output.port.repository.UserRepository;
 import co.com.smartlife.smartlifeapi.users.service.output.port.repository.entity.UserEntity;
 

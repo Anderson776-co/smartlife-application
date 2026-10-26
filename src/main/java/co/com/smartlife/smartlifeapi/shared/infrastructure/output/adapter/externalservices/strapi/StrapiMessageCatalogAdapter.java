@@ -18,6 +18,7 @@ import co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.extern
 import co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.strapi.dto.StrapiMessageCatalogResponse;
 import co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.strapi.mapper.MessageCatalogMapper;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogOutputPort;
+import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogProvider;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.dto.MessageCatalogDTO;
 
 

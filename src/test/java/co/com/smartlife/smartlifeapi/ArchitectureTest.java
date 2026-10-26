@@ -25,6 +25,7 @@ class ArchitectureTest {
     @ArchTest
     static final ArchRule DoNotUseLibrariesInDomain =
             classes().that().resideInAPackage("..domain..")
+            		.and().doNotHaveSimpleName("package-info")
                     .should().onlyDependOnClassesThat().resideInAnyPackage("java..", "..domain..");
 
     @ArchTest

@@ -15,9 +15,8 @@ public class LogOutUseCaseImpl implements LogOutUseCase{
 	private final UserRepository userRepository;
 	private final IdentityProviderOutputPort identityProvider;
 	
-	public LogOutUseCaseImpl(UserRepository userRepository, UserEntity userEntity,
-			IdentityProviderOutputPort identityProvider) {
-		super();
+	public LogOutUseCaseImpl(final UserRepository userRepository,
+			final IdentityProviderOutputPort identityProvider) {
 		this.userRepository = userRepository;
 		this.identityProvider = identityProvider;
 	}

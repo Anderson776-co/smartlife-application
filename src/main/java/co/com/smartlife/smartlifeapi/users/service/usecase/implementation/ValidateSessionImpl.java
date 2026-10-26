@@ -19,12 +19,12 @@ import co.com.smartlife.smartlifeapi.users.service.usecase.contract.ValidateSess
 public class ValidateSessionImpl implements ValidateSessionUseCase{
 
 	private final IdentityProviderOutputPort identityProvider;
-	private final Boolean checkRevoked;
+	private final boolean checkRevoked;
 	private final ValidateCreatedUser validateCreatedUser;
 	private final ValidateUserIsActive validateUserIsActive;
 	private final UserRoleRepository userRoleRepository;
 	
-	public ValidateSessionImpl(final IdentityProviderOutputPort identityProvider, @Value("${smartlife.session.check-revoked:true}") Boolean checkRevoked,
+	public ValidateSessionImpl(final IdentityProviderOutputPort identityProvider, @Value("${smartlife.session.check-revoked:true}") boolean checkRevoked,
 			final ValidateCreatedUser validateCreatedUser, final ValidateUserIsActive validateUserIsActive, final UserRoleRepository userRoleRepository) {
 		this.identityProvider = identityProvider;
 		this.checkRevoked = checkRevoked;

@@ -56,6 +56,7 @@ public class SecurityConfiguration {
     CorsConfigurationSource corsConfigurationSource(
             @Value("${smartlife.cors.allowed-origins}") List<String> origins) {
         final CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(origins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE"));
         config.setAllowedHeaders(List.of("Content-Type", "X-XSRF-TOKEN"));
         config.setAllowCredentials(true);

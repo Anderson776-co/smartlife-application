@@ -1,11 +1,10 @@
-package co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.strapi;
+package co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import co.com.smartlife.smartlifeapi.crosscutting.helper.LocalHelper;
-import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogOutputPort;
 
 @Component
 public class MessageCatalogProvider {
