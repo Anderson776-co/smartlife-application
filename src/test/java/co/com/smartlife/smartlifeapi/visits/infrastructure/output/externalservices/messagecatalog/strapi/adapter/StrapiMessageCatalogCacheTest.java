@@ -19,8 +19,9 @@ import org.springframework.test.web.client.ExpectedCount;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
 
-import co.com.smartlife.smartlifeapi.visits.service.output.dto.MessageCatalogDTO;
-import co.com.smartlife.smartlifeapi.visits.service.output.port.MessageCatalogOutputPort;
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.messagecatalog.strapi.StrapiMessageCatalogAdapter;
+import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.MessageCatalogOutputPort;
+import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.MessageCatalogDTO;
 
 class StrapiMessageCatalogCacheTest {
 
