@@ -1,5 +1,6 @@
 package co.com.smartlife.smartlifeapi.visits.service.output.port.repository;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import co.com.smartlife.smartlifeapi.shared.repository.CreateRepository;
@@ -9,4 +10,5 @@ import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entit
 
 public interface VisitAuthorizationRepository extends CreateRepository<VisitAuthorizationEntity>, ReadRepository<UUID, VisitAuthorizationEntity>, 
 UpdateRepository<UUID, VisitAuthorizationEntity>{
+	boolean existsOverlapping(UUID visitorId, UUID propertyId, Instant startDate, Instant endDate);
 }

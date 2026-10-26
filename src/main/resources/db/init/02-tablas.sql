@@ -104,7 +104,9 @@ CREATE TABLE visits.visitor (
     second_last_name  VARCHAR(100),
     email             VARCHAR(255) NOT NULL,
     vehicle_plate     VARCHAR(20),
-    document_type     UUID REFERENCES visits.document_type (id) 
+    document_type     UUID REFERENCES visits.document_type (id),
+    CONSTRAINT uq_visitor_document_number UNIQUE (document_number),
+    CONSTRAINT uq_visitor_email UNIQUE (email)
 );
 
 CREATE TABLE visits.visit_authorization (
@@ -118,7 +120,9 @@ CREATE TABLE visits.visit_authorization (
     id_property       UUID NOT NULL,  -- vista visits.property_visit (sin FK)
     id_authorizator   UUID NOT NULL,  -- vista visits.authorizator (sin FK)
     id_visitor        UUID NOT NULL REFERENCES visits.visitor (id),
-    id_visit_reason   UUID NOT NULL REFERENCES visits.visit_reason (id)
+    id_visit_reason   UUID NOT NULL REFERENCES visits.visit_reason (id),
+    CREATE INDEX ix_visit_authorization_overlap
+    ON visits.visit_authorization (id_visitor, id_property, start_date, end_date);
 );
 
 CREATE TABLE visits.visit (

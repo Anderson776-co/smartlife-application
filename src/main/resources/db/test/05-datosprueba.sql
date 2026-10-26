@@ -55,8 +55,9 @@ INSERT INTO residents.resident_dwelling (id_residence, id_resident, is_active) V
 INSERT INTO visits.document_type (id, name) VALUES
     ('ffffffff-0000-0000-0000-000000000001', 'Cédula de ciudadanía');
 
-INSERT INTO visits.visit_reason (id, name) VALUES
-    ('ffffffff-0000-0000-0000-000000000002', 'Visita familiar');
+INSERT INTO visits.visit_reason (id, name, requires_document) VALUES
+    ('ffffffff-0000-0000-0000-000000000002', 'Visita familiar',  FALSE),
+    ('ffffffff-0000-0000-0000-000000000005', 'Servicio técnico', TRUE);
 
 INSERT INTO visits.visitor
     (id, document_number, first_name, last_name, email, vehicle_plate, document_type)
@@ -67,7 +68,8 @@ VALUES
 INSERT INTO visits.visit_authorization
     (id, start_date, end_date, qr_code, id_property, id_authorizator, id_visitor, id_visit_reason)
 VALUES
-    ('ffffffff-0000-0000-0000-000000000004', now(), now() + interval '4 hours', 'QR-0001',
+    ('ffffffff-0000-0000-0000-000000000004', now(), now() + interval '4 hours',
+     'http://localhost:5173/visitas/autorizaciones/ffffffff-0000-0000-0000-000000000004',
      'cccccccc-0000-0000-0000-000000000002',
      'bbbbbbbb-0000-0000-0000-000000000002',
      'ffffffff-0000-0000-0000-000000000003',

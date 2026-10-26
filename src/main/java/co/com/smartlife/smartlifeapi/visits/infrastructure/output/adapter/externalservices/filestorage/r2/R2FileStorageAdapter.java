@@ -15,6 +15,7 @@ import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
@@ -85,5 +86,12 @@ public class R2FileStorageAdapter implements FileStorageOutputPort {
 					.build();
 		}
 		return s3Client;
+	}
+
+	@Override
+	public void delete(String key) {
+		requireBucket();
+		client().deleteObject(DeleteObjectRequest.builder().bucket(bucket).key(key).build());
+		
 	}
 }

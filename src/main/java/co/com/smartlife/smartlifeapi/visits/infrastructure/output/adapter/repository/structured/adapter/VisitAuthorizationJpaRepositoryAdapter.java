@@ -1,5 +1,6 @@
 package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.adapter;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -52,5 +53,10 @@ public class VisitAuthorizationJpaRepositoryAdapter implements VisitAuthorizatio
 	@Override
 	public void update(UUID id, VisitAuthorizationEntity entity) {
 		//pendiente
+	}
+
+	@Override
+	public boolean existsOverlapping(UUID visitorId, UUID propertyId, Instant startDate, Instant endDate) {
+		return repository.existsOverlapping(visitorId, propertyId, endDate, startDate);
 	}
 }

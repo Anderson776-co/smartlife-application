@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.notificationgateway.resend.dto.ResendAttachment;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.notificationgateway.resend.dto.ResendEmailRequest;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.notificationgateway.resend.dto.ResendEmailResponse;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.NotificationGatewayOutputPort;
@@ -46,8 +47,11 @@ public class ResendNotificationGatewayAdapter implements NotificationGatewayOutp
 			throw new IllegalStateException("La API key de Resend no está configurada (resend.api-key)");
 		}
 
+		final List<ResendAttachment> attachments = email.attachments().stream()
+				.map(a -> new ResendAttachment(a.fileName(), a.base64Content(), a.contentType(), a.contentId()))
+				.toList();
 		ResendEmailRequest request = new ResendEmailRequest(from, List.of(email.to()), email.subject(),
-				email.content());
+				email.content(), attachments);
 
 		ResendEmailResponse response = restClient.post()
 				.uri(EMAILS_PATH)

@@ -37,6 +37,7 @@
   		<jackson-bom.version>3.1.7</jackson-bom.version>
 		<aws-sdk.version>2.31.0</aws-sdk.version>
 		<firebase-admin.version>9.4.3</firebase-admin.version>
+		<spring-cloud.version>2025.1.4</spring-cloud.version>
 	</properties>
 	
 	<dependencies>
@@ -125,6 +126,10 @@
       		<artifactId>spring-boot-starter-security-test</artifactId>
       		<scope>test</scope>
     	</dependency>
+    	<dependency>
+      		<groupId>org.springframework.cloud</groupId>
+      		<artifactId>spring-cloud-starter-config</artifactId>
+    	</dependency>
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
@@ -140,6 +145,13 @@
 	            <artifactId>jackson-core</artifactId>
 	            <version>2.21.7</version>
         	</dependency>
+        	<dependency>
+        		<groupId>org.springframework.cloud</groupId>
+        		<artifactId>spring-cloud-dependencies</artifactId>
+       			<version>${spring-cloud.version}</version>
+        		<type>pom</type>
+        		<scope>import</scope>
+      		</dependency>
 		</dependencies>
 	</dependencyManagement>
 
