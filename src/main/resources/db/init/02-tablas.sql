@@ -33,6 +33,7 @@ CREATE TABLE users."user" (
     is_email_confirmed                BOOLEAN DEFAULT FALSE,
     is_email_confirmed_default_value  BOOLEAN DEFAULT FALSE,
     is_active                         BOOLEAN NOT NULL DEFAULT TRUE,
+    external_id                       VARCHAR(128) UNIQUE,
     id_type                           UUID NOT NULL REFERENCES users.document_type (id),
     id_urbanization                   UUID NOT NULL  -- vista users.urbanization (sin FK)
 );

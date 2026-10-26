@@ -12,8 +12,8 @@ import org.springframework.stereotype.Component;
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
 import co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.strapi.MessageCatalogProvider;
 import co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.externalservices.identityprovider.VerifiedToken;
-import co.com.smartlife.smartlifeapi.users.service.output.port.externalservices.IdentityProviderOutputPort;
-import co.com.smartlife.smartlifeapi.users.service.output.port.externalservices.dto.AuthenticatedUserDTO;
+import co.com.smartlife.smartlifeapi.users.service.output.port.externalservices.identityprovider.IdentityProviderOutputPort;
+import co.com.smartlife.smartlifeapi.users.service.output.port.externalservices.identityprovider.dto.AuthenticatedUserDTO;
 
 @Component
 public class FirebaseIdentityProviderAdapter implements IdentityProviderOutputPort {

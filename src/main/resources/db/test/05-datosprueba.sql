@@ -18,10 +18,10 @@ INSERT INTO users.role (id, name) VALUES
 INSERT INTO users."user"
     (id, document_number, first_name, middle_name, last_name, second_last_name,
      email, is_email_confirmed, is_email_confirmed_default_value, is_active,
-     id_type, id_urbanization)
+     external_id, id_type, id_urbanization)
 VALUES
     ('bbbbbbbb-0000-0000-0000-000000000001', '1001', 'Carlos', 'Andrés', 'Pérez', 'Gómez',
-     'carlos@example.com', TRUE, FALSE, TRUE,
+     'carlos@example.com', TRUE, FALSE, TRUE, "W4k9Xz2mLp7vQ1bN8sR5tJ3cY6h",
      'dddddddd-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001'),
     ('bbbbbbbb-0000-0000-0000-000000000002', '1002', 'María', NULL, 'López', 'Ruiz',
      'maria@example.com', TRUE, FALSE, TRUE,

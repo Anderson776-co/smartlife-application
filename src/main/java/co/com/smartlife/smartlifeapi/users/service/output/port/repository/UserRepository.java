@@ -14,6 +14,6 @@ public interface UserRepository extends CreateRepository<UserEntity>, ReadReposi
 	
 	Optional<UserEntity> findByDocumentNumber(final String documentNumber);
 	
-	Optional<UserEntity> findByIdentityProviderUid(String identityProviderUid);
+	Optional<UserEntity> findByIdentityProviderUid(final String uid);
 
 }

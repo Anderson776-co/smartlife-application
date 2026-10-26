@@ -188,8 +188,5 @@ public class UserJpaEntity {
 	public void setUrbanization(UrbanizationUserJpaEntity urbanization) {
 		this.urbanization = urbanization;
 	}
-
-    
-    
     
 }
