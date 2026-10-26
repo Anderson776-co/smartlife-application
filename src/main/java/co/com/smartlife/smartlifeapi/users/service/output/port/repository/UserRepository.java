@@ -13,5 +13,7 @@ public interface UserRepository extends CreateRepository<UserEntity>, ReadReposi
 	Optional<UserEntity> findByEmail(final String email);
 	
 	Optional<UserEntity> findByDocumentNumber(final String documentNumber);
+	
+	Optional<UserEntity> findByIdentityProviderUid(String identityProviderUid);
 
 }

@@ -1,54 +1,48 @@
 package co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.externalservices.identityprovider.firebase;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
 
 import org.junit.jupiter.api.Test;
 
-import co.com.smartlife.smartlifeapi.users.service.output.port.externalservices.dto.AuthenticatedUserDTO;
+import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
+import co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.externalservices.identityprovider.VerifiedToken;
 
-class FirebaseIdentityProviderAdapterTest {
+public class FirebaseIdentityProviderAdapterTest {
+	
+	
+	private static final Instant NOW = Instant.parse("2026-10-24T17:00:00Z");
+	private static final Clock CLOCK = Clock.fixed(NOW, ZoneOffset.UTC);
 
+	private final FakeFirebaseAuthClient firebase = new FakeFirebaseAuthClient();
+	private final FirebaseIdentityProviderAdapter adapter = new FirebaseIdentityProviderAdapter(firebase, CLOCK);
+
+	private static VerifiedToken tokenAuthenticatedSecondsAgo(final long seconds) {
+		return new VerifiedToken("uid-123", "residente@test.com", true, NOW.getEpochSecond() - seconds);
+	}
+	
 	@Test
-	void verifyTokenShouldReturnTheAuthenticatedUser() {
-		FirebaseIdentityProviderAdapter adapter = new FirebaseIdentityProviderAdapter(
-				_ -> new AuthenticatedUserDTO("uid-123", "residente@test.com"));
+	void createSessionCookieShouldReturnTheCookieWhenLoginIsRecent() {
+		firebase.idToken = tokenAuthenticatedSecondsAgo(60);
 
-		AuthenticatedUserDTO result = adapter.verifyToken("token-valido");
+		final String cookie = adapter.createSessionCookie("id-token", Duration.ofHours(1));
 
-		assertEquals("uid-123", result.uid());
-		assertEquals("residente@test.com", result.email());
+		assertEquals("cookie-de-sesion", cookie);
+		assertEquals(Duration.ofHours(1), firebase.requestedExpiration);
 	}
 
 	@Test
-	void verifyTokenShouldFailWhenTheTokenIsEmpty() {
-		FirebaseIdentityProviderAdapter adapter = new FirebaseIdentityProviderAdapter(
-				_ -> new AuthenticatedUserDTO("uid-123", "residente@test.com"));
+	void createSessionCookieShouldFailWhenLoginIsOlderThanFiveMinutes() {
+		firebase.idToken = tokenAuthenticatedSecondsAgo(301);
 
-		assertThrows(IllegalArgumentException.class, () -> adapter.verifyToken(" "));
-	}
-
-	@Test
-	void verifyTokenShouldFailWhenTheTokenIsNull() {
-		FirebaseIdentityProviderAdapter adapter = new FirebaseIdentityProviderAdapter(
-				_ -> new AuthenticatedUserDTO("uid-123", "residente@test.com"));
-
-		assertThrows(IllegalArgumentException.class, () -> adapter.verifyToken(null));
-	}
-
-	@Test
-	void verifyTokenShouldFailWhenFirebaseRejectsTheToken() {
-		FirebaseIdentityProviderAdapter adapter = new FirebaseIdentityProviderAdapter(_ -> {
-			throw new IllegalArgumentException("El token de Firebase no es válido");
-		});
-
-		assertThrows(IllegalArgumentException.class, () -> adapter.verifyToken("token-falso"));
-	}
-
-	@Test
-	void verifyTokenShouldFailWhenFirebaseIsNotConfigured() {
-		FirebaseIdentityProviderAdapter adapter = new FirebaseIdentityProviderAdapter("", "");
-
-		assertThrows(IllegalStateException.class, () -> adapter.verifyToken("token-valido"));
+		assertThrows(SmartLifeException.class,
+				() -> adapter.createSessionCookie("id-token", Duration.ofHours(1)));
+		assertFalse(firebase.sessionCookieRequested);
 	}
 }

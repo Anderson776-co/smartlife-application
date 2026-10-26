@@ -15,10 +15,12 @@ import jakarta.persistence.Table;
 public class UrbanizationUserJpaEntity {
 	@Id
 	@Column(name = "id")
-	private final UUID id;
+	private UUID id;
 	
 	@Column(name = "name")
-	private final String name;
+	private  String name;
+	
+	protected UrbanizationUserJpaEntity() {}
 	
     public UrbanizationUserJpaEntity(final UUID id, final String name) {
 		this.id = id;

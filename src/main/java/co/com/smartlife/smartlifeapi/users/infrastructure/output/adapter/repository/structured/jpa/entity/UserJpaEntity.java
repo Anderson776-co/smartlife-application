@@ -4,8 +4,6 @@ import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -16,7 +14,6 @@ import jakarta.persistence.Table;
 public class UserJpaEntity {
 	
 	@Id
-	@GeneratedValue(strategy = GenerationType.UUID)
 	@Column(name = "id", updatable = false)
 	private UUID id;
 	
@@ -47,6 +44,9 @@ public class UserJpaEntity {
 	@Column(name = "is_active")
     private Boolean isActive;
 	
+	@Column(name = "external_id")
+	private String externalId;
+	
 	@ManyToOne
 	@JoinColumn(name = "id_type")
     private IdTypeJpaEntity idType;
@@ -54,6 +54,8 @@ public class UserJpaEntity {
 	@ManyToOne
 	@JoinColumn(name = "id_urbanization")
     private UrbanizationUserJpaEntity urbanization;
+	
+	protected UserJpaEntity() {}
 	
 	public UserJpaEntity(final UUID id,
             final String firstName,
@@ -65,6 +67,7 @@ public class UserJpaEntity {
             final Boolean emailConfirmed,
             final Boolean emailConfirmedDefaultValue,
             final Boolean isActive,
+            final String externalId,
             final IdTypeJpaEntity idType,
             final UrbanizationUserJpaEntity urbanization) {
 		setId(id);
@@ -76,6 +79,7 @@ public class UserJpaEntity {
         setEmail(email);
         setEmailConfirmed(emailConfirmed);
         setIsActive(isActive);
+        setExternalId(externalId);
         setIdType(idType);
         setUrbanization(urbanization);
         setEmailConfirmedDefaultValue(emailConfirmedDefaultValue);
@@ -159,6 +163,14 @@ public class UserJpaEntity {
 
 	public void setIsActive(Boolean isActive) {
 		this.isActive = isActive;
+	}
+
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
 	}
 
 	public IdTypeJpaEntity getIdType() {

@@ -125,9 +125,9 @@ class UserRepositoryAdapterTest {
 	void updateShouldCopyTheFieldsOfTheEntityIntoTheStoredOne() {
 		UUID id = UUID.randomUUID();
 		UserJpaEntity stored = new UserJpaEntity(id, "Viejo", "Viejo", "Viejo", "Viejo", "000", "viejo@test.com",
-				false, false, false, null, null);
+				false, false, false, "ext-viejo", null, null);
 		UserEntity changes = new UserEntity(id, "Ana", "María", "Pérez", "Gómez", "123456789", "ana@test.com",
-				true, true, true, null, null);
+				true, true, true, "ext-123", null, null);
 		when(repository.findById(id)).thenReturn(Optional.of(stored));
 
 		adapter.update(id, changes);
@@ -141,6 +141,7 @@ class UserRepositoryAdapterTest {
 		assertEquals(Boolean.TRUE, stored.getEmailConfirmed());
 		assertEquals(Boolean.TRUE, stored.getEmailConfirmedDefaultValue());
 		assertEquals(Boolean.TRUE, stored.getIsActive());
+		verify(repository).save(stored);
 	}
 
 	@Test

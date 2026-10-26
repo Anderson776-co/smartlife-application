@@ -4,12 +4,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.stereotype.Repository;
+
 import co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.repository.structured.jpa.UserJpaRepository;
 import co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.repository.structured.jpa.entity.UserJpaEntity;
 import co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.repository.structured.mapper.UserMapper;
 import co.com.smartlife.smartlifeapi.users.service.output.port.repository.UserRepository;
 import co.com.smartlife.smartlifeapi.users.service.output.port.repository.entity.UserEntity;
 
+@Repository
 public class UserRepositoryAdapter implements UserRepository {
 	
 	private final UserJpaRepository repository;
@@ -59,6 +62,8 @@ public class UserRepositoryAdapter implements UserRepository {
 		entityJpa.setEmailConfirmed(entity.getEmailConfirmed());
 		entityJpa.setEmailConfirmedDefaultValue(entity.getEmailConfirmedDefaultValue());
 		entityJpa.setIsActive(entity.getIsActive());
+		
+		repository.save(entityJpa);
 	}
 
 	@Override
@@ -71,6 +76,11 @@ public class UserRepositoryAdapter implements UserRepository {
 	public Optional<UserEntity> findByDocumentNumber(String documentNumber) {
 		Optional <UserJpaEntity> entityJpa = repository.findByDocumentNumber(documentNumber);
 		return entityJpa.map(mapper::toEntity);
+	}
+	
+	@Override
+	public Optional<UserEntity> findByIdentityProviderUid(final String uid) {
+		return repository.findByExternalId(uid).map(mapper::toEntity);
 	}
 
 }
