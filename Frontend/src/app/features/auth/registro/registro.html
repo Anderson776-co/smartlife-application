@@ -1,0 +1,94 @@
+<main class="auth-pagina">
+  <section class="auth-tarjeta">
+    <h1 class="auth-titulo">Crear cuenta</h1>
+    <p class="auth-subtitulo">Regístrate en SmartLife</p>
+
+    @if (error(); as mensaje) {
+      <div class="alerta" role="alert">{{ mensaje }}</div>
+    }
+
+    <form [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
+      <div class="campo">
+        <label for="nombre">Nombre completo</label>
+        <input id="nombre" type="text" formControlName="nombre" autocomplete="name" />
+        @if (formulario.controls.nombre.touched && formulario.controls.nombre.invalid) {
+          <small class="campo-error">
+            @if (formulario.controls.nombre.hasError('required')) {
+              Ingresa tu nombre.
+            } @else {
+              El nombre debe tener al menos 3 caracteres.
+            }
+          </small>
+        }
+      </div>
+
+      <div class="campo">
+        <label for="correo">Correo electrónico</label>
+        <input id="correo" type="email" formControlName="correo" autocomplete="email" />
+        @if (formulario.controls.correo.touched && formulario.controls.correo.invalid) {
+          <small class="campo-error">
+            @if (formulario.controls.correo.hasError('required')) {
+              Ingresa tu correo.
+            } @else {
+              El correo no tiene un formato válido.
+            }
+          </small>
+        }
+      </div>
+
+      <div class="campo">
+        <label for="contrasena">Contraseña</label>
+        <div class="campo-clave">
+          <input
+            id="contrasena"
+            [type]="verContrasena() ? 'text' : 'password'"
+            formControlName="contrasena"
+            autocomplete="new-password"
+          />
+          <button
+            type="button"
+            class="boton-texto"
+            [attr.aria-pressed]="verContrasena()"
+            (click)="verContrasena.set(!verContrasena())"
+          >
+            {{ verContrasena() ? 'Ocultar' : 'Ver' }}
+          </button>
+        </div>
+        @if (formulario.controls.contrasena.touched && formulario.controls.contrasena.invalid) {
+          <small class="campo-error">
+            @if (formulario.controls.contrasena.hasError('required')) {
+              Ingresa una contraseña.
+            } @else {
+              La contraseña debe tener al menos 8 caracteres.
+            }
+          </small>
+        }
+      </div>
+
+      <div class="campo">
+        <label for="confirmar">Confirmar contraseña</label>
+        <input
+          id="confirmar"
+          [type]="verContrasena() ? 'text' : 'password'"
+          formControlName="confirmar"
+          autocomplete="new-password"
+        />
+        @if (formulario.controls.confirmar.touched) {
+          @if (formulario.controls.confirmar.hasError('required')) {
+            <small class="campo-error">Repite la contraseña.</small>
+          } @else if (formulario.hasError('noCoinciden')) {
+            <small class="campo-error">Las contraseñas no coinciden.</small>
+          }
+        }
+      </div>
+
+      <button type="submit" class="boton" [disabled]="cargando()">
+        {{ cargando() ? 'Creando cuenta...' : 'Crear cuenta' }}
+      </button>
+    </form>
+
+    <div class="auth-enlaces">
+      <a routerLink="/login">¿Ya tienes cuenta? Inicia sesión</a>
+    </div>
+  </section>
+</main>

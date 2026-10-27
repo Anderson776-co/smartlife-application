@@ -1,0 +1,41 @@
+<main class="auth-pagina">
+  <section class="auth-tarjeta">
+    <h1 class="auth-titulo">Recuperar contraseña</h1>
+    <p class="auth-subtitulo">Te enviaremos un enlace para crear una nueva</p>
+
+    @if (enviado()) {
+      <p role="status">
+        Si el correo está registrado, recibirás un enlace para restablecer tu contraseña. Revisa
+        también la carpeta de spam.
+      </p>
+    } @else {
+      @if (error(); as mensaje) {
+        <div class="alerta" role="alert">{{ mensaje }}</div>
+      }
+
+      <form [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
+        <div class="campo">
+          <label for="correo">Correo electrónico</label>
+          <input id="correo" type="email" formControlName="correo" autocomplete="email" />
+          @if (formulario.controls.correo.touched && formulario.controls.correo.invalid) {
+            <small class="campo-error">
+              @if (formulario.controls.correo.hasError('required')) {
+                Ingresa tu correo.
+              } @else {
+                El correo no tiene un formato válido.
+              }
+            </small>
+          }
+        </div>
+
+        <button type="submit" class="boton" [disabled]="cargando()">
+          {{ cargando() ? 'Enviando...' : 'Enviar enlace' }}
+        </button>
+      </form>
+    }
+
+    <div class="auth-enlaces">
+      <a routerLink="/login">Volver a iniciar sesión</a>
+    </div>
+  </section>
+</main>
