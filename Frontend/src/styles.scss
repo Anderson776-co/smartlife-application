@@ -5,16 +5,40 @@
 }
 
 :root {
-  --color-primario: #1f6feb;
-  --color-primario-oscuro: #1858bf;
-  --color-fondo: #f3f5f9;
+  /* Colores tomados del banner de SmartLife */
+  --color-marca-oscuro: #001d4c;
+  --color-primario: #005ff9;
+  --color-primario-oscuro: #0049c4;
+  --color-fondo: #f2f7ff;
   --color-superficie: #ffffff;
-  --color-texto: #1b2430;
-  --color-texto-suave: #5b6676;
-  --color-borde: #cfd6e2;
+  --color-texto: #0f1f3d;
+  --color-texto-suave: #445168;
+  --color-icono: #6b7a90;
+  --color-borde: #d3ddee;
   --color-error: #c62828;
   --color-error-fondo: #fdeaea;
-  --radio: 10px;
+  --radio: 12px;
+
+  /* Tamaños: cámbialos aquí para agrandar o achicar las pantallas de acceso */
+  --tam-titulo: 3rem;
+  --tam-texto: 1.15rem;
+  --alto-campo: 60px;
+  --ancho-tarjeta: 34rem;
+
+  /* Posición de la tarjeta en pantallas anchas.
+     Negativo la mueve a la izquierda (ej. -60px), positivo a la derecha. */
+  --mover-tarjeta: 0px;
+
+  /* Hasta dónde llega el logo del banner en pantalla (se calcula solo) */
+  --borde-logo: max(42.1vw, 115.2vh);
+
+  /* La tarjeta se centra en el espacio libre a la derecha del logo (se calcula solo) */
+  --izquierda-tarjeta: calc(
+    min(
+        max((100vw + var(--borde-logo) - var(--ancho-tarjeta)) / 2, var(--borde-logo) + 1.5rem),
+        100vw - var(--ancho-tarjeta) - 1.5rem
+      ) + var(--mover-tarjeta)
+  );
 }
 
 body {
@@ -24,58 +48,144 @@ body {
   background: var(--color-fondo);
 }
 
+/* ---------- Pantallas de autenticación ---------- */
+
 .auth-pagina {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 1rem;
+}
+
+/* Diseño base (pantallas angostas): banner arriba y tarjeta debajo */
+.auth-banner {
+  display: block;
+  width: 100%;
+  height: clamp(180px, 26vw, 360px);
+  object-fit: cover;
+  object-position: 0% 38%;
 }
 
 .auth-tarjeta {
-  width: 100%;
-  max-width: 26rem;
-  background: var(--color-superficie);
-  border-radius: 16px;
-  padding: 2rem 1.5rem;
-  box-shadow: 0 8px 30px rgba(20, 30, 60, 0.08);
+  position: relative;
+  overflow: hidden;
+  width: calc(100% - 2rem);
+  max-width: var(--ancho-tarjeta);
+  margin: auto 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  border-radius: 24px;
+  padding: 2.75rem 2.5rem 2.5rem;
+  box-shadow: 0 16px 48px rgba(0, 29, 76, 0.16);
+
+  /* Círculos decorativos de las esquinas */
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(0, 95, 249, 0.12);
+    pointer-events: none;
+  }
+
+  &::before {
+    width: 9rem;
+    height: 9rem;
+    top: -4.5rem;
+    right: -3.5rem;
+  }
+
+  &::after {
+    width: 8rem;
+    height: 8rem;
+    bottom: -4rem;
+    right: -3rem;
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.auth-banner + .auth-tarjeta {
+  margin-top: -2.5rem;
+  margin-bottom: 2rem;
+}
+
+/* Pantallas anchas: el banner pasa a ser el fondo y la tarjeta queda a la derecha del logo */
+@media (min-width: 1366px) and (min-aspect-ratio: 2/1),
+  (min-width: 1700px) and (min-aspect-ratio: 16/9) {
+  .auth-pagina--hero {
+    position: relative;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 1.5rem 0;
+  }
+
+  .auth-pagina--hero .auth-banner {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-position: left center;
+    z-index: 0;
+  }
+
+  .auth-pagina--hero .auth-banner + .auth-tarjeta {
+    margin: 0 1.5rem 0 var(--izquierda-tarjeta);
+    width: var(--ancho-tarjeta);
+    max-width: var(--ancho-tarjeta);
+    z-index: 1;
+  }
 }
 
 .auth-titulo {
   margin: 0;
-  font-size: 1.75rem;
-  text-align: center;
+  font-size: var(--tam-titulo);
+  font-weight: 700;
+  line-height: 1.15;
   color: var(--color-primario);
 }
 
 .auth-subtitulo {
-  margin: 0.25rem 0 1.5rem;
-  text-align: center;
+  margin: 0.35rem 0 1.75rem;
+  font-size: calc(var(--tam-texto) + 0.1rem);
   color: var(--color-texto-suave);
 }
+
+/* ---------- Campos de formulario ---------- */
 
 .campo {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  margin-bottom: 1rem;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
 
   label {
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: var(--tam-texto);
+    color: var(--color-marca-oscuro);
   }
 
   input {
-    min-height: 44px;
-    padding: 0 0.75rem;
+    min-height: var(--alto-campo);
+    padding: 0 0.9rem;
     border: 1px solid var(--color-borde);
     border-radius: var(--radio);
     font: inherit;
+    font-size: var(--tam-texto);
     color: inherit;
     background: #fff;
 
+    &::placeholder {
+      color: #8795ab;
+    }
+
     &:focus-visible {
-      outline: 3px solid rgba(31, 111, 235, 0.35);
+      outline: 3px solid rgba(0, 95, 249, 0.3);
       border-color: var(--color-primario);
     }
 
@@ -85,6 +195,67 @@ body {
   }
 }
 
+/* Campo con ícono a la izquierda (y botón de ojo opcional a la derecha) */
+.campo-entrada {
+  position: relative;
+}
+
+.campo .campo-entrada input {
+  width: 100%;
+  padding-left: 3.5rem;
+  padding-right: 3.75rem;
+}
+
+.campo-entrada .icono {
+  position: absolute;
+  left: 1.1rem;
+  top: 50%;
+  width: 24px;
+  height: 24px;
+  transform: translateY(-50%);
+  fill: none;
+  stroke: var(--color-icono);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.campo-ojo {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  width: 46px;
+  height: 46px;
+  transform: translateY(-50%);
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-icono);
+  cursor: pointer;
+
+  svg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  &:hover {
+    color: var(--color-primario);
+  }
+
+  &:focus-visible {
+    outline: 3px solid rgba(0, 95, 249, 0.3);
+  }
+}
+
+/* Contraseña con botón "Ver" aparte (usado en la pantalla de registro) */
 .campo-clave {
   display: flex;
   gap: 0.5rem;
@@ -97,22 +268,30 @@ body {
 
 .campo-error {
   color: var(--color-error);
-  font-size: 0.8rem;
+  font-size: 0.9rem;
 }
+
+/* ---------- Botones, alertas y enlaces ---------- */
 
 .boton {
   width: 100%;
-  min-height: 46px;
+  min-height: var(--alto-campo);
   border: 0;
   border-radius: var(--radio);
   background: var(--color-primario);
   color: #fff;
   font: inherit;
+  font-size: calc(var(--tam-texto) + 0.05rem);
   font-weight: 600;
   cursor: pointer;
 
   &:hover:not(:disabled) {
     background: var(--color-primario-oscuro);
+  }
+
+  &:focus-visible {
+    outline: 3px solid rgba(0, 95, 249, 0.35);
+    outline-offset: 2px;
   }
 
   &:disabled {
@@ -122,35 +301,42 @@ body {
 }
 
 .boton-texto {
-  min-height: 44px;
-  padding: 0 0.75rem;
+  min-height: var(--alto-campo);
+  padding: 0 0.9rem;
   border: 1px solid var(--color-borde);
   border-radius: var(--radio);
   background: #fff;
   color: var(--color-primario);
   font: inherit;
+  font-size: var(--tam-texto);
   cursor: pointer;
+
+  &:hover {
+    background: #eef4ff;
+  }
 }
 
 .alerta {
-  margin-bottom: 1rem;
-  padding: 0.75rem 1rem;
+  margin-bottom: 1.1rem;
+  padding: 0.85rem 1rem;
   border-radius: var(--radio);
   background: var(--color-error-fondo);
   color: var(--color-error);
-  font-size: 0.9rem;
+  font-size: var(--tam-texto);
 }
 
 .auth-enlaces {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
-  margin-top: 1.25rem;
-  font-size: 0.9rem;
+  gap: 0.6rem;
+  margin-top: 1.5rem;
+  font-size: var(--tam-texto);
 
   a {
     color: var(--color-primario);
+    text-decoration: underline;
+    text-underline-offset: 3px;
   }
 }
 
