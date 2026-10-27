@@ -1,0 +1,58 @@
+<main class="auth-pagina">
+  <section class="auth-tarjeta">
+    <h1 class="auth-titulo">SmartLife</h1>
+    <p class="auth-subtitulo">Inicia sesión para continuar</p>
+
+    @if (error(); as mensaje) {
+      <div class="alerta" role="alert">{{ mensaje }}</div>
+    }
+
+    <form [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
+      <div class="campo">
+        <label for="correo">Correo electrónico</label>
+        <input id="correo" type="email" formControlName="correo" autocomplete="email" />
+        @if (formulario.controls.correo.touched && formulario.controls.correo.invalid) {
+          <small class="campo-error">
+            @if (formulario.controls.correo.hasError('required')) {
+              Ingresa tu correo.
+            } @else {
+              El correo no tiene un formato válido.
+            }
+          </small>
+        }
+      </div>
+
+      <div class="campo">
+        <label for="contrasena">Contraseña</label>
+        <div class="campo-clave">
+          <input
+            id="contrasena"
+            [type]="verContrasena() ? 'text' : 'password'"
+            formControlName="contrasena"
+            autocomplete="current-password"
+          />
+          <button
+            type="button"
+            class="boton-texto"
+            [attr.aria-pressed]="verContrasena()"
+            (click)="verContrasena.set(!verContrasena())"
+          >
+            {{ verContrasena() ? 'Ocultar' : 'Ver' }}
+          </button>
+        </div>
+        @if (formulario.controls.contrasena.touched && formulario.controls.contrasena.invalid) {
+          <small class="campo-error">Ingresa tu contraseña.</small>
+        }
+      </div>
+
+      <button type="submit" class="boton" [disabled]="cargando()">
+        {{ cargando() ? 'Ingresando...' : 'Iniciar sesión' }}
+      </button>
+    </form>
+
+    <div class="auth-enlaces">
+      <a routerLink="/recuperar">¿Olvidaste tu contraseña?</a>
+      <a routerLink="/registro">¿No tienes cuenta? Crear cuenta</a>
+    </div>
+  </section>
+</main>
