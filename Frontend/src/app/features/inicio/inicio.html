@@ -1,7 +1,8 @@
 <main class="pagina">
   <h1>Inicio</h1>
-  @if (auth.usuario(); as usuario) {
-    <p>Sesión iniciada como {{ usuario.displayName || usuario.email }}</p>
+  @if (auth.sesion(); as sesion) {
+    <p>Sesión iniciada como {{ sesion.email }}</p>
+    <p>Rol: {{ sesion.roles.join(', ') }}</p>
   }
   <button type="button" class="boton" (click)="salir()">Cerrar sesión</button>
 </main>
