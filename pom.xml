@@ -32,10 +32,12 @@
 		<mapstruct.version>1.6.3</mapstruct.version>
 		<sonar.organization>anderson776-co</sonar.organization>
 		<sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+		<sonar.cpd.exclusions>**/entity/**</sonar.cpd.exclusions>
 		<tomcat.version>11.0.25</tomcat.version>
   		<jackson-bom.version>3.1.7</jackson-bom.version>
 		<aws-sdk.version>2.31.0</aws-sdk.version>
 		<firebase-admin.version>9.4.3</firebase-admin.version>
+		<spring-cloud.version>2025.1.4</spring-cloud.version>
 	</properties>
 	
 	<dependencies>
@@ -110,6 +112,24 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-redis</artifactId>
 		</dependency>
+		<dependency>
+      		<groupId>org.springdoc</groupId>
+     	 	<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+      		<version>3.1.0</version>
+    	</dependency>
+    	<dependency>
+      		<groupId>org.springframework.boot</groupId>
+      		<artifactId>spring-boot-starter-security</artifactId>
+    	</dependency>
+    	<dependency>
+      		<groupId>org.springframework.boot</groupId>
+      		<artifactId>spring-boot-starter-security-test</artifactId>
+      		<scope>test</scope>
+    	</dependency>
+    	<dependency>
+      		<groupId>org.springframework.cloud</groupId>
+      		<artifactId>spring-cloud-starter-config</artifactId>
+    	</dependency>
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
@@ -125,6 +145,13 @@
 	            <artifactId>jackson-core</artifactId>
 	            <version>2.21.7</version>
         	</dependency>
+        	<dependency>
+        		<groupId>org.springframework.cloud</groupId>
+        		<artifactId>spring-cloud-dependencies</artifactId>
+       			<version>${spring-cloud.version}</version>
+        		<type>pom</type>
+        		<scope>import</scope>
+      		</dependency>
 		</dependencies>
 	</dependencyManagement>
 

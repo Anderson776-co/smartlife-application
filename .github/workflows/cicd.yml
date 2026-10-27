@@ -140,3 +140,9 @@ jobs:
           region: ${{ vars.GCP_REGION }}
           project_id: ${{ vars.GCP_PROJECT_ID }}
           flags: --service-account=smartlife-runtime@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+          env_vars: |-
+            CONFIG_SERVER_URL=https://parameter-catalog-smartlife-177841439929.us-central1.run.app
+          env_vars_update_strategy: merge
+          secrets: |-
+            RESEND_API_KEY=resend-api-key:latest
+          secrets_update_strategy: merge
