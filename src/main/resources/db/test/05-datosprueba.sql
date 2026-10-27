@@ -21,10 +21,10 @@ INSERT INTO users."user"
      external_id, id_type, id_urbanization)
 VALUES
     ('bbbbbbbb-0000-0000-0000-000000000001', '1001', 'Carlos', 'Andrés', 'Pérez', 'Gómez',
-     'carlos@example.com', TRUE, FALSE, TRUE, "W4k9Xz2mLp7vQ1bN8sR5tJ3cY6h",
+     'carlos@example.com', TRUE, FALSE, TRUE, 'W4k9Xz2mLp7vQ1bN8sR5tJ3cY6h',
      'dddddddd-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001'),
     ('bbbbbbbb-0000-0000-0000-000000000002', '1002', 'María', NULL, 'López', 'Ruiz',
-     'maria@example.com', TRUE, FALSE, TRUE,
+     'maria@example.com', TRUE, FALSE, TRUE, 'M7p2Qx9TzL4vB1nR8cK5wY3hJ6d',
      'dddddddd-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001');
 
 INSERT INTO users.user_role (id_user, id_role) VALUES
