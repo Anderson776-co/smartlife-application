@@ -142,7 +142,10 @@ jobs:
           flags: --service-account=smartlife-runtime@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com
           env_vars: |-
             CONFIG_SERVER_URL=https://parameter-catalog-smartlife-177841439929.us-central1.run.app
+            DB_URL=jdbc:postgresql:///smartlife?cloudSqlInstance=project-078c9c72-e891-42db-98c:us-central1:smartlife-pg&socketFactory=com.google.cloud.sql.postgres.SocketFactory
+            DB_USER=smartlife_app
           env_vars_update_strategy: merge
           secrets: |-
             RESEND_API_KEY=resend-api-key:latest
+            DB_PASSWORD=db-password:latest
           secrets_update_strategy: merge
