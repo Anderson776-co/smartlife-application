@@ -56,7 +56,10 @@ public class VisitAuthorizationJpaRepositoryAdapter implements VisitAuthorizatio
 	}
 
 	@Override
-	public boolean existsOverlapping(UUID visitorId, UUID propertyId, Instant startDate, Instant endDate) {
-		return repository.existsOverlapping(visitorId, propertyId, endDate, startDate);
+	public Optional<VisitAuthorizationEntity> findActiveAuthorizationByVisitorId(UUID visitorId, Instant referencedDate) {
+		return repository
+				.findActiveAuthorizationByVisitorId(
+						visitorId, referencedDate)
+				.map(mapper::toEntity);
 	}
 }

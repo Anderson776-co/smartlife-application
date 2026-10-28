@@ -42,6 +42,7 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.POST, "/api/v1/users/sessions").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/users/sessions/csrf").permitAll()
                 .requestMatchers("/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/visits/authorizations").hasAnyRole("OWNER", "RESIDENT")
                 .anyRequest().authenticated())
             .exceptionHandling(e -> e
                 .authenticationEntryPoint((req, res, ex) -> write(res, HttpStatus.UNAUTHORIZED, UNAUTHORIZED))

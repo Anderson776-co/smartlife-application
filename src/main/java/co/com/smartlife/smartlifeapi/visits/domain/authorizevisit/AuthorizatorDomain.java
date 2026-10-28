@@ -1,5 +1,5 @@
 package co.com.smartlife.smartlifeapi.visits.domain.authorizevisit;
 
-public class AuthorizatorDomain {
+import java.util.UUID;
 
-}
+public record AuthorizatorDomain(UUID id, String fullName, Boolean isActive, UUID urbanizationId) { }

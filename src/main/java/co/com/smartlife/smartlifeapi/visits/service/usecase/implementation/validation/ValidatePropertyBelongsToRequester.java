@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
 import co.com.smartlife.smartlifeapi.crosscutting.session.CurrentUser;
 import co.com.smartlife.smartlifeapi.crosscutting.specification.generics.IsMandatorySpecification;
-import co.com.smartlife.smartlifeapi.shared.domain.validator.Validator;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogProvider;
+import co.com.smartlife.smartlifeapi.shared.service.usecase.Validator;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.PropertyVisitDomain;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.PropertyVisitRepository;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.VisitResidentRepository;
@@ -47,12 +47,14 @@ public final class ValidatePropertyBelongsToRequester implements Validator{
             throw SmartLifeException.create(userMessage, technicalMessage);
         }
 		
-		final CurrentUser currentUser = (CurrentUser) data[0];
-		final UUID propertyId = (UUID) data[1];
+		CurrentUser currentUser = (CurrentUser) data[0];
+		UUID propertyId = (UUID) data[1];
+		
+		findAuthorizedProperty(currentUser,propertyId);
 	}
 	
 	public PropertyVisitDomain findAuthorizedProperty(final CurrentUser requester, final UUID propertyId) {
-		final  PropertyVisitEntity property = propertyVisitRepository.findById(propertyId)
+		PropertyVisitEntity property = propertyVisitRepository.findById(propertyId)
 		        .orElseThrow(() -> {
 		            var userMessage = MessageCatalogProvider.getContent("VISIT_PROPERTY_NOT_FOUND");
 

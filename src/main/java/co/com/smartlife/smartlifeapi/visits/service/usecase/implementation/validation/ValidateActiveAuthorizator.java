@@ -5,8 +5,9 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
-import co.com.smartlife.smartlifeapi.shared.domain.validator.Validator;
+import co.com.smartlife.smartlifeapi.crosscutting.specification.generics.IsMandatorySpecification;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogProvider;
+import co.com.smartlife.smartlifeapi.shared.service.usecase.Validator;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.AuthorizatorDomain;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.AuthorizatorRepository;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.AuthorizatorEntity;
@@ -25,12 +26,19 @@ public final class ValidateActiveAuthorizator implements Validator{
 
 	@Override
 	public void validate(Object... data) {
-		final UUID userId = (UUID) data[0];
+		
+		if (!new IsMandatorySpecification().isSatisfiedBy(data) || data.length < 1) {
+            var userMessage = MessageCatalogProvider.getContent("USER_ERROR_TRYING_TO_MAKE_AN_OPERATION");
+            var technicalMessage =MessageCatalogProvider.getContent("INCOMPLETE_PARAMETERS_VALIDATE");
+            throw SmartLifeException.create(userMessage, technicalMessage);
+        }
+		
+		UUID userId = (UUID) data[0];
 		findActiveAuthorizator(userId);
 	}
 	
 	public AuthorizatorDomain findActiveAuthorizator(final UUID userId) {
-		final AuthorizatorEntity authorizator = authorizatorRepository.findById(userId)
+		AuthorizatorEntity authorizator = authorizatorRepository.findById(userId)
         .orElseThrow(() -> {
             var userMessage =
                 MessageCatalogProvider.getContent("USER_NOT_REGISTERED");
@@ -39,7 +47,7 @@ public final class ValidateActiveAuthorizator implements Validator{
                 MessageCatalogProvider.getContent(
                     "USER_NOT_REGISTRED_TRY_TO_LOG_IN");
 
-            return SmartLifeException.createAuthentication(
+            throw SmartLifeException.createAuthentication(
                 userMessage, technicalMessage);
         });
 		

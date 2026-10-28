@@ -28,23 +28,41 @@
 	</scm>
 	<properties>
 		<java.version>25</java.version>
-		<spring-modulith.version>2.1.1</spring-modulith.version>
-		<mapstruct.version>1.6.3</mapstruct.version>
+
+		<!-- Sonar -->
 		<sonar.organization>anderson776-co</sonar.organization>
+		<sonar.projectKey>smartlife-api</sonar.projectKey>
 		<sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 		<sonar.cpd.exclusions>**/entity/**</sonar.cpd.exclusions>
-		<tomcat.version>11.0.25</tomcat.version>
-  		<jackson-bom.version>3.1.7</jackson-bom.version>
+
+		<!-- Overrides de versiones gestionadas por Spring Boot -->
+		<tomcat.version>11.0.26</tomcat.version>
+		<jackson-bom.version>3.1.7</jackson-bom.version>
+
+		<!-- BOMs -->
+		<spring-modulith.version>2.1.1</spring-modulith.version>
+		<spring-cloud.version>2025.1.4</spring-cloud.version>
+
+		<!-- Librerías -->
+		<mapstruct.version>1.6.3</mapstruct.version>
+		<jackson2-core.version>2.21.7</jackson2-core.version>
 		<aws-sdk.version>2.31.0</aws-sdk.version>
 		<firebase-admin.version>9.4.3</firebase-admin.version>
-		<spring-cloud.version>2025.1.4</spring-cloud.version>
+		<zxing.version>3.5.3</zxing.version>
+		<springdoc.version>3.1.0</springdoc.version>
+		<archunit.version>1.5.1</archunit.version>
+		<archunit-junit.version>1.5.1</archunit-junit.version>
+
+		<!-- Plugins -->
+		<jacoco.version>0.8.15</jacoco.version>
 	</properties>
-	
+
 	<dependencies>
 		<dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc</artifactId>
@@ -64,35 +82,14 @@
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-webmvc-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.modulith</groupId>
-			<artifactId>spring-modulith-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-		    <groupId>com.tngtech.archunit</groupId>
-		    <artifactId>archunit-junit5</artifactId>
-		    <version>1.5.1</version>
-		    <scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>com.google.zxing</groupId>
 			<artifactId>core</artifactId>
-			<version>3.5.3</version>
+			<version>${zxing.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.zxing</groupId>
 			<artifactId>javase</artifactId>
-			<version>3.5.3</version>
+			<version>${zxing.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>software.amazon.awssdk</groupId>
@@ -113,24 +110,55 @@
 			<artifactId>spring-boot-starter-data-redis</artifactId>
 		</dependency>
 		<dependency>
-      		<groupId>org.springdoc</groupId>
-     	 	<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-      		<version>3.1.0</version>
-    	</dependency>
-    	<dependency>
-      		<groupId>org.springframework.boot</groupId>
-      		<artifactId>spring-boot-starter-security</artifactId>
-    	</dependency>
-    	<dependency>
-      		<groupId>org.springframework.boot</groupId>
-      		<artifactId>spring-boot-starter-security-test</artifactId>
-      		<scope>test</scope>
-    	</dependency>
-    	<dependency>
-      		<groupId>org.springframework.cloud</groupId>
-      		<artifactId>spring-cloud-starter-config</artifactId>
-    	</dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+			<version>${springdoc.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-config</artifactId>
+		</dependency>
+
+		<!-- Test -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webmvc-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.modulith</groupId>
+			<artifactId>spring-modulith-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.tngtech.archunit</groupId>
+			<artifactId>archunit-junit5</artifactId>
+			<version>${archunit-junit.version}</version>
+			<scope>test</scope>
+		</dependency>
+		
+		<!-- Resend -->
+		<dependency>
+    		<groupId>com.resend</groupId>
+    		<artifactId>resend-java</artifactId>
+    		<version>4.29.0</version>
+		</dependency>
 	</dependencies>
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -141,17 +169,22 @@
 				<scope>import</scope>
 			</dependency>
 			<dependency>
-	            <groupId>com.fasterxml.jackson.core</groupId>
-	            <artifactId>jackson-core</artifactId>
-	            <version>2.21.7</version>
-        	</dependency>
-        	<dependency>
-        		<groupId>org.springframework.cloud</groupId>
-        		<artifactId>spring-cloud-dependencies</artifactId>
-       			<version>${spring-cloud.version}</version>
-        		<type>pom</type>
-        		<scope>import</scope>
-      		</dependency>
+				<groupId>org.springframework.cloud</groupId>
+				<artifactId>spring-cloud-dependencies</artifactId>
+				<version>${spring-cloud.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.tngtech.archunit</groupId>
+				<artifactId>archunit</artifactId>
+				<version>${archunit.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-core</artifactId>
+				<version>${jackson2-core.version}</version>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 
@@ -182,7 +215,7 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.15</version>
+				<version>${jacoco.version}</version>
 				<executions>
 					<execution>
 						<id>prepare-agent</id>

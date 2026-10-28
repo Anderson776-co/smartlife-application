@@ -15,7 +15,6 @@ public class MessageCatalogProvider {
         init(messageCatalog);
     }
 
-    /** Lo usa Spring y también tus pruebas unitarias (con un catálogo falso). */
     public static void init(final MessageCatalogOutputPort port) {
         MessageCatalogProvider.messageCatalogOutputPort = port;
     }

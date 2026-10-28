@@ -36,6 +36,9 @@ public class VisitAuthorizationJpaEntity {
 	@Column(name = "file_reference")
 	private String fileReference;
 	
+	@Column(name = "is_active")
+	private Boolean isActive;
+	
 	@ManyToOne
 	@JoinColumn(name = "id_property")
 	private PropertyVisitJpaEntity property;
@@ -55,8 +58,8 @@ public class VisitAuthorizationJpaEntity {
 	protected VisitAuthorizationJpaEntity() {}
 
 	public VisitAuthorizationJpaEntity(final UUID id, final Instant authorizationStartDate, final Instant authorizationEndDate,
-			final Instant registerDate, final String observation, final String qrCode, final String fileReference, final PropertyVisitJpaEntity property, 
-			final AuthorizatorJpaEntity authorizator, final VisitorJpaEntity visitor, final VisitReasonJpaEntity visitReason) {
+			final Instant registerDate, final String observation, final String qrCode, final String fileReference, final Boolean isActive, 
+			final PropertyVisitJpaEntity property, final AuthorizatorJpaEntity authorizator, final VisitorJpaEntity visitor, final VisitReasonJpaEntity visitReason) {
 		setId(id);
 		setAuthorizationStartDate(authorizationStartDate);
 		setAuthorizationEndDate(authorizationEndDate);
@@ -64,6 +67,7 @@ public class VisitAuthorizationJpaEntity {
 		setObservation(observation);
 		setQrCode(qrCode);
 		setFileReference(fileReference);
+		setIsActive(isActive);
 		setProperty(property);
 		setAuthorizator(authorizator);
 		setVisitReason(visitReason);
@@ -124,6 +128,14 @@ public class VisitAuthorizationJpaEntity {
 
 	public void setFileReference(String fileReference) {
 		this.fileReference = fileReference;
+	}
+
+	public Boolean getIsActive() {
+		return isActive;
+	}
+
+	public void setIsActive(Boolean isActive) {
+		this.isActive = isActive;
 	}
 
 	public PropertyVisitJpaEntity getProperty() {

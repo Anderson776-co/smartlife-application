@@ -1,5 +1,7 @@
 package co.com.smartlife.smartlifeapi.visits.domain.authorizevisit;
 
-public class PropertyVisitDomain {
+import java.util.UUID;
+
+public record PropertyVisitDomain(UUID id, String location, UUID ownerId) {
 
 }
