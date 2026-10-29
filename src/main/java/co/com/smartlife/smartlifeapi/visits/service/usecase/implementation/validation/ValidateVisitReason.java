@@ -5,7 +5,6 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
-import co.com.smartlife.smartlifeapi.crosscutting.rules.generics.IsUUIDPresentRule;
 import co.com.smartlife.smartlifeapi.crosscutting.specification.generics.IsMandatorySpecification;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogProvider;
 import co.com.smartlife.smartlifeapi.shared.service.usecase.Validator;

@@ -36,6 +36,8 @@ public class VisitAuthorizationController {
 		//Sanitizer
 		
 		
+		// PROVISIONAL (solo para que compile): falta asignar el usuario autenticado (requester).
+		final AuthorizeVisitDtoRequest input = request.withAttachedDocument(toAttachedDocument(document));
 		final VisitAuthorizationDtoResponse result = authorizeVisitInputPort.execute(input);
 		return ResponseEntity.status(HttpStatus.CREATED).body(Response.createSuccededResponse(List.of(result)));
 				

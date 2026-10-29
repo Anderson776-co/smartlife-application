@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.crosscutting.rules.generics;
+package co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.validation;
 
 import java.util.UUID;
 
@@ -45,4 +45,3 @@ public final class IsUUIDPresentRule implements Rule {
 	    }
 	}
 }
-

@@ -78,8 +78,9 @@ public class AuthorizeVisitUseCaseImpl implements AuthorizeVisitUseCase{
 	
 	@Override
 	public VisitAuthorizationDomain execute(VisitAuthorizationDomain input) {
-		
-		
+		// PENDIENTE (Anderson/Sara): implementar la autorizacion de la visita con las validaciones inyectadas.
+		// PROVISIONAL: para que la aplicacion compile y arranque mientras tanto.
+		throw new UnsupportedOperationException("El caso de uso de autorizar visita aun no esta implementado");
 	}
 	
 }

@@ -117,13 +117,15 @@ CREATE TABLE visits.visit_authorization (
     observation       VARCHAR(500),
     qr_code           VARCHAR(255) NOT NULL,
     file_reference    VARCHAR(255),
+    is_active         BOOLEAN NOT NULL DEFAULT TRUE,
     id_property       UUID NOT NULL,  -- vista visits.property_visit (sin FK)
     id_authorizator   UUID NOT NULL,  -- vista visits.authorizator (sin FK)
     id_visitor        UUID NOT NULL REFERENCES visits.visitor (id),
-    id_visit_reason   UUID NOT NULL REFERENCES visits.visit_reason (id),
-    CREATE INDEX ix_visit_authorization_overlap
-    ON visits.visit_authorization (id_visitor, id_property, start_date, end_date);
+    id_visit_reason   UUID NOT NULL REFERENCES visits.visit_reason (id)
 );
+
+CREATE INDEX ix_visit_authorization_overlap
+    ON visits.visit_authorization (id_visitor, id_property, start_date, end_date);
 
 CREATE TABLE visits.visit (
     id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),

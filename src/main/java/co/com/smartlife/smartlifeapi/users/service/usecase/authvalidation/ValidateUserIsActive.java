@@ -3,7 +3,7 @@ package co.com.smartlife.smartlifeapi.users.service.usecase.authvalidation;
 import org.springframework.stereotype.Component;
 
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
-import co.com.smartlife.smartlifeapi.shared.domain.validator.Validator;
+import co.com.smartlife.smartlifeapi.shared.service.usecase.Validator;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogProvider;
 
 @Component
