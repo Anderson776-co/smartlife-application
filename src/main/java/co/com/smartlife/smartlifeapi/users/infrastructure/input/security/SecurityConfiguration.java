@@ -10,6 +10,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -25,6 +26,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfiguration {
 	private static final String UNAUTHORIZED = "{\"messages\":[\"Sesión requerida\"],\"data\":[],\"responseSucceded\":false}";
     private static final String FORBIDDEN = "{\"messages\":[\"Acceso denegado\"],\"data\":[],\"responseSucceded\":false}";
@@ -42,7 +44,6 @@ public class SecurityConfiguration {
                 .requestMatchers(HttpMethod.POST, "/api/v1/users/sessions").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/users/sessions/csrf").permitAll()
                 .requestMatchers("/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/v1/visits/authorizations").hasAnyRole("OWNER", "RESIDENT")
                 .anyRequest().authenticated())
             .exceptionHandling(e -> e
                 .authenticationEntryPoint((req, res, ex) -> write(res, HttpStatus.UNAUTHORIZED, UNAUTHORIZED))

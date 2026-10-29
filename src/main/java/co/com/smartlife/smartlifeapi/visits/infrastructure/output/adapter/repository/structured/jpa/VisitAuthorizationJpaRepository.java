@@ -24,4 +24,16 @@ public interface VisitAuthorizationJpaRepository extends JpaRepository<VisitAuth
 			""")
 	Optional<VisitAuthorizationJpaEntity> findActiveAuthorizationByVisitorId(
 			@Param("visitorId") UUID visitorId, @Param("referenceDate") Instant referenceDate);
+
+	/** Dos rangos se cruzan cuando cada uno empieza antes de que el otro termine. */
+	@Query("""
+			SELECT COUNT(v) > 0 FROM VisitAuthorizationJpaEntity v
+			WHERE v.visitor.id = :visitorId
+			  AND v.property.id = :propertyId
+			  AND v.isActive = true
+			  AND v.authorizationStartDate < :endDate
+			  AND v.authorizationEndDate > :startDate
+			""")
+	boolean existsOverlappingAuthorization(@Param("visitorId") UUID visitorId, @Param("propertyId") UUID propertyId,
+			@Param("startDate") Instant startDate, @Param("endDate") Instant endDate);
 }

@@ -84,4 +84,16 @@ class VisitAuthorizationJpaRepositoryAdapterTest {
 	void updateShouldNotFailForNow() {
 		assertDoesNotThrow(() -> adapter.update(UUID.randomUUID(), mock(VisitAuthorizationEntity.class)));
 	}
+
+	@Test
+	void existsOverlappingAuthorizationShouldDelegateToTheRepository() {
+		UUID visitorId = UUID.randomUUID();
+		UUID propertyId = UUID.randomUUID();
+		java.time.Instant start = java.time.Instant.parse("2026-10-29T15:00:00Z");
+		java.time.Instant end = start.plusSeconds(3600);
+		when(repository.existsOverlappingAuthorization(visitorId, propertyId, start, end)).thenReturn(true);
+
+		assertTrue(adapter.existsOverlappingAuthorization(visitorId, propertyId, start, end));
+	}
+
 }

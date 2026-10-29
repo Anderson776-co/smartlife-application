@@ -12,28 +12,28 @@ import co.com.smartlife.smartlifeapi.crosscutting.helper.UUIDHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.session.CurrentUser;
 import io.swagger.v3.oas.annotations.media.Schema;
 
-public record AuthorizeVisitDtoRequest(UUID propertyId, UUID visitReasonId, Instant startDate,
-		Instant endDate, String observation, VisitorDtoRequest visitor, 
+public record AuthorizeVisitDtoRequest(UUID propertyId, UUID visitReasonId, Instant authorizationStartDate,
+		Instant authorizationEndDate, String observation, VisitorDtoRequest visitor, 
 		@JsonIgnore @Schema(hidden = true) AttachedDocumentDtoRequest attachedDocument,
-		@JsonIgnore @Schema(hidden = true) CurrentUser requester) {
+		@JsonIgnore @Schema(hidden = true) CurrentUser authorizator) {
 	
 	private static final CurrentUser ANONYMOUS =
-			new CurrentUser(UUIDHelper.getUUIDHelper().getDefault(), "", Set.of());
+			new CurrentUser(UUIDHelper.getUUIDHelper().getDefault(),"", Set.of(), UUIDHelper.getUUIDHelper().getDefault());
 	
 	public AuthorizeVisitDtoRequest {
 		propertyId = UUIDHelper.getUUIDHelper().getDefault(propertyId);
 		visitReasonId = UUIDHelper.getUUIDHelper().getDefault(visitReasonId);
-		startDate = ObjectHelper.getDefault(startDate, Instant.EPOCH);
-		endDate = ObjectHelper.getDefault(endDate, Instant.EPOCH);
+		authorizationStartDate = ObjectHelper.getDefault(authorizationStartDate, Instant.EPOCH);
+		authorizationEndDate = ObjectHelper.getDefault(authorizationEndDate, Instant.EPOCH);
 		observation = TextHelper.getDefault(observation);
 		visitor = ObjectHelper.getDefault(visitor, VisitorDtoRequest.empty());
 		attachedDocument = ObjectHelper.getDefault(attachedDocument, AttachedDocumentDtoRequest.empty());
-		requester = ObjectHelper.getDefault(requester, ANONYMOUS);
+		authorizator = ObjectHelper.getDefault(authorizator, ANONYMOUS);
 	}
 	
-	public AuthorizeVisitDtoRequest withAttachedDocument(final AttachedDocumentDtoRequest document) {
-		return new AuthorizeVisitDtoRequest(propertyId, visitReasonId, startDate, endDate,
-				observation, visitor, document, requester);
+	public AuthorizeVisitDtoRequest withContext(final AttachedDocumentDtoRequest document, final CurrentUser currentUser) {
+		return new AuthorizeVisitDtoRequest(propertyId, visitReasonId, authorizationStartDate, authorizationEndDate,
+				observation, visitor, document, currentUser);
 	}
 
 }

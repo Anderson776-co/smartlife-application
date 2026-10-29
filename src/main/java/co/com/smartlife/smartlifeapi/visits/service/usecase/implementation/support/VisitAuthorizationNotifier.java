@@ -1,6 +1,5 @@
 package co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.support;
 
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,6 +17,7 @@ import co.com.smartlife.smartlifeapi.crosscutting.helper.TextHelper;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.NotificationCatalogOutputPort;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.NotificationGatewayOutputPort;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.QrGeneratorOutputPort;
+import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.VisitParametersOutputPort;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.EmailAttachmentDTO;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.EmailNotificationDTO;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.NotificationCatalogDTO;
@@ -33,18 +33,19 @@ public class VisitAuthorizationNotifier {
 	private static final String QR_FILE_NAME = "autorizacion-visita.png";
 	private static final String QR_CONTENT_TYPE = "image/png";
 	private static final String DATE_PATTERN = "dd/MM/yyyy hh:mm a";
-	// Temporal: cuando tengas VisitParametersOutputPort, reemplázalo por parameters.timeZone()
-	private static final ZoneId TIME_ZONE = ZoneId.of("America/Bogota");
 
 	private final NotificationCatalogOutputPort notificationCatalog;   // Strapi + @Cacheable (Redis)
 	private final NotificationGatewayOutputPort notificationGateway;   // Resend
 	private final QrGeneratorOutputPort qrGenerator;                   // ZXing
+	private final VisitParametersOutputPort parameters;                // Spring Cloud Config
 
 	public VisitAuthorizationNotifier(final NotificationCatalogOutputPort notificationCatalog,
-			final NotificationGatewayOutputPort notificationGateway, final QrGeneratorOutputPort qrGenerator) {
+			final NotificationGatewayOutputPort notificationGateway, final QrGeneratorOutputPort qrGenerator,
+			final VisitParametersOutputPort parameters) {
 		this.notificationCatalog = notificationCatalog;
 		this.notificationGateway = notificationGateway;
 		this.qrGenerator = qrGenerator;
+		this.parameters = parameters;
 	}
 
 	/** Nunca lanza excepción: la autorización ya quedó guardada. */
@@ -70,7 +71,7 @@ public class VisitAuthorizationNotifier {
 	}
 
 	private Map<String, String> placeholders(final VisitAuthorizationEntity authorization, final Locale locale) {
-		final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN, locale).withZone(TIME_ZONE);
+		final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN, locale).withZone(parameters.get().timeZone());
 		final VisitorEntity visitor = authorization.getVisitor();
 		final Map<String, String> values = new HashMap<>();
 		values.put("visitorName", join(visitor.getFirstName(), visitor.getMiddleName(),

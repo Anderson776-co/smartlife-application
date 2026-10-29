@@ -13,5 +13,8 @@ public interface VisitAuthorizationRepository extends CreateRepository<VisitAuth
 UpdateRepository<UUID, VisitAuthorizationEntity>{
 	
 	Optional<VisitAuthorizationEntity> findActiveAuthorizationByVisitorId(UUID visitorId, Instant referencedDate);
+
+	/** Hay una autorizacion activa del visitante en la propiedad que se cruza con el rango dado. */
+	boolean existsOverlappingAuthorization(UUID visitorId, UUID propertyId, Instant startDate, Instant endDate);
 	
 }

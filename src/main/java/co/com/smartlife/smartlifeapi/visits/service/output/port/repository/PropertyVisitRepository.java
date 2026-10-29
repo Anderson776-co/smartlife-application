@@ -7,4 +7,6 @@ import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entit
 
 public interface PropertyVisitRepository extends ReadRepository<UUID, PropertyVisitEntity>{
 	
+	boolean isOwnedBy(UUID propertyId, UUID ownerId);
+	
 }

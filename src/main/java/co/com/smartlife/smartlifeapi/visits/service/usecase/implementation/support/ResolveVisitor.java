@@ -28,7 +28,7 @@ public class ResolveVisitor {
 	
 	public VisitorResolution resolve (final VisitorDomain data) {
 		if (ObjectHelper.isNull(data) || TextHelper.isEmptyWithTrim(data.documentNumber())) {
-			throw error("VISITOR_EMAIL_INVALID", "CODIGO_TECH_PENDIENTE");
+			throw error("VISITOR_DOCUMENT_REQUIRED", "Documento del visitante requerido");
 		}
 		
 		final String documentNumber = TextHelper.getDefaultWithTrim(data.documentNumber());
