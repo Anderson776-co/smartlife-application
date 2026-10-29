@@ -144,6 +144,7 @@ jobs:
             CONFIG_SERVER_URL=https://parameter-catalog-smartlife-177841439929.us-central1.run.app
             DB_URL=jdbc:postgresql://ep-round-frost-b4icbrl3.c-6.us-east-2.aws.neon.tech/smartlife?sslmode=require
             DB_USER=smartlife_app
+            FIREBASE_PROJECT_ID=pocfirebase-c2915
           env_vars_update_strategy: merge
           secrets: |-
             RESEND_API_KEY=resend-api-key:latest
