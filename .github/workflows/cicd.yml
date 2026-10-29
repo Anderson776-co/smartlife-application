@@ -145,8 +145,12 @@ jobs:
             DB_URL=jdbc:postgresql://ep-round-frost-b4icbrl3.c-6.us-east-2.aws.neon.tech/smartlife?sslmode=require
             DB_USER=smartlife_app
             FIREBASE_PROJECT_ID=pocfirebase-c2915
+            R2_ENDPOINT=https://6b2aa7dd089d2ccd1ce24c3d6bb2eda2.r2.cloudflarestorage.com
+            R2_BUCKET=smartlife-documentos
           env_vars_update_strategy: merge
           secrets: |-
             RESEND_API_KEY=resend-api-key:latest
             DB_PASSWORD=db-password:latest
+            R2_ACCESS_KEY=r2-access-key:latest
+            R2_SECRET_KEY=r2-secret-key:latest
           secrets_update_strategy: merge
