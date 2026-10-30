@@ -13,7 +13,7 @@ Cada secreto está en una sola ubicación (`us-central1`) y con cifrado administ
 
 | Variable que lee la aplicación | Secreto en Secret Manager | Estado |
 |---|---|---|
-| `RESEND_API_KEY` | `resend-api-key` | Con valor (versión 1) y conectado en el despliegue |
+| `RESEND_API_KEY` | `resend-api-key` | Con valor (versión 1), de la cuenta de Resend de Mateo, y conectado en el despliegue |
 | `DB_PASSWORD` | `db-password` | Con valor y conectado. La **versión 3** es la contraseña del rol `smartlife_app` de Neon y es la que se lee (`latest`). Las versiones 1 y 2 eran de una base anterior en Cloud SQL, ya eliminada: no se usan y se pueden inhabilitar |
 | `R2_ACCESS_KEY` | `r2-access-key` | Con valor (versión 1) y conectado en el despliegue |
 | `R2_SECRET_KEY` | `r2-secret-key` | Con valor (versión 1) y conectado en el despliegue |
@@ -51,6 +51,19 @@ La base de datos de SmartLife es PostgreSQL en **Neon**, plan gratuito, en la cu
 - `R2_ENDPOINT` es la dirección S3 de la cuenta (`https://<ID-de-cuenta>.r2.cloudflarestorage.com`, sin el nombre del bucket) y `R2_BUCKET` es el nombre del bucket. Ambos van en el `cicd.yml`.
 - Costo: la suscripción está activa y hay una alerta de presupuesto en Cloudflare. Los límites gratuitos mensuales que mostró la pantalla de R2 son 10 GB de almacenamiento, 1 millón de operaciones de escritura y 10 millones de lectura; la descarga no se cobra. Solo se cobra si se superan.
 - Probado el 29 de octubre de 2026 con un archivo de prueba: se subió, se leyó con las claves y se borró; una petición sin claves no recibió el archivo. Falta probarlo desde la aplicación.
+
+## Resend (correos)
+
+- La cuenta de Resend es la de Mateo, en el plan gratuito (los límites diarios y mensuales se confirman en https://resend.com/pricing). La clave de API está en el secreto `resend-api-key`.
+- Dominio de envío: `mail.smartlife.sarl`, un subdominio de `smartlife.sarl` solo para correo, para que sus registros no se mezclen con los de la página. Región `us-east-1` (North Virginia). **Verificado.** Solo envío: la recepción está apagada, y el seguimiento de clics y de aperturas también (para no alterar el enlace del QR).
+- Remitente: `no-reply@mail.smartlife.sarl`, que se define con la variable `RESEND_FROM` en `.github/workflows/cicd.yml`. Si no se define, la aplicación usa `onboarding@resend.dev`, que solo sirve para pruebas.
+- Registros DNS creados en Cloudflare (todos en modo «DNS only», sin proxy):
+  - `resend._domainkey.mail` (TXT): la firma del correo (DKIM).
+  - `send.mail` y `rsend.mail` (CNAME): autorización de envío y recepción de rebotes.
+  - `_dmarc` (TXT): política `v=DMARC1; p=none;`, que solo observa y no bloquea.
+- Los registros los agregó Mateo a mano en Cloudflare. No se usó la opción «Auto configure» de Resend, para no darle a un servicio externo permiso sobre el DNS del dominio.
+- Probado el 29 de octubre de 2026: se envió un correo de prueba desde Cloud Shell con la clave del baúl de secretos, desde `no-reply@mail.smartlife.sarl` a una dirección distinta a la de la cuenta de Resend, y llegó. Falta probar el envío desde la aplicación, que además necesita la plantilla del correo en Strapi.
+- Si cambia la persona responsable de la cuenta de Resend, hay que crear una clave en la cuenta nueva, verificar allí el dominio y guardar la clave como una versión nueva de `resend-api-key`.
 
 ## Camino de las peticiones (Cloudflare + API Gateway + Cloud Run)
 
@@ -115,7 +128,7 @@ Reenvía cada petición, tal cual, al API Gateway y le agrega la clave de API. L
 
 ## Variables normales (no son secretas)
 
-Van como variables de entorno del servicio de Cloud Run. Las primeras seis se definen en `.github/workflows/cicd.yml`; el resto usa los valores por defecto de `application.properties`:
+Van como variables de entorno del servicio de Cloud Run. Las primeras siete se definen en `.github/workflows/cicd.yml`; el resto usa los valores por defecto de `application.properties`:
 
 | Variable | Valor |
 |---|---|
@@ -125,9 +138,9 @@ Van como variables de entorno del servicio de Cloud Run. Las primeras seis se de
 | `FIREBASE_PROJECT_ID` | `pocfirebase-c2915` |
 | `R2_ENDPOINT` | Dirección S3 de la cuenta de Cloudflare |
 | `R2_BUCKET` | `smartlife-documentos` |
+| `RESEND_FROM` | `no-reply@mail.smartlife.sarl` |
 | `DDL_AUTO` | `none` |
 | `STRAPI_URL` | vacío |
-| `RESEND_FROM` | `onboarding@resend.dev` |
 | `CACHE_TYPE` | `none` (para activar Redis: `redis`) |
 | `CACHE_TTL` | `1h` |
 | `REDIS_HOST`, `REDIS_PORT`, `REDIS_USERNAME`, `REDIS_SSL` | `localhost`, `6379`, vacío, `false` |
@@ -146,6 +159,7 @@ El paso `Deploy` de `.github/workflows/cicd.yml` usa la acción `google-github-a
       FIREBASE_PROJECT_ID=pocfirebase-c2915
       R2_ENDPOINT=<direccion S3 de la cuenta de Cloudflare>
       R2_BUCKET=smartlife-documentos
+      RESEND_FROM=no-reply@mail.smartlife.sarl
     env_vars_update_strategy: merge
     secrets: |-
       RESEND_API_KEY=resend-api-key:latest
@@ -178,7 +192,7 @@ Si el despliegue falla por permisos sobre un secreto, la cuenta de servicio de l
 
 ## Costos
 
-Se usa una sola versión activa y una sola ubicación por secreto. Los secretos vacíos no tienen versiones. Los límites gratuitos de Secret Manager se confirman en https://cloud.google.com/secret-manager/pricing, porque Google puede cambiarlos. La base de datos está en el plan gratuito de Neon (https://neon.com/pricing), los documentos en R2 dentro de su capa gratuita (https://developers.cloudflare.com/r2/pricing/), el WAF y el Worker en el plan gratuito de Cloudflare, y el API Gateway dentro de su capa gratuita mensual (https://cloud.google.com/api-gateway/pricing). No se debe pulsar «Actualizar» ni «Upgrade» en las cuentas de prueba de Google Cloud, Neon o Cloudflare sin avisar al equipo.
+Se usa una sola versión activa y una sola ubicación por secreto. Los secretos vacíos no tienen versiones. Los límites gratuitos de Secret Manager se confirman en https://cloud.google.com/secret-manager/pricing, porque Google puede cambiarlos. La base de datos está en el plan gratuito de Neon (https://neon.com/pricing), los documentos en R2 dentro de su capa gratuita (https://developers.cloudflare.com/r2/pricing/), los correos en el plan gratuito de Resend (https://resend.com/pricing), el WAF y el Worker en el plan gratuito de Cloudflare, y el API Gateway dentro de su capa gratuita mensual (https://cloud.google.com/api-gateway/pricing). No se debe pulsar «Actualizar» ni «Upgrade» en las cuentas de prueba de Google Cloud, Neon o Cloudflare sin avisar al equipo.
 
 ## Pendiente
 
@@ -187,4 +201,4 @@ Se usa una sola versión activa y una sola ubicación por secreto. Los secretos 
 - Cargar datos de prueba en Neon y refrescar las vistas materializadas.
 - Cambiar la contraseña de `smartlife_app` en Neon (y agregar la nueva como versión de `db-password`) antes de cargar datos reales.
 - Cuando existan las cuentas de Strapi y Redis, agregar las claves y sus líneas en el `cicd.yml`.
-- Verificar un dominio en Resend para poder enviar correos a cualquier visitante.
+- Probar el envío del correo desde la aplicación: necesita la plantilla `VISIT_AUTHORIZATION_CREATED` en Strapi.
