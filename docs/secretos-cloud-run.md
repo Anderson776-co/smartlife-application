@@ -52,41 +52,66 @@ La base de datos de SmartLife es PostgreSQL en **Neon**, plan gratuito, en la cu
 - Costo: la suscripción está activa y hay una alerta de presupuesto en Cloudflare. Los límites gratuitos mensuales que mostró la pantalla de R2 son 10 GB de almacenamiento, 1 millón de operaciones de escritura y 10 millones de lectura; la descarga no se cobra. Solo se cobra si se superan.
 - Probado el 29 de octubre de 2026 con un archivo de prueba: se subió, se leyó con las claves y se borró; una petición sin claves no recibió el archivo. Falta probarlo desde la aplicación.
 
+## Camino de las peticiones (Cloudflare + API Gateway + Cloud Run)
+
+La API se publica en `api.smartlife.sarl`, un subdominio del dominio `smartlife.sarl` (en Cloudflare, plan gratuito). El camino de una petición es:
+
+    Visitante -> Cloudflare (WAF) -> Worker smartlife-api-proxy -> API Gateway (Google) -> Cloud Run (privado)
+
+Es el único camino: Cloud Run no acepta peticiones sin identidad, el API Gateway exige una clave que solo conoce el Worker, y la dirección `workers.dev` del Worker está desactivada.
+
 ## WAF de Cloudflare (api.smartlife.sarl)
 
-El dominio `smartlife.sarl` está en Cloudflare (plan gratuito). La API se publica en un subdominio aparte, `api.smartlife.sarl`, y el camino de una petición es:
-
-    Visitante -> Cloudflare (WAF) -> Worker smartlife-api-proxy -> Cloud Run (smartlife-application)
-
-- **Worker `smartlife-api-proxy`:** reenvía cada petición, tal cual, a la dirección de Cloud Run. Se usa un Worker porque Cloud Run rechaza las peticiones que llegan con un nombre de dominio distinto al suyo. Su código es este:
-
-        const ORIGEN = "smartlife-application-clfarpgyxa-uc.a.run.app";
-
-        export default {
-          async fetch(request) {
-            const url = new URL(request.url);
-            url.protocol = "https:";
-            url.hostname = ORIGEN;
-            url.port = "";
-            return fetch(new Request(url.toString(), request), { redirect: "manual" });
-          },
-        };
-
-- **Dominio del Worker:** `api.smartlife.sarl` (dominio personalizado). La dirección `workers.dev` del Worker está **desactivada**, para que no exista una entrada que se salte el WAF.
 - **Reglas administradas gratuitas de Cloudflare:** activadas.
 - **Reglas personalizadas** (todas llevan la condición `http.host eq "api.smartlife.sarl"` para no afectar a `smartlife.sarl` ni a `www`, que ya están publicadas). Acción: bloquear.
   1. `api-bloquear-actuator-y-documentacion`: rutas que empiezan por `/actuator`, `/v3/api-docs` o `/swagger-ui`.
   2. `api-bloquear-metodos-no-usados`: cualquier método HTTP distinto de GET, POST, PUT, PATCH, DELETE, OPTIONS y HEAD.
   3. `api-bloquear-sondeos-comunes`: rutas que empiezan por `/.env`, `/.git`, `/wp-` o `/phpmyadmin`, y rutas que terminan en `.php`.
 - **Límite de peticiones:** la regla `Limit` (ya existía; el plan gratuito permite una sola) se aplica a todas las rutas del dominio: 30 peticiones cada 10 segundos por IP, acción bloquear durante 10 segundos. Cubre también la API. Varias personas en la misma red cuentan como una sola IP.
-- Probado el 29 de octubre de 2026 con `curl`: las rutas bloqueadas responden con la página «Attention Required» de Cloudflare, mientras que una ruta normal llega a Cloud Run.
 - **Bot Fight Mode:** se dejó apagado, porque en el plan gratuito aplica a todo el dominio y puede mostrar retos que el frontend no sabe resolver.
-
-Limitaciones conocidas:
-
-- **El servicio de Cloud Run es privado** (no tiene el rol `roles/run.invoker` para `allUsers`), así que hoy responde `403` de Google a cualquier petición, también por el WAF. Para que la API reciba peticiones del frontend hay que hacerlo público, decisión que corresponde a Anderson.
-- Aun público, quien llame directo a `smartlife-application-clfarpgyxa-uc.a.run.app` se salta el WAF. Cerrarlo sin costo exige que el Worker envíe una contraseña en un encabezado y que la aplicación la exija: queda como mejora.
 - El plan gratuito no incluye el conjunto de reglas OWASP completo.
+
+## Worker de Cloudflare (smartlife-api-proxy)
+
+Reenvía cada petición, tal cual, al API Gateway y le agrega la clave de API. La clave vive solo como secreto del Worker (`GATEWAY_API_KEY`, en Settings > Variables and secrets); nunca se escribe en un archivo ni en el repositorio. Su código es este:
+
+        const ORIGEN = "smartlife-gateway-29p679a1.uc.gateway.dev";
+
+        export default {
+          async fetch(request, env) {
+            const url = new URL(request.url);
+            url.protocol = "https:";
+            url.hostname = ORIGEN;
+            url.port = "";
+            const reenviada = new Request(url.toString(), request);
+            reenviada.headers.set("x-api-key", env.GATEWAY_API_KEY);
+            return fetch(reenviada, { redirect: "manual" });
+          },
+        };
+
+- Dominio del Worker: `api.smartlife.sarl` (dominio personalizado). La dirección `workers.dev` está **desactivada**.
+
+## API Gateway (Google Cloud)
+
+- API `smartlife-api`, configuración `smartlife-config-1` y gateway `smartlife-gateway` en `us-central1`. Dirección: `smartlife-gateway-29p679a1.uc.gateway.dev`.
+- El contrato (Swagger 2.0) está en `infra/api-gateway/openapi2.yaml`. Solo define las rutas que expone la aplicación; cualquier otra ruta recibe `404` del gateway:
+  - `GET /api/v1/users/sessions/csrf`
+  - `POST /api/v1/users/sessions`
+  - `GET /api/v1/users/sessions/me`
+  - `POST /api/v1/users/sessions/logout`
+  - `POST /api/v1/visits/authorizations`
+  - y la verificación previa de CORS (`OPTIONS`) de cada una. El CORS lo resuelve la propia aplicación, no el gateway.
+- Plazo máximo de respuesta del gateway: 60 segundos (la primera petición a Cloud Run "frío" puede tardar).
+- Cuenta de servicio del gateway: `smartlife-gateway@project-078c9c72-e891-42db-98c.iam.gserviceaccount.com`, con el rol `roles/run.invoker` **solo sobre el servicio** `smartlife-application`. El servicio de Cloud Run sigue siendo privado (no tiene `allUsers`).
+- Clave de API: `smartlife-worker-cloudflare`, limitada solo al servicio del gateway. Sin esa clave, el gateway responde `401`.
+- Probado el 29 de octubre de 2026 con `curl`:
+  - `api.smartlife.sarl`: llega a la aplicación (la versión desplegada hoy viene de `main` y no tiene todavía las rutas nuevas, por eso responde `404` de Spring).
+  - Gateway sin clave: `401`. `run.app` directo: `403`. `workers.dev`: `404`.
+  - `/actuator/health` por `api.smartlife.sarl`: lo bloquea el WAF.
+- **Si se agrega una ruta a la aplicación**, hay que agregarla al contrato y crear una configuración nueva:
+
+        gcloud api-gateway api-configs create smartlife-config-2 --api=smartlife-api --openapi-spec=infra/api-gateway/openapi2.yaml --backend-auth-service-account=smartlife-gateway@project-078c9c72-e891-42db-98c.iam.gserviceaccount.com --project=project-078c9c72-e891-42db-98c
+        gcloud api-gateway gateways update smartlife-gateway --api=smartlife-api --api-config=smartlife-config-2 --location=us-central1 --project=project-078c9c72-e891-42db-98c
 
 ## Variables normales (no son secretas)
 
@@ -153,12 +178,12 @@ Si el despliegue falla por permisos sobre un secreto, la cuenta de servicio de l
 
 ## Costos
 
-Se usa una sola versión activa y una sola ubicación por secreto. Los secretos vacíos no tienen versiones. Los límites gratuitos de Secret Manager se confirman en https://cloud.google.com/secret-manager/pricing, porque Google puede cambiarlos. La base de datos está en el plan gratuito de Neon (https://neon.com/pricing), los documentos en R2 dentro de su capa gratuita (https://developers.cloudflare.com/r2/pricing/) y el WAF en el plan gratuito de Cloudflare. No se debe pulsar «Actualizar» ni «Upgrade» en las cuentas de prueba de Google Cloud, Neon o Cloudflare sin avisar al equipo.
+Se usa una sola versión activa y una sola ubicación por secreto. Los secretos vacíos no tienen versiones. Los límites gratuitos de Secret Manager se confirman en https://cloud.google.com/secret-manager/pricing, porque Google puede cambiarlos. La base de datos está en el plan gratuito de Neon (https://neon.com/pricing), los documentos en R2 dentro de su capa gratuita (https://developers.cloudflare.com/r2/pricing/), el WAF y el Worker en el plan gratuito de Cloudflare, y el API Gateway dentro de su capa gratuita mensual (https://cloud.google.com/api-gateway/pricing). No se debe pulsar «Actualizar» ni «Upgrade» en las cuentas de prueba de Google Cloud, Neon o Cloudflare sin avisar al equipo.
 
 ## Pendiente
 
-- Probar Neon, Firebase y R2 desde Cloud Run: depende de terminar la lógica de `AuthorizeVisitUseCaseImpl` y de subir los cambios a `main`.
-- Decidir si el servicio de Cloud Run se hace público, para que el frontend pueda usar `api.smartlife.sarl`, y ajustar `CORS_ALLOWED_ORIGINS` a la dirección del frontend publicado.
+- Desplegar la versión nueva desde `main` (con las rutas de login y de autorizar visita) y probar Neon, Firebase y R2 desde Cloud Run.
+- Ajustar `CORS_ALLOWED_ORIGINS` y `qr-base-url` a la dirección del frontend publicado.
 - Cargar datos de prueba en Neon y refrescar las vistas materializadas.
 - Cambiar la contraseña de `smartlife_app` en Neon (y agregar la nueva como versión de `db-password`) antes de cargar datos reales.
 - Cuando existan las cuentas de Strapi y Redis, agregar las claves y sus líneas en el `cicd.yml`.
