@@ -1,0 +1,76 @@
+<section class="exito" role="status">
+  <div class="celebracion" aria-hidden="true">
+    <span class="anillo"></span>
+    <span class="anillo anillo--2"></span>
+    <div class="exito-icono">
+      <svg viewBox="0 0 24 24"><path class="trazo" d="m5 12.5 4.5 4.5L19 7.5" /></svg>
+    </div>
+    @for (p of confeti; track $index) {
+      <i
+        class="pieza"
+        [style.--x.px]="p.x"
+        [style.--y.px]="p.y"
+        [style.--r.deg]="p.r"
+        [style.--c]="p.c"
+        [style.animation-delay.ms]="p.d + 450"
+      ></i>
+    }
+  </div>
+
+  <h1 class="revelar" style="--i: 3">¡Visita autorizada!</h1>
+  @if (resumen().visitante; as visitante) {
+    <p class="exito-subtitulo revelar" style="--i: 4">
+      <strong>{{ visitante }}</strong> ya puede ingresar en el horario indicado.
+    </p>
+  }
+
+  <dl class="datos revelar" style="--i: 5">
+    <div>
+      <dt>Propiedad</dt>
+      <dd>{{ resumen().propiedad }}</dd>
+    </div>
+    <div>
+      <dt>Motivo</dt>
+      <dd>{{ resumen().motivo }}</dd>
+    </div>
+    <div>
+      <dt>Desde</dt>
+      <dd>{{ resumen().inicio }}</dd>
+    </div>
+    <div>
+      <dt>Hasta</dt>
+      <dd>{{ resumen().fin }}</dd>
+    </div>
+  </dl>
+
+  <div class="codigo revelar" style="--i: 6">
+    <span class="codigo-etiqueta">Código de autorización</span>
+    <div class="codigo-fila">
+      <code>{{ resultado().authorizationId }}</code>
+      <button type="button" class="copiar" [class.copiar--listo]="copiado()" (click)="copiar()">
+        @if (copiado()) {
+          ¡Copiado!
+        } @else {
+          Copiar
+        }
+      </button>
+    </div>
+  </div>
+
+  <p class="correo revelar" style="--i: 7" [class.correo--ok]="resultado().notificationSent">
+    @if (resultado().notificationSent) {
+      Enviamos el código QR al correo del visitante.
+    } @else {
+      No se pudo enviar el correo, pero la autorización quedó registrada.
+    }
+  </p>
+
+  <div class="acciones revelar" style="--i: 8">
+    <button type="button" class="btn btn-primario" (click)="otra.emit()">
+      Autorizar otra visita
+    </button>
+    <button type="button" class="btn btn-secundario" (click)="volver.emit()">
+      Volver al inicio
+    </button>
+  </div>
+</section>

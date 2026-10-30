@@ -1,0 +1,350 @@
+/* Franja superior con la foto del conjunto */
+.banda {
+  position: relative;
+  overflow: hidden;
+  padding: 2.4rem 1.25rem 5.5rem;
+  color: #fff;
+  background:
+    linear-gradient(95deg, rgba(0, 18, 56, 0.96) 0%, rgba(0, 29, 76, 0.84) 50%, rgba(0, 29, 76, 0.35) 100%),
+    url('/images/conjunto.webp') 70% 60% / cover no-repeat;
+  animation: aparecer 0.7s ease both;
+
+  &::after {
+    content: '';
+    position: absolute;
+    right: -6rem;
+    top: -8rem;
+    width: 22rem;
+    height: 22rem;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.07);
+    animation: flotar 11s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  h1 {
+    margin: 0.5rem 0 0.4rem;
+    font-size: clamp(1.9rem, 4vw, 2.6rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  p {
+    margin: 0;
+    font-size: 1.05rem;
+    color: rgba(255, 255, 255, 0.88);
+  }
+}
+
+.banda-contenido {
+  position: relative;
+  z-index: 1;
+  max-width: 74rem;
+  margin: 0 auto;
+}
+
+.migas {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.75);
+
+  a {
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.visita {
+  max-width: 74rem;
+  margin: -3.4rem auto 0;
+  padding: 0 1.25rem;
+  position: relative;
+  z-index: 1;
+}
+
+.distribucion {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20rem;
+  gap: 1.5rem;
+  align-items: start;
+
+  @media (max-width: 62rem) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.bloque,
+.tarjeta {
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 22px;
+  box-shadow: var(--sombra-suave);
+}
+
+.bloque {
+  padding: 1.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  transition: box-shadow 0.4s var(--ease);
+
+  &:focus-within {
+    box-shadow: 0 28px 50px -28px rgba(0, 95, 249, 0.45);
+  }
+}
+
+.bloque-cabecera {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+
+  h2 {
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--color-marca-oscuro);
+  }
+
+  p {
+    margin: 0.1rem 0 0;
+    font-size: 0.92rem;
+    color: var(--color-texto-suave);
+  }
+}
+
+.paso {
+  width: 2.3rem;
+  height: 2.3rem;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2f86ff, var(--color-primario-oscuro));
+  box-shadow: 0 10px 18px -10px rgba(0, 95, 249, 0.9);
+  color: #fff;
+  font-weight: 800;
+}
+
+.rejilla {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1.2rem;
+
+  @media (max-width: 40rem) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.opcional {
+  font-weight: 400;
+  color: var(--color-icono);
+}
+
+.documento {
+  animation: aparecer-arriba 0.5s var(--ease) both;
+}
+
+.subida-fila {
+  display: flex;
+  gap: 0.6rem;
+  align-items: stretch;
+}
+
+.subida {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.95rem 1rem;
+  border: 2px dashed #a9bde0;
+  border-radius: 16px;
+  background: #f7faff;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.3s var(--ease);
+
+  svg {
+    width: 1.8rem;
+    height: 1.8rem;
+    flex: none;
+    fill: none;
+    stroke: var(--color-primario);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  &:hover,
+  &:focus-within {
+    background: #eef4ff;
+    border-color: var(--color-primario);
+    transform: translateY(-1px);
+  }
+}
+
+.subida--error {
+  border-color: var(--color-error);
+  background: #fffafa;
+}
+
+.subida-texto {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--color-marca-oscuro);
+  }
+
+  small {
+    color: var(--color-texto-suave);
+  }
+}
+
+.subida-entrada {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.quitar {
+  padding: 0 1rem;
+  border: 1.5px solid var(--color-borde);
+  border-radius: var(--radio);
+  background: #fff;
+  color: var(--color-error);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: var(--color-error-fondo);
+  }
+}
+
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+
+  @media (max-width: 40rem) {
+    .btn {
+      flex: 1;
+    }
+  }
+}
+
+.lateral {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  position: sticky;
+  top: 5.6rem;
+
+  @media (max-width: 62rem) {
+    position: static;
+  }
+}
+
+.tarjeta {
+  padding: 1.4rem;
+
+  h2 {
+    margin: 0;
+    font-size: 1.05rem;
+    color: var(--color-marca-oscuro);
+  }
+}
+
+.progreso-cabecera {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.7rem;
+}
+
+.progreso-valor {
+  font-weight: 800;
+  color: var(--color-primario);
+}
+
+.progreso {
+  height: 0.5rem;
+  margin-bottom: 1.2rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-primario-suave);
+}
+
+.progreso-barra {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #2f86ff, var(--color-acento));
+  transition: width 0.6s var(--ease);
+}
+
+.resumen {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+
+  dt {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-icono);
+  }
+
+  dd {
+    margin: 0.1rem 0 0;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+  }
+}
+
+.tarjeta--reglas {
+  background: #f1f6ff;
+  border-color: #d5e3fb;
+
+  h2 {
+    margin-bottom: 0.9rem;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.92rem;
+    line-height: 1.45;
+    color: var(--color-texto-suave);
+  }
+}
