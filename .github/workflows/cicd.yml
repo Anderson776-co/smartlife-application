@@ -147,6 +147,7 @@ jobs:
             FIREBASE_PROJECT_ID=pocfirebase-c2915
             R2_ENDPOINT=https://6b2aa7dd089d2ccd1ce24c3d6bb2eda2.r2.cloudflarestorage.com
             R2_BUCKET=smartlife-documentos
+            RESEND_FROM=no-reply@mail.smartlife.sarl
           env_vars_update_strategy: merge
           secrets: |-
             RESEND_API_KEY=resend-api-key:latest
