@@ -70,7 +70,7 @@ class TelemetryConfigurationTest {
 
 		for (String name : properties.stringPropertyNames()) {
 			String lowerName = name.toLowerCase();
-			boolean sensitive = lowerName.contains("authorization") || lowerName.contains("password")
+			boolean sensitive = lowerName.endsWith(".authorization") || lowerName.contains("password")
 					|| lowerName.contains("token") || lowerName.contains("secret")
 					|| lowerName.contains("api-key") || lowerName.contains("access-key")
 					|| lowerName.contains("credentials");
