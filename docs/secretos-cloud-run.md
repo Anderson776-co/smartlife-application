@@ -34,15 +34,30 @@ La base de datos de SmartLife es PostgreSQL en **Neon**, plan gratuito, en la cu
 - Las vistas materializadas se refrescan a mano (`db/test/07-refrescarvistas.sql`): nada las refresca solas.
 - Neon suspende la base cuando no se usa, y la primera consulta después de un rato tarda más. Conviene hacer una consulta antes de una demostración.
 - Probado el 29 de octubre de 2026: conexión desde pgAdmin con el usuario `smartlife_app` y la contraseña de la versión 3 de `db-password`, con la estructura completa visible. Falta probar la conexión desde Cloud Run.
+- Datos de prueba cargados el 30 de octubre de 2026: una urbanización, dos usuarios (`carlos@example.com`, propietario de la casa 101 del bloque A y del apartamento 202 del bloque B, y `maria@example.com`, residente del 202 del bloque B), los motivos de visita y una autorización de ejemplo. Los `external_id` de esos dos usuarios son los UID reales de sus cuentas de Firebase. El `05-datosprueba.sql` del repositorio trae UID inventados: para Neon hay que usar los reales.
+- **Los usuarios nuevos se crean a mano en Neon** (decisión del equipo; el registro de usuarios es un caso de uso aparte). El registro del frontend solo crea la cuenta en Firebase, y el login busca al usuario en Neon por su UID de Firebase (`users.user.external_id`). Para que alguien pueda entrar hay que sacar su UID de Firebase, crear su fila en `users.user` y su rol en `users.user_role`, y refrescar las vistas materializadas (`dwellings.user_owner`, `residents.user_resident` y `visits.authorizator`). Para autorizar visitas, además debe ser propietario de una vivienda o residente activo de ella.
 
 ## Firebase (inicio de sesión)
 
-- Proyecto de Firebase: `pocfirebase-c2915`.
+- Proyecto de Firebase: `pocfirebase-c2915`, **confirmado por el equipo como el definitivo**. Su nombre visible es «Smartlife-firebaseComponent»; el ID conserva `poc` porque nació como prueba de concepto y no se puede cambiar.
 - La aplicación **no usa ningún archivo de claves**: toma las credenciales de la cuenta de servicio de Cloud Run (`smartlife-runtime`), a la que se le dio el rol **Firebase Authentication Admin** (`roles/firebaseauth.admin`) dentro del proyecto de Firebase.
 - La API `identitytoolkit.googleapis.com` está activada en el proyecto de Google Cloud de la aplicación.
 - La variable `FIREBASE_PROJECT_ID` se define en `.github/workflows/cicd.yml`.
 - Nunca se debe guardar un archivo de claves de Firebase (por ejemplo `firebase-service-account.json`) en un repositorio.
+- El inicio de sesión del frontend usa correo y contraseña (activado en el proyecto); el acceso anónimo está apagado. Los dominios autorizados son los de por defecto, y no hace falta agregar `smartlife.sarl` mientras el frontend no pida enlaces de retorno en los correos de verificación.
 - Falta probar un inicio de sesión real desde Cloud Run.
+
+## Frontend (Firebase Hosting)
+
+Según el ADR-0022, el frontend (Angular) se aloja en **Firebase Hosting**, dentro del mismo proyecto de Firebase (`pocfirebase-c2915`, plan Spark, sin costo). Los registros DNS de `smartlife.sarl` y `www` apuntaban a un nombre de Vercel que no tenía ningún despliegue: es un resto y no la decisión del equipo.
+
+- Configuración en la carpeta `Frontend`: `firebase.json` (publica `dist/smartlife-frontend/browser` y reescribe todas las rutas hacia `index.html`) y `.firebaserc` (proyecto `pocfirebase-c2915`).
+- Publicación manual, hecha el 31 de octubre de 2026 desde Cloud Shell con la cuenta de Anderson: clonar la rama, `npm ci`, `npm run build` y `npx firebase-tools@latest deploy --only hosting --project pocfirebase-c2915`. Para que la herramienta de Firebase funcione desde Cloud Shell hay que activar `firebase.googleapis.com` y `firebasehosting.googleapis.com` en el proyecto de Google Cloud de la aplicación.
+- Dirección gratuita: `https://pocfirebase-c2915.web.app`. Ahí la API **no responde**, porque esa dirección no pasa por Cloudflare.
+- Dominio `smartlife.sarl`: agregado como dominio personalizado en Firebase. En Cloudflare se reemplazó el registro CNAME hacia Vercel por un registro `A` (`199.36.158.100`) y un `TXT` (`hosting-site=pocfirebase-c2915`), ambos sin proxy («DNS only») mientras Firebase verifica el dominio y emite el certificado. Cuando quede en estado «Conectado», el registro `A` se pasa a «Proxied» para que funcione la ruta `/api/*` del Worker. El registro `www` sigue apuntando a Vercel y falta corregirlo.
+- El frontend llama a la API como `/api/v1` (ruta relativa). En desarrollo lo atiende el proxy de `ng serve`; en producción lo atiende la ruta de Cloudflare `smartlife.sarl/api/*`.
+- El frontend no tiene página de destino para el enlace del QR (`/visitas/autorizaciones/<id>`): hoy esa ruta lleva al login.
+- Mientras el dominio no esté conectado, la demostración puede hacerse con el frontend local (`ng serve`), que redirige `/api` al backend local.
 
 ## Cloudflare R2 (documentos de las visitas)
 
@@ -67,18 +82,18 @@ La base de datos de SmartLife es PostgreSQL en **Neon**, plan gratuito, en la cu
 
 ## Camino de las peticiones (Cloudflare + API Gateway + Cloud Run)
 
-La API se publica en `api.smartlife.sarl`, un subdominio del dominio `smartlife.sarl` (en Cloudflare, plan gratuito). El camino de una petición es:
+La API se publica en `api.smartlife.sarl` y también en la ruta `smartlife.sarl/api/*`, ambos dentro del dominio `smartlife.sarl` (en Cloudflare, plan gratuito). El camino de una petición a la API es:
 
     Visitante -> Cloudflare (WAF) -> Worker smartlife-api-proxy -> API Gateway (Google) -> Cloud Run (privado)
 
-Es el único camino: Cloud Run no acepta peticiones sin identidad, el API Gateway exige una clave que solo conoce el Worker, y la dirección `workers.dev` del Worker está desactivada.
+La página (el resto de rutas de `smartlife.sarl`) la sirve Firebase Hosting. El único camino al backend es el de arriba: Cloud Run no acepta peticiones sin identidad, el API Gateway exige una clave que solo conoce el Worker, y la dirección `workers.dev` del Worker está desactivada.
 
 ## WAF de Cloudflare (api.smartlife.sarl)
 
 - **Reglas administradas gratuitas de Cloudflare:** activadas.
 - **Reglas personalizadas** (todas llevan la condición `http.host eq "api.smartlife.sarl"` para no afectar a `smartlife.sarl` ni a `www`, que ya están publicadas). Acción: bloquear.
   1. `api-bloquear-actuator-y-documentacion`: rutas que empiezan por `/actuator`, `/v3/api-docs` o `/swagger-ui`.
-  2. `api-bloquear-metodos-no-usados`: cualquier método HTTP distinto de GET, POST, PUT, PATCH, DELETE, OPTIONS y HEAD.
+  2. `api-bloquear-metodos-no-usados`: cualquier método HTTP distinto de GET, POST, PUT, PATCH, DELETE, OPTIONS y HEAD, en `api.smartlife.sarl` y en las rutas `/api/` de `smartlife.sarl` y `www.smartlife.sarl`.
   3. `api-bloquear-sondeos-comunes`: rutas que empiezan por `/.env`, `/.git`, `/wp-` o `/phpmyadmin`, y rutas que terminan en `.php`.
 - **Límite de peticiones:** la regla `Limit` (ya existía; el plan gratuito permite una sola) se aplica a todas las rutas del dominio: 30 peticiones cada 10 segundos por IP, acción bloquear durante 10 segundos. Cubre también la API. Varias personas en la misma red cuentan como una sola IP.
 - **Bot Fight Mode:** se dejó apagado, porque en el plan gratuito aplica a todo el dominio y puede mostrar retos que el frontend no sabe resolver.
@@ -102,7 +117,7 @@ Reenvía cada petición, tal cual, al API Gateway y le agrega la clave de API. L
           },
         };
 
-- Dominio del Worker: `api.smartlife.sarl` (dominio personalizado). La dirección `workers.dev` está **desactivada**.
+- Dominio del Worker: `api.smartlife.sarl` (dominio personalizado), y la ruta `smartlife.sarl/api/*` (con el modo de fallo «Fail closed»). La dirección `workers.dev` está **desactivada**. Falta agregar la ruta de `www.smartlife.sarl/api/*`. Cuidado al crear una ruta: la ventana de Cloudflare propone por defecto `*.smartlife.sarl/*`, que enviaría toda la página al Worker.
 
 ## API Gateway (Google Cloud)
 
@@ -128,7 +143,7 @@ Reenvía cada petición, tal cual, al API Gateway y le agrega la clave de API. L
 
 ## Variables normales (no son secretas)
 
-Van como variables de entorno del servicio de Cloud Run. Las primeras siete se definen en `.github/workflows/cicd.yml`; el resto usa los valores por defecto de `application.properties`:
+Van como variables de entorno del servicio de Cloud Run. Las primeras ocho se definen en `.github/workflows/cicd.yml`; el resto usa los valores por defecto de `application.properties`:
 
 | Variable | Valor |
 |---|---|
@@ -139,14 +154,14 @@ Van como variables de entorno del servicio de Cloud Run. Las primeras siete se d
 | `R2_ENDPOINT` | Dirección S3 de la cuenta de Cloudflare |
 | `R2_BUCKET` | `smartlife-documentos` |
 | `RESEND_FROM` | `no-reply@mail.smartlife.sarl` |
+| `CORS_ALLOWED_ORIGINS` | `https://smartlife.sarl` (hace falta aunque el frontend use la ruta de Cloudflare: el backend ve el `Origin` del navegador y lo trata como otro sitio; una sola dirección, porque una coma dentro de la variable puede interpretarse como separador en el despliegue) |
 | `DDL_AUTO` | `none` |
-| `STRAPI_URL` | vacío |
+| `STRAPI_URL` | vacío (Strapi está a cargo de Anderson) |
 | `CACHE_TYPE` | `none` (para activar Redis: `redis`) |
 | `CACHE_TTL` | `1h` |
 | `REDIS_HOST`, `REDIS_PORT`, `REDIS_USERNAME`, `REDIS_SSL` | `localhost`, `6379`, vacío, `false` |
 | `SESSION_DURATION`, `SESSION_COOKIE_NAME`, `SESSION_CHECK_REVOKED` | `5d`, `__Host-smartlife_session`, `true` |
-| `CORS_ALLOWED_ORIGINS` | `http://localhost:5173` (hay que cambiarlo por la dirección del frontend publicado) |
-| `QR_BASE_URL` | `http://localhost:5173/visitas/autorizaciones/` |
+| `QR_BASE_URL` | `http://localhost:5173/visitas/autorizaciones/` (valor de respaldo; el servidor de parámetros entrega `https://smartlife.sarl/visitas/autorizaciones/`, que tiene prioridad) |
 
 ## Cómo se conecta un secreto
 
@@ -160,6 +175,7 @@ El paso `Deploy` de `.github/workflows/cicd.yml` usa la acción `google-github-a
       R2_ENDPOINT=<direccion S3 de la cuenta de Cloudflare>
       R2_BUCKET=smartlife-documentos
       RESEND_FROM=no-reply@mail.smartlife.sarl
+      CORS_ALLOWED_ORIGINS=https://smartlife.sarl
     env_vars_update_strategy: merge
     secrets: |-
       RESEND_API_KEY=resend-api-key:latest
@@ -168,7 +184,7 @@ El paso `Deploy` de `.github/workflows/cicd.yml` usa la acción `google-github-a
       R2_SECRET_KEY=r2-secret-key:latest
     secrets_update_strategy: merge
 
-El despliegue solo corre con un push a `main`.
+El despliegue solo corre con un push a `main`. El servicio se despliega con `--memory=1Gi --max-instances=1 --cpu-boost` (más memoria que la de por defecto, una sola instancia para quedar dentro de lo gratuito y más CPU durante el arranque de Spring Boot).
 
 ## Qué hacer cuando llega una clave
 
@@ -196,9 +212,11 @@ Se usa una sola versión activa y una sola ubicación por secreto. Los secretos 
 
 ## Pendiente
 
-- Desplegar la versión nueva desde `main` (con las rutas de login y de autorizar visita) y probar Neon, Firebase y R2 desde Cloud Run.
-- Ajustar `CORS_ALLOWED_ORIGINS` y `qr-base-url` a la dirección del frontend publicado.
-- Cargar datos de prueba en Neon y refrescar las vistas materializadas.
+- Terminar de conectar `smartlife.sarl` en Firebase Hosting (verificación y certificado) y después pasar el registro `A` a «Proxied». Corregir el registro `www` (hoy apunta a Vercel) y agregar la ruta `www.smartlife.sarl/api/*` del Worker.
+- Pull Request de la rama de integración hacia `main`: la integración continua corre las pruebas, Sonar y el escaneo de seguridad de Trivy, que bloquea si encuentra vulnerabilidades graves con corrección disponible. Después, el despliegue y la primera prueba real en Cloud Run (arranque, memoria y tiempo de inicio).
+- Probar Neon, Firebase, R2 y el servidor de parámetros desde la aplicación desplegada.
+- Strapi (a cargo de Anderson): servidor, colecciones, mensajes, plantilla del correo y token. Sin él, los mensajes salen como códigos y no se envía el correo de la autorización. Cuando exista, agregar `STRAPI_URL`, el secreto `STRAPI_API_TOKEN` y `CACHE_TYPE=simple`.
+- Página de destino del QR en el frontend (`/visitas/autorizaciones/<id>`).
+- Registro de usuarios en el backend (caso de uso aparte): hoy los usuarios nuevos se crean a mano en Neon.
 - Cambiar la contraseña de `smartlife_app` en Neon (y agregar la nueva como versión de `db-password`) antes de cargar datos reales.
-- Cuando existan las cuentas de Strapi y Redis, agregar las claves y sus líneas en el `cicd.yml`.
-- Probar el envío del correo desde la aplicación: necesita la plantilla `VISIT_AUTHORIZATION_CREATED` en Strapi.
+- Telemetría: el código de OpenTelemetry está en la rama y apagado por defecto (sin variables en el despliegue). Para encenderla hace falta un destino para las métricas.

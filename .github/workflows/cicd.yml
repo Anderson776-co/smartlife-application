@@ -139,7 +139,7 @@ jobs:
           image: ${{ env.IMAGEN }}:${{ github.sha }}
           region: ${{ vars.GCP_REGION }}
           project_id: ${{ vars.GCP_PROJECT_ID }}
-          flags: --service-account=smartlife-runtime@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+          flags: --service-account=smartlife-runtime@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com --memory=1Gi --max-instances=1 --cpu-boost
           env_vars: |-
             CONFIG_SERVER_URL=https://parameter-catalog-smartlife-177841439929.us-central1.run.app
             DB_URL=jdbc:postgresql://ep-round-frost-b4icbrl3.c-6.us-east-2.aws.neon.tech/smartlife?sslmode=require
@@ -148,6 +148,7 @@ jobs:
             R2_ENDPOINT=https://6b2aa7dd089d2ccd1ce24c3d6bb2eda2.r2.cloudflarestorage.com
             R2_BUCKET=smartlife-documentos
             RESEND_FROM=no-reply@mail.smartlife.sarl
+            CORS_ALLOWED_ORIGINS=https://smartlife.sarl
           env_vars_update_strategy: merge
           secrets: |-
             RESEND_API_KEY=resend-api-key:latest
