@@ -1,0 +1,90 @@
+swagger: "2.0"
+info:
+  title: smartlife-api
+  description: Puerta de entrada de SmartLife (API Gateway de Google) hacia el servicio smartlife-application en Cloud Run.
+  version: "1.0.0"
+schemes:
+  - https
+produces:
+  - application/json
+x-google-backend:
+  address: https://smartlife-application-clfarpgyxa-uc.a.run.app
+  path_translation: APPEND_PATH_TO_ADDRESS
+  deadline: 60.0
+securityDefinitions:
+  api_key:
+    type: apiKey
+    name: x-api-key
+    in: header
+security:
+  - api_key: []
+paths:
+  /api/v1/users/sessions/csrf:
+    get:
+      summary: Entrega la cookie XSRF-TOKEN
+      operationId: csrf
+      responses:
+        "204":
+          description: Cookie entregada
+    options:
+      summary: Verificacion previa de CORS
+      operationId: csrfOptions
+      responses:
+        "200":
+          description: Respuesta de la aplicacion
+  /api/v1/users/sessions:
+    post:
+      summary: Inicio de sesion con el token de Firebase
+      operationId: login
+      consumes:
+        - application/json
+      responses:
+        "200":
+          description: Sesion creada
+    options:
+      summary: Verificacion previa de CORS
+      operationId: loginOptions
+      responses:
+        "200":
+          description: Respuesta de la aplicacion
+  /api/v1/users/sessions/me:
+    get:
+      summary: Usuario de la sesion actual
+      operationId: me
+      responses:
+        "200":
+          description: Usuario actual
+    options:
+      summary: Verificacion previa de CORS
+      operationId: meOptions
+      responses:
+        "200":
+          description: Respuesta de la aplicacion
+  /api/v1/users/sessions/logout:
+    post:
+      summary: Cierre de sesion
+      operationId: logout
+      responses:
+        "200":
+          description: Sesion cerrada
+    options:
+      summary: Verificacion previa de CORS
+      operationId: logoutOptions
+      responses:
+        "200":
+          description: Respuesta de la aplicacion
+  /api/v1/visits/authorizations:
+    post:
+      summary: Autoriza la visita de una persona, con documento adjunto opcional
+      operationId: authorizeVisit
+      consumes:
+        - multipart/form-data
+      responses:
+        "200":
+          description: Autorizacion creada
+    options:
+      summary: Verificacion previa de CORS
+      operationId: authorizeVisitOptions
+      responses:
+        "200":
+          description: Respuesta de la aplicacion
