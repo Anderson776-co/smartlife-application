@@ -41,4 +41,9 @@ public class VisitResidentJpaRepositoryAdapter implements VisitResidentRepositor
 		return List.of();
 	}
 
+	@Override
+	public boolean residesIn(final UUID residentId, final UUID propertyId) {
+		return repository.existsByIdAndPropertyId(residentId, propertyId);
+	}
+
 }

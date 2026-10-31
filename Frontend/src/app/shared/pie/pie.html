@@ -1,0 +1,25 @@
+<footer class="pie">
+  <div class="pie-contenido">
+    <div class="pie-marca">
+      <span class="pie-logo">Smart<span>Life</span></span>
+      <p>Tu unidad residencial, más conectada y en armonía.</p>
+    </div>
+
+    <nav class="pie-enlaces" aria-label="Accesos rápidos">
+      <h2>Accesos</h2>
+      <a routerLink="/inicio">Inicio</a>
+      @if (puedeAutorizar()) {
+        <a routerLink="/visitas/autorizar">Autorizar visita</a>
+      }
+    </nav>
+
+    <div class="pie-info">
+      <h2>Tu conjunto</h2>
+      <p>Gestión de visitas, reservas y pagos en un solo lugar, de forma segura.</p>
+    </div>
+  </div>
+
+  <div class="pie-legal">
+    <span>© {{ anio }} SmartLife. Todos los derechos reservados.</span>
+  </div>
+</footer>

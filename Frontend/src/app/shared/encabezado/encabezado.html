@@ -1,0 +1,42 @@
+<header class="encabezado">
+  <div class="contenido">
+    <a class="marca" routerLink="/inicio" aria-label="SmartLife, ir al inicio">
+      <svg class="marca-icono" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+        <path
+          d="M5 19 20 6l15 13v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V19Z"
+          stroke="currentColor"
+          stroke-width="3"
+          stroke-linejoin="round"
+        />
+        <path d="M15 31c0-8 5-11 12-11 0 8-5 12-12 11Z" fill="currentColor" />
+      </svg>
+      <span class="marca-texto">Smart<span>Life</span></span>
+    </a>
+
+    <nav class="nav" aria-label="Principal">
+      <a class="nav-enlace" routerLink="/inicio" routerLinkActive="activo">Inicio</a>
+      @if (puedeAutorizar()) {
+        <a class="nav-enlace" routerLink="/visitas/autorizar" routerLinkActive="activo">
+          Autorizar visita
+        </a>
+      }
+    </nav>
+
+    <div class="usuario">
+      <div class="usuario-datos">
+        <span class="usuario-correo">{{ correo() }}</span>
+        @if (rol()) {
+          <span class="usuario-rol">{{ rol() }}</span>
+        }
+      </div>
+      <span class="usuario-avatar" aria-hidden="true">{{ inicial() }}</span>
+      <button type="button" class="salir" (click)="salir()" aria-label="Cerrar sesión">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+          <path d="m16 17 5-5-5-5M21 12H9" />
+        </svg>
+        <span>Cerrar sesión</span>
+      </button>
+    </div>
+  </div>
+</header>

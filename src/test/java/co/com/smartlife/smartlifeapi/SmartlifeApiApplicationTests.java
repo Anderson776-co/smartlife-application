@@ -8,7 +8,7 @@ import org.springframework.test.context.ActiveProfiles;
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
-class DazmaApplicationTests {
+class SmartlifeApiApplicationTests {
 
     @Test
     void contextLoads() {

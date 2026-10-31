@@ -13,6 +13,7 @@ public class UserEntity {
     private String 	email;
     private Boolean emailConfirmed;
     private Boolean emailConfirmedDefaultValue;
+    private String externalId;
     private IdTypeEntity idType;
     private UrbanizationUserEntity urbanization;
 
@@ -27,6 +28,7 @@ public class UserEntity {
             final Boolean emailConfirmed,
             final Boolean emailConfirmedDefaultValue,
             final Boolean isActive,
+            final String externalId,
             final IdTypeEntity idType,
             final UrbanizationUserEntity urbanization) {
 
@@ -39,6 +41,7 @@ public class UserEntity {
         setEmail(email);
         setEmailConfirmed(emailConfirmed);
         setIsActive(isActive);
+        setExternalId(externalId);
         setIdType(idType);
         setUrbanization(urbanization);
         setEmailConfirmedDefaultValue(emailConfirmedDefaultValue);
@@ -122,6 +125,14 @@ public class UserEntity {
 
 	public void setEmailConfirmedDefaultValue(Boolean emailConfirmedDefaultValue) {
 		this.emailConfirmedDefaultValue = emailConfirmedDefaultValue;
+	}
+
+	public String getExternalId() {
+		return externalId;
+	}
+
+	public void setExternalId(String externalId) {
+		this.externalId = externalId;
 	}
 
 	public IdTypeEntity getIdType() {

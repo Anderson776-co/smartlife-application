@@ -1,4 +1,4 @@
 @org.springframework.modulith.ApplicationModule(
-    allowedDependencies = {}
+    allowedDependencies = {"crosscutting::helper", "crosscutting::exception"}
 )
 package co.com.smartlife.smartlifeapi.shared;

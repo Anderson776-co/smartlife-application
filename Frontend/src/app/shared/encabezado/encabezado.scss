@@ -1,0 +1,227 @@
+:host {
+  display: block;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.encabezado {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px) saturate(1.6);
+  border-bottom: 1px solid rgba(214, 224, 241, 0.9);
+  animation: aparecer 0.6s ease both;
+}
+
+/* La sombra aparece al bajar la página (donde el navegador lo permite) */
+@supports (animation-timeline: scroll()) {
+  .encabezado {
+    animation: sombra-scroll linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0 140px;
+  }
+}
+
+@keyframes sombra-scroll {
+  from {
+    box-shadow: 0 0 0 rgba(0, 29, 76, 0);
+  }
+  to {
+    box-shadow: 0 14px 34px -16px rgba(0, 29, 76, 0.4);
+  }
+}
+
+.contenido {
+  max-width: 74rem;
+  min-height: 4.4rem;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+  display: flex;
+  align-items: stretch;
+  gap: 1.5rem;
+}
+
+.marca {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--color-primario);
+  text-decoration: none;
+  transition: transform 0.3s var(--ease);
+
+  &:hover {
+    transform: translateX(2px);
+  }
+}
+
+.marca-icono {
+  width: 2.3rem;
+  height: 2.3rem;
+}
+
+.marca-texto {
+  font-size: 1.45rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--color-marca-oscuro);
+
+  span {
+    color: var(--color-primario);
+  }
+}
+
+.nav {
+  display: flex;
+  align-items: stretch;
+  gap: 1.75rem;
+  margin-left: 1rem;
+}
+
+.nav-enlace {
+  position: relative;
+  display: flex;
+  align-items: center;
+  color: var(--color-texto-suave);
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: var(--color-primario);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.35s var(--ease);
+  }
+
+  &:hover,
+  &.activo {
+    color: var(--color-primario);
+  }
+
+  &:hover::after,
+  &.activo::after {
+    transform: scaleX(1);
+  }
+}
+
+.usuario {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.usuario-datos {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.15rem;
+  line-height: 1.2;
+}
+
+.usuario-correo {
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.usuario-rol {
+  padding: 0.1rem 0.6rem;
+  border-radius: 999px;
+  background: var(--color-primario-suave);
+  color: var(--color-primario-oscuro);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.usuario-avatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primario), var(--color-marca-oscuro));
+  box-shadow: 0 8px 18px -8px rgba(0, 95, 249, 0.8);
+  color: #fff;
+  font-weight: 700;
+}
+
+.salir {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.85rem;
+  border: 1.5px solid var(--color-borde);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--color-marca-oscuro);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.25s var(--ease);
+
+  svg {
+    width: 1.1rem;
+    height: 1.1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform 0.25s var(--ease);
+  }
+
+  &:hover {
+    background: var(--color-primario-suave);
+    border-color: #a9bde0;
+
+    svg {
+      transform: translateX(3px);
+    }
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+@media (max-width: 52rem) {
+  .contenido {
+    flex-wrap: wrap;
+    gap: 0;
+    padding-top: 0.6rem;
+  }
+
+  .usuario {
+    min-height: 2.7rem;
+  }
+
+  .usuario-datos,
+  .salir span {
+    display: none;
+  }
+
+  .salir {
+    padding: 0.55rem;
+  }
+
+  .nav {
+    order: 3;
+    flex-basis: 100%;
+    margin: 0;
+    min-height: 2.9rem;
+    gap: 1.4rem;
+    overflow-x: auto;
+  }
+}

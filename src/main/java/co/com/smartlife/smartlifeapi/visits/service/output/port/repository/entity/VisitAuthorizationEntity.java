@@ -11,14 +11,15 @@ public class VisitAuthorizationEntity {
 	private String observation;
 	private String qrCode;
 	private String fileReference;
+	private Boolean isActive;
 	private PropertyVisitEntity property;
 	private AuthorizatorEntity authorizator;
 	private VisitorEntity visitor;
 	private VisitReasonEntity visitReason;
 	
 	public VisitAuthorizationEntity(final UUID id, final Instant authorizationStartDate, final Instant authorizationEndDate,
-			final Instant registerDate, final String observation, final String qrCode, final String fileReference, final PropertyVisitEntity property, 
-			final AuthorizatorEntity authorizator, final VisitorEntity visitor, final VisitReasonEntity visitReason) {
+			final Instant registerDate, final String observation, final String qrCode, final String fileReference, final Boolean isActive,
+			final PropertyVisitEntity property, final AuthorizatorEntity authorizator, final VisitorEntity visitor, final VisitReasonEntity visitReason) {
 		setId(id);
 		setAuthorizationStartDate(authorizationStartDate);
 		setAuthorizationEndDate(authorizationEndDate);
@@ -26,6 +27,7 @@ public class VisitAuthorizationEntity {
 		setObservation(observation);
 		setQrCode(qrCode);
 		setFileReference(fileReference);
+		setIsActive(isActive);
 		setProperty(property);
 		setAuthorizator(authorizator);
 		setVisitReason(visitReason);
@@ -86,6 +88,14 @@ public class VisitAuthorizationEntity {
 
 	public void setFileReference(String fileReference) {
 		this.fileReference = fileReference;
+	}
+
+	public Boolean getIsActive() {
+		return isActive;
+	}
+
+	public void setIsActive(Boolean isActive) {
+		this.isActive = isActive;
 	}
 
 	public PropertyVisitEntity getProperty() {

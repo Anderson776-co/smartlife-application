@@ -41,5 +41,10 @@ public class PropertyVisitJpaRepositoryAdapter implements PropertyVisitRepositor
 	public List<PropertyVisitEntity> findByFilter(PropertyVisitEntity entity) {
 		return List.of();
 	}
+
+	@Override
+	public boolean isOwnedBy(final UUID propertyId, final UUID ownerId) {
+		return repository.existsByIdAndOwnerId(propertyId, ownerId);
+	}
 	
 }
