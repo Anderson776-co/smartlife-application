@@ -19,6 +19,8 @@ Cada secreto está en una sola ubicación (`us-central1`) y con cifrado administ
 | `R2_SECRET_KEY` | `r2-secret-key` | Con valor (versión 1) y conectado en el despliegue |
 | `STRAPI_API_TOKEN` | `strapi-api-token` | Con valor (Anderson confirmó que tiene versión) y conectado en el despliegue: es el token que permite a la aplicación leer el catálogo de Strapi |
 | `REDIS_PASSWORD` | `redis-password` | Con valor (versión 1): el token de la base de Upstash, y conectado en el despliegue |
+| `CONFIG_WEBHOOK_SECRET` | `config-webhook-secret` | Con valor (versión 1) y conectado en el despliegue: es el mismo que tiene el webhook de GitHub del repositorio de parámetros (ver la sección de Webhooks) |
+| `STRAPI_WEBHOOK_SECRET` | `strapi-webhook-secret` | Conectado en el despliegue; Anderson debe confirmar que tiene al menos una versión y registrar el mismo valor en el webhook de Strapi |
 | `FIREBASE_CREDENTIALS_BASE64` | No se usa | El adaptador usa las credenciales de la cuenta de servicio de Cloud Run |
 
 ## Base de datos (Neon)
@@ -107,6 +109,22 @@ Según el ADR-0036, la caché es Redis. Guarda los mensajes y las plantillas de 
 - Si cambia la persona que administra la cuenta de Upstash, hay que crear la base o el token en la cuenta nueva y guardar el token como una versión nueva de `redis-password` (se lee con `:latest`, así que no hay que tocar el `cicd.yml`).
 - La alternativa sin servidor es `CACHE_TYPE=simple`, una caché en la memoria de la aplicación: sin vencimiento, una por instancia y se pierde al reiniciar. El ADR-0036 la descartó, pero sirve de respaldo.
 
+## Webhooks entrantes (mantienen al día lo que el backend guarda en memoria)
+
+El backend recibe dos webhooks para no tener que reiniciarse cuando cambia un texto de Strapi o un parámetro. Los dos son `POST`, no usan sesión ni cookie y se autentican con un secreto. Si el secreto no está configurado, el backend rechaza todo (falla cerrado), y las comparaciones son de tiempo constante.
+
+| Webhook | Ruta | Quién lo envía | Cómo se autentica | Qué hace |
+|---|---|---|---|---|
+| Strapi | `/api/v1/internal/webhooks/strapi` | Strapi, al publicar o cambiar un mensaje o una plantilla | Cabecera `X-Webhook-Secret` con el valor de `strapi-webhook-secret` | Borra de la caché (Redis) el texto que cambió, para que se vuelva a pedir a Strapi |
+| Parámetros | `/api/v1/internal/webhooks/config` | GitHub, con un `push` al repositorio de parámetros | Firma HMAC-SHA256 del cuerpo en `X-Hub-Signature-256`, calculada con `config-webhook-secret` | Si el `push` es a la rama vigilada (`CONFIG_WEBHOOK_REF`, por defecto `refs/heads/main`), vuelve a leer los parámetros del servidor de configuración, sin reiniciar; los demás eventos y ramas se ignoran |
+
+- Las dos rutas llegan por Cloudflare, el Worker y el API Gateway (configuración activa `smartlife-config-3`, con las siete rutas) y están en el contrato `infra/api-gateway/openapi2.yaml`. El WAF y el límite de peticiones de Cloudflare no las bloquean: la entrega de GitHub llegó hasta el gateway.
+- Seguridad: los webhooks tienen su propia cadena de filtros de Spring Security (`webhookFilterChain`, sin estado, sin el filtro de la cookie de sesión, que rechaza cualquier otra ruta). En esa cadena se desactiva CSRF, porque estas peticiones no dependen de una sesión del navegador; en el resto de la API CSRF sigue completo. La regla S4502 de Sonar se declara aceptada en el código con su justificación.
+- **Webhook de GitHub (creado el 1 de noviembre de 2026 por Mateo, propietario del repositorio):** `mateoguerramarin-dotcom/Parameter-Catalog-SmartLife` > Settings > Webhooks. URL `https://api.smartlife.sarl/api/v1/internal/webhooks/config`, tipo `application/json`, verificación SSL activada, solo el evento `push`, activo, y como secreto el valor de `config-webhook-secret`. El `ping` inicial dio *timeout* (algo pasajero) y la reentrega dio `404` en 0,39 s, que era lo esperado porque la aplicación nueva todavía no estaba desplegada.
+- El servidor de parámetros lee los valores directamente de ese repositorio (rama `main`), así que un `push` a `main` cambia lo que sirve; el webhook avisa al backend para que los recargue. Cualquier `push` a `main` del repositorio dispara la recarga, aunque toque el `Dockerfile` o el código del servidor: es inofensivo (recarga los mismos valores).
+- Cómo comprobarlo, una vez desplegada la aplicación nueva: en Recent Deliveries del webhook, **Redeliver** del `ping` debe dar `200`. Después, un cambio real de un valor de `smartlife-api.yaml` en `main` debe dar `200` o `202`, y el registro del backend debe decir «Parámetros recargados». Si da `401`, el secreto del webhook no coincide con el del backend; si da `403`, hay que revisar las reglas del WAF de Cloudflare; si da *timeout*, la aplicación estaba dormida (GitHub espera 10 segundos): reentregar.
+- Si se cambia el valor de un secreto de webhook, hay que crear una versión nueva en Secret Manager, actualizar el secreto en el emisor (GitHub o Strapi) y reiniciar o redesplegar la aplicación, porque las instancias ya encendidas conservan el valor que leyeron al arrancar.
+
 ## Camino de las peticiones (Cloudflare + API Gateway + Cloud Run)
 
 La API se publica en `api.smartlife.sarl` y también en la ruta `smartlife.sarl/api/*`, ambos dentro del dominio `smartlife.sarl` (en Cloudflare, plan gratuito). El camino de una petición a la API es:
@@ -148,14 +166,15 @@ Reenvía cada petición, tal cual, al API Gateway y le agrega la clave de API. L
 
 ## API Gateway (Google Cloud)
 
-- API `smartlife-api`, configuración `smartlife-config-1` y gateway `smartlife-gateway` en `us-central1`. Dirección: `smartlife-gateway-29p679a1.uc.gateway.dev`.
+- API `smartlife-api`, gateway `smartlife-gateway` en `us-central1` y configuración activa `smartlife-config-3` (comprobado el 1 de noviembre de 2026; trae las siete rutas de abajo). Dirección: `smartlife-gateway-29p679a1.uc.gateway.dev`.
 - El contrato (Swagger 2.0) está en `infra/api-gateway/openapi2.yaml`. Solo define las rutas que expone la aplicación; cualquier otra ruta recibe `404` del gateway:
   - `GET /api/v1/users/sessions/csrf`
   - `POST /api/v1/users/sessions`
   - `GET /api/v1/users/sessions/me`
   - `POST /api/v1/users/sessions/logout`
   - `POST /api/v1/visits/authorizations`
-  - y la verificación previa de CORS (`OPTIONS`) de cada una. El CORS lo resuelve la propia aplicación, no el gateway.
+  - `POST /api/v1/internal/webhooks/strapi` y `POST /api/v1/internal/webhooks/config` (webhooks entrantes, ver su sección)
+  - y la verificación previa de CORS (`OPTIONS`) de las cinco primeras. El CORS lo resuelve la propia aplicación, no el gateway.
 - Plazo máximo de respuesta del gateway: 60 segundos (la primera petición a Cloud Run "frío" puede tardar).
 - Cuenta de servicio del gateway: `smartlife-gateway@project-078c9c72-e891-42db-98c.iam.gserviceaccount.com`, con el rol `roles/run.invoker` **solo sobre el servicio** `smartlife-application`. El servicio de Cloud Run sigue siendo privado (no tiene `allUsers`).
 - Clave de API: `smartlife-worker-cloudflare`, limitada solo al servicio del gateway. Sin esa clave, el gateway responde `401`.
@@ -163,10 +182,10 @@ Reenvía cada petición, tal cual, al API Gateway y le agrega la clave de API. L
   - `api.smartlife.sarl`: llega a la aplicación (la versión desplegada hoy viene de `main` y no tiene todavía las rutas nuevas, por eso responde `404` de Spring).
   - Gateway sin clave: `401`. `run.app` directo: `403`. `workers.dev`: `404`.
   - `/actuator/health` por `api.smartlife.sarl`: lo bloquea el WAF.
-- **Si se agrega una ruta a la aplicación**, hay que agregarla al contrato y crear una configuración nueva:
+- **Si se agrega una ruta a la aplicación**, hay que agregarla al contrato y crear una configuración nueva (el ejemplo usa `smartlife-config-4`, la siguiente a la activa; antes se ve cuál existe con `gcloud api-gateway api-configs list --api=smartlife-api`):
 
-        gcloud api-gateway api-configs create smartlife-config-2 --api=smartlife-api --openapi-spec=infra/api-gateway/openapi2.yaml --backend-auth-service-account=smartlife-gateway@project-078c9c72-e891-42db-98c.iam.gserviceaccount.com --project=project-078c9c72-e891-42db-98c
-        gcloud api-gateway gateways update smartlife-gateway --api=smartlife-api --api-config=smartlife-config-2 --location=us-central1 --project=project-078c9c72-e891-42db-98c
+        gcloud api-gateway api-configs create smartlife-config-4 --api=smartlife-api --openapi-spec=infra/api-gateway/openapi2.yaml --backend-auth-service-account=smartlife-gateway@project-078c9c72-e891-42db-98c.iam.gserviceaccount.com --project=project-078c9c72-e891-42db-98c
+        gcloud api-gateway gateways update smartlife-gateway --api=smartlife-api --api-config=smartlife-config-4 --location=us-central1 --project=project-078c9c72-e891-42db-98c
 
 ## Variables normales (no son secretas)
 
@@ -187,6 +206,7 @@ Van como variables de entorno del servicio de Cloud Run. Las que aparecen en el 
 | `CACHE_TYPE` | `redis` (definida en el `cicd.yml`; `none` apaga la caché y `simple` usa una caché en memoria, sin vencimiento) |
 | `CACHE_TTL` | `1h` |
 | `REDIS_HOST`, `REDIS_PORT`, `REDIS_USERNAME`, `REDIS_SSL` | `rapid-sculpin-44456.upstash.io`, `6379`, `default`, `true` (definidas en el `cicd.yml`) |
+| `CONFIG_WEBHOOK_REF` | `refs/heads/main` (por defecto): la rama del repositorio de parámetros cuyo `push` recarga los parámetros |
 | `OTLP_METRICS_ENABLED`, `OTLP_TRACING_ENABLED` | `false`: la telemetría está apagada (ver Pendiente) |
 | `SESSION_DURATION`, `SESSION_COOKIE_NAME`, `SESSION_CHECK_REVOKED` | `5d`, `__Host-smartlife_session`, `true` |
 | `QR_BASE_URL` | `http://localhost:5173/visitas/autorizaciones/` (valor de respaldo; el servidor de parámetros entrega `https://smartlife.sarl/visitas/autorizaciones/`, que tiene prioridad) |
@@ -218,6 +238,8 @@ El paso `Deploy` de `.github/workflows/cicd.yml` usa la acción `google-github-a
       R2_SECRET_KEY=r2-secret-key:latest
       STRAPI_API_TOKEN=strapi-api-token:latest
       REDIS_PASSWORD=redis-password:latest
+      STRAPI_WEBHOOK_SECRET=strapi-webhook-secret:latest
+      CONFIG_WEBHOOK_SECRET=config-webhook-secret:latest
     secrets_update_strategy: merge
 
 El despliegue solo corre con un push a `main`. El servicio se despliega con `--memory=1Gi --max-instances=1 --cpu-boost` (más memoria que la de por defecto, una sola instancia para quedar dentro de lo gratuito y más CPU durante el arranque de Spring Boot).
@@ -259,4 +281,6 @@ La cuenta de Google Cloud está en **prueba gratuita**: tiene un crédito de 1.0
 - Página de destino del QR en el frontend (`/visitas/autorizaciones/<id>`).
 - Registro de usuarios en el backend (caso de uso aparte): hoy los usuarios nuevos se crean a mano en Neon.
 - Cambiar la contraseña de `smartlife_app` en Neon (y agregar la nueva como versión de `db-password`) antes de cargar datos reales.
+- Webhooks: tras el primer despliegue de la aplicación nueva, **reentregar** el `ping` del webhook de GitHub (debe dar `200`) y hacer una prueba real cambiando un valor de `smartlife-api.yaml`. Anderson debe registrar el webhook de Strapi (ruta `/strapi`, cabecera `X-Webhook-Secret`) y confirmar que `strapi-webhook-secret` tiene versión y permiso para `smartlife-runtime`.
+- Rotar `config-webhook-secret` antes de cargar datos reales: su valor se mostró en una conversación de trabajo el 1 de noviembre de 2026. Se crea una versión nueva, se desactiva la anterior y se actualiza el secreto del webhook de GitHub (Settings > Webhooks > Edit > Change secret).
 - Telemetría (ADR-0030): el código de OpenTelemetry está conectado al caso de uso de autorizar visita (autorizaciones creadas y fallidas, correos no enviados y duración) y apagado por defecto. Están listos el collector (`infra/otel-collector`: configuración y Dockerfile), las APIs de Cloud Monitoring y Cloud Trace y los roles `roles/monitoring.metricWriter` y `roles/cloudtrace.agent` de `smartlife-runtime`. Falta construir la imagen del collector en la integración continua, desplegar Cloud Run con dos contenedores (la aplicación y el collector) y encender `OTLP_METRICS_ENABLED` y `OTLP_TRACING_ENABLED`; las direcciones por defecto ya apuntan al collector (`localhost:4318`). Las trazas tienen capa gratuita en Cloud Trace; las métricas de Managed Service for Prometheus cobran por muestra y se descuentan del crédito de prueba.
