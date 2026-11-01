@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -32,16 +33,33 @@ public class SecurityConfiguration {
     private static final String WEBHOOKS = "/api/v1/internal/webhooks/**";
     private static final String FORBIDDEN = "{\"messages\":[\"Acceso denegado\"],\"data\":[],\"responseSucceded\":false}";
 
-    // CSRF sigue activo en todas las rutas. Solo se exceptuan los webhooks (servidor a servidor): no usan cookie
-    // de sesion y se autentican con un secreto en una cabecera o con una firma HMAC, que un sitio externo no puede
-    // poner ni conocer. Por eso la regla S4502 de Sonar se declara aceptada aqui.
-    @SuppressWarnings("java:S4502")
+    /**
+     * Cadena propia de los webhooks entrantes (Strapi y GitHub). Es sin estado, no lee la cookie de sesion
+     * (no lleva {@link SessionCookieFilter}) y cada webhook se autentica con su secreto o firma en el
+     * controlador. Como estas peticiones no dependen de una sesion del navegador, no hay nada que un ataque
+     * CSRF pueda aprovechar, y el resto de la API conserva la proteccion CSRF completa.
+     */
+    @SuppressWarnings("java:S4502")   // excepcion de CSRF declarada y justificada: ver la explicacion de arriba
+    @Bean
+    @Order(1)
+    SecurityFilterChain webhookFilterChain(HttpSecurity http) throws Exception {
+        http
+            .securityMatcher(WEBHOOKS)
+            .csrf(AbstractHttpConfigurer::disable)   // NOSONAR java:S4502 - solo en la cadena de webhooks: sin sesion ni cookie, se autentican con secreto o firma
+            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .httpBasic(AbstractHttpConfigurer::disable)
+            .formLogin(AbstractHttpConfigurer::disable)
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(HttpMethod.POST, WEBHOOKS).permitAll()   // el controlador valida el secreto de cada webhook
+                .anyRequest().denyAll());
+        return http.build();
+    }
+
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http, ValidateSessionInputPort validateSession,
             SessionCookieManager cookies) throws Exception {
         http
-            .csrf(csrf -> csrf.spa()   // cookie XSRF-TOKEN + header X-XSRF-TOKEN
-                .ignoringRequestMatchers(WEBHOOKS))   // NOSONAR java:S4502 - los webhooks no traen sesion ni cookie: se autentican con un secreto
+            .csrf(csrf -> csrf.spa())   // cookie XSRF-TOKEN + header X-XSRF-TOKEN
             .cors(Customizer.withDefaults())
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .httpBasic(AbstractHttpConfigurer::disable)
@@ -49,7 +67,6 @@ public class SecurityConfiguration {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.POST, "/api/v1/users/sessions").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/users/sessions/csrf").permitAll()
-                .requestMatchers(HttpMethod.POST, WEBHOOKS).permitAll()   // el controlador valida el secreto de cada webhook
                 .requestMatchers("/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .anyRequest().authenticated())
             .exceptionHandling(e -> e

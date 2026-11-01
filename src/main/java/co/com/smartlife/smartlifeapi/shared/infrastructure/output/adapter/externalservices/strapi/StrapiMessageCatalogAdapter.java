@@ -43,8 +43,6 @@ public class StrapiMessageCatalogAdapter implements MessageCatalogOutputPort {
 			"No se encontró en el catálogo de Strapi el mensaje con código: ";
 	private static final String DEFAULT_UNAVAILABLE_MESSAGE =
 			"No fue posible consultar el catálogo de mensajes de Strapi para el código: ";
-	private static final String DEFAULT_NOT_CONFIGURED_MESSAGE =
-			"La URL de Strapi no está configurada (strapi.url). Código solicitado: ";
 	
 	private final RestClient restClient;
 	private final MessageCatalogMapper mapper;

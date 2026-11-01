@@ -88,3 +88,28 @@ paths:
       responses:
         "200":
           description: Respuesta de la aplicacion
+  /api/v1/internal/webhooks/strapi:
+    post:
+      summary: Webhook de Strapi para invalidar la cache del catalogo
+      operationId: strapiWebhook
+      consumes:
+        - application/json
+      responses:
+        "200":
+          description: Evento procesado
+        "401":
+          description: Secreto invalido
+  /api/v1/internal/webhooks/config:
+    post:
+      summary: Webhook de GitHub para recargar los parametros
+      operationId: configWebhook
+      consumes:
+        - application/json
+      responses:
+        "200":
+          description: Ping o evento ignorado
+        "202":
+          description: Recarga aceptada
+        "401":
+          description: Firma invalida
+  

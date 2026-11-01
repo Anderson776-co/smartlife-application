@@ -9,6 +9,8 @@ import co.com.smartlife.smartlifeapi.crosscutting.specification.generics.IsUUIDP
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogProvider;
 
 public final class IsUUIDPresentRule implements Rule {
+
+	private static final String USER_ERROR_CODE = "USER_ERROR_TRYING_TO_MAKE_AN_OPERATION";
 	
 	private static final Rule instance = new IsUUIDPresentRule();
 	
@@ -23,13 +25,13 @@ public final class IsUUIDPresentRule implements Rule {
 	@Override
 	public void execute(final Object... data) {
 		if(!new IsMandatorySpecification().isSatisfiedBy(data)) {
-			var userMessage = MessageCatalogProvider.getContent("USER_ERROR_TRYING_TO_MAKE_AN_OPERATION");
+			var userMessage = MessageCatalogProvider.getContent(USER_ERROR_CODE);
             var technicalMessage = MessageCatalogProvider.getContent("NULL_PARAMETERS_IS_UUID_PRESENT_RULE");
             throw SmartLifeException.create(userMessage, technicalMessage);
 	    }
 	
 	    if (data.length < 1) {
-	    		var userMessage = MessageCatalogProvider.getContent("USER_ERROR_TRYING_TO_MAKE_AN_OPERATION");
+	    		var userMessage = MessageCatalogProvider.getContent(USER_ERROR_CODE);
 	    		var technicalMessage = MessageCatalogProvider.getContent("INCOMPLETE_PARAMETERS_IS_UUID_PRESENT_RULE");
 	    		throw SmartLifeException.create(userMessage, technicalMessage);
 		}
@@ -39,8 +41,8 @@ public final class IsUUIDPresentRule implements Rule {
 	    var isUUIDPresentSpecification = new IsUUIDPresentSpecification();
 	    
 	    if(!isUUIDPresentSpecification.isSatisfiedBy(uuidData)) {
-	    	var userMessage = MessageCatalogProvider.getContent("USER_ERROR_TRYING_TO_MAKE_AN_OPERATION");
-	    	var technicalMessage = MessageCatalogProvider.getContent("TECHNICAL_MESSAGE_UUID_IS_NOT_PRESENT");;
+	    	var userMessage = MessageCatalogProvider.getContent(USER_ERROR_CODE);
+	    	var technicalMessage = MessageCatalogProvider.getContent("TECHNICAL_MESSAGE_UUID_IS_NOT_PRESENT");
 	    	throw SmartLifeException.create(userMessage, technicalMessage);
 	    }
 	}
