@@ -1,4 +1,4 @@
-import { provideHttpClient } from '@angular/common/http';
+import { HttpErrorResponse, provideHttpClient } from '@angular/common/http';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { Auth } from '@angular/fire/auth';
@@ -85,9 +85,12 @@ describe('AutorizarVisita', () => {
     expect(pagina.textContent).toContain('abc-123');
   });
 
-  it('exige el documento cuando el motivo lo pide', async () => {
+  it('no valida en el navegador: envía aunque falten datos y deja que el backend responda', async () => {
+    autorizar.mockRejectedValue(
+      new HttpErrorResponse({ status: 400, error: { messages: ['Mensaje del catálogo'] } }),
+    );
     const { fixture, formulario, pagina } = await crear(['RESIDENT']);
-    formulario.patchValue({ propiedadId: CASA_101, motivoId: SERVICIO_TECNICO, ...visitanteValido });
+    formulario.patchValue({ propiedadId: CASA_101, motivoId: SERVICIO_TECNICO });
     fixture.detectChanges();
     expect(pagina.querySelector('input[type="file"]')).not.toBeNull();
 
@@ -95,11 +98,12 @@ describe('AutorizarVisita', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(autorizar).not.toHaveBeenCalled();
-    expect(pagina.textContent).toContain('Este motivo exige adjuntar un documento.');
+    expect(autorizar).toHaveBeenCalledTimes(1);
+    expect(autorizar.mock.calls[0][1]).toBeNull();
+    expect(pagina.querySelector('[role="alert"]')?.textContent).toContain('Mensaje del catálogo');
   });
 
-  it('no envía si la duración supera las 24 horas', async () => {
+  it('envía duraciones largas sin bloquearlas: la regla es del backend', async () => {
     const { fixture, formulario, pagina } = await crear(['OWNER']);
     const pad = (n: number) => String(n).padStart(2, '0');
     const local = (f: Date) =>
@@ -119,7 +123,23 @@ describe('AutorizarVisita', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(autorizar).not.toHaveBeenCalled();
-    expect(pagina.textContent).toContain('no puede durar más de 24 horas');
+    expect(autorizar).toHaveBeenCalledTimes(1);
+  });
+
+  it('muestra el mensaje del backend también cuando responde 403', async () => {
+    autorizar.mockRejectedValue(
+      new HttpErrorResponse({ status: 403, error: { messages: ['Sin acceso según el catálogo'] } }),
+    );
+    const { fixture, formulario, pagina } = await crear(['OWNER']);
+    formulario.patchValue({ propiedadId: CASA_101, motivoId: VISITA_FAMILIAR, ...visitanteValido });
+    fixture.detectChanges();
+
+    (pagina.querySelector('form') as HTMLFormElement).dispatchEvent(new Event('submit'));
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(pagina.querySelector('[role="alert"]')?.textContent).toContain(
+      'Sin acceso según el catálogo',
+    );
   });
 });
