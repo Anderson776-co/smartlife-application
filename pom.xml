@@ -46,7 +46,7 @@
 
 		<!-- Librerías -->
 		<mapstruct.version>1.6.3</mapstruct.version>
-		<jackson2-core.version>2.21.7</jackson2-core.version>
+		<jackson2-core.version>2.22.4</jackson2-core.version>
 		<aws-sdk.version>2.31.0</aws-sdk.version>
 		<firebase-admin.version>9.11.0</firebase-admin.version>
 		<zxing.version>3.5.3</zxing.version>
