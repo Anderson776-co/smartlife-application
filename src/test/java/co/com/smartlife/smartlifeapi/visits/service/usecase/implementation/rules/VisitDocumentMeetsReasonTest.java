@@ -42,7 +42,8 @@ class VisitDocumentMeetsReasonTest {
 
 	@Test
 	void shouldRejectAMissingDocument() {
-		assertThrows(SmartLifeException.class, () -> run(REQUIRES, AttachedDocumentDomain.empty()));
+		final AttachedDocumentDomain empty = AttachedDocumentDomain.empty();
+		assertThrows(SmartLifeException.class, () -> run(REQUIRES, empty));
 		assertThrows(SmartLifeException.class, () -> run(REQUIRES, null));
 	}
 
@@ -58,8 +59,8 @@ class VisitDocumentMeetsReasonTest {
 
 	@Test
 	void shouldRejectADocumentOverTheMaximumSize() {
-		assertThrows(SmartLifeException.class,
-				() -> run(REQUIRES, document("application/pdf", "%PDF-" + "x".repeat(40))));
+		final String content = "%PDF-" + "x".repeat(40);
+		assertThrows(SmartLifeException.class, () -> run(REQUIRES, document("application/pdf", content)));
 	}
 
 	@Test

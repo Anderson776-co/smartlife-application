@@ -32,7 +32,7 @@ public class InvalidateCatalogCacheUseCaseImpl implements InvalidateCatalogCache
 
 		if (input.hasEntry()) {
 			catalogCache.evict(input.catalog(), input.code(), input.locale());
-			LOGGER.info("Caché invalidada: catálogo {}, código {} ({})", input.catalog(), input.code(), input.locale());
+			LOGGER.info("Caché invalidada: una entrada del catálogo {}", input.catalog());
 		} else {
 			catalogCache.evictAll(input.catalog());
 			LOGGER.info("Caché invalidada: catálogo {} completo", input.catalog());

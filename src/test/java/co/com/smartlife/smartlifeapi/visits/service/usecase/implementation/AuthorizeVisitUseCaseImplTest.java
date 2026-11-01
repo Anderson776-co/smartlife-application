@@ -153,8 +153,8 @@ class AuthorizeVisitUseCaseImplTest {
 
 	@Test
 	void shouldRejectWhenTheReasonRequiresADocumentAndNoneIsAttached() {
-		final SmartLifeException exception = assertThrows(SmartLifeException.class,
-				() -> useCase.execute(request(technicalReasonId, AttachedDocumentDomain.empty())));
+		final VisitAuthorizationDomain command = request(technicalReasonId, AttachedDocumentDomain.empty());
+		final SmartLifeException exception = assertThrows(SmartLifeException.class, () -> useCase.execute(command));
 
 		assertEquals(SmartLifeException.Type.BUSINESS, exception.getType());
 		verify(documentStorage, never()).store(any(), any());
@@ -167,7 +167,8 @@ class AuthorizeVisitUseCaseImplTest {
 		when(documentStorage.store(any(UUID.class), any())).thenReturn(DOCUMENT_KEY);
 		doThrow(new IllegalStateException("db down")).when(registerAuthorization).register(any(), anyBoolean());
 
-		assertThrows(IllegalStateException.class, () -> useCase.execute(request(technicalReasonId, pdf())));
+		final VisitAuthorizationDomain command = request(technicalReasonId, pdf());
+		assertThrows(IllegalStateException.class, () -> useCase.execute(command));
 
 		verify(documentStorage).discard(DOCUMENT_KEY);
 		verify(notifier, never()).notifyVisitor(any());
@@ -177,8 +178,8 @@ class AuthorizeVisitUseCaseImplTest {
 	void shouldNotTouchTheStorageWhenPersistenceFailsWithoutDocument() {
 		doThrow(new IllegalStateException("db down")).when(registerAuthorization).register(any(), anyBoolean());
 
-		assertThrows(IllegalStateException.class,
-				() -> useCase.execute(request(familyReasonId, AttachedDocumentDomain.empty())));
+		final VisitAuthorizationDomain command = request(familyReasonId, AttachedDocumentDomain.empty());
+		assertThrows(IllegalStateException.class, () -> useCase.execute(command));
 
 		verify(documentStorage, never()).discard(any());
 	}
@@ -197,8 +198,8 @@ class AuthorizeVisitUseCaseImplTest {
 	void shouldRejectWhenTheAuthorizatorHasNoAccessToTheProperty() {
 		when(verifyAccess.execute(any(VisitAuthorizationAccessDomain.class))).thenReturn(false);
 
-		final SmartLifeException exception = assertThrows(SmartLifeException.class,
-				() -> useCase.execute(request(familyReasonId, AttachedDocumentDomain.empty())));
+		final VisitAuthorizationDomain command = request(familyReasonId, AttachedDocumentDomain.empty());
+		final SmartLifeException exception = assertThrows(SmartLifeException.class, () -> useCase.execute(command));
 
 		assertEquals(SmartLifeException.Type.AUTHORIZATION, exception.getType());
 		verify(registerAuthorization, never()).register(any(), anyBoolean());
@@ -209,8 +210,8 @@ class AuthorizeVisitUseCaseImplTest {
 		when(authorizatorRepository.findById(authorizatorId)).thenReturn(
 				Optional.of(new AuthorizatorEntity(authorizatorId, "Ana Ruiz", false, urbanizationId)));
 
-		final SmartLifeException exception = assertThrows(SmartLifeException.class,
-				() -> useCase.execute(request(familyReasonId, AttachedDocumentDomain.empty())));
+		final VisitAuthorizationDomain command = request(familyReasonId, AttachedDocumentDomain.empty());
+		final SmartLifeException exception = assertThrows(SmartLifeException.class, () -> useCase.execute(command));
 
 		assertEquals(SmartLifeException.Type.BUSINESS, exception.getType());
 		verify(registerAuthorization, never()).register(any(), anyBoolean());
@@ -220,16 +221,16 @@ class AuthorizeVisitUseCaseImplTest {
 	void shouldRejectWhenThePropertyDoesNotExist() {
 		when(propertyVisitRepository.findById(propertyId)).thenReturn(Optional.empty());
 
-		assertThrows(SmartLifeException.class,
-				() -> useCase.execute(request(familyReasonId, AttachedDocumentDomain.empty())));
+		final VisitAuthorizationDomain command = request(familyReasonId, AttachedDocumentDomain.empty());
+		assertThrows(SmartLifeException.class, () -> useCase.execute(command));
 
 		verify(registerAuthorization, never()).register(any(), anyBoolean());
 	}
 
 	@Test
 	void shouldRejectWhenTheVisitReasonDoesNotExist() {
-		assertThrows(SmartLifeException.class,
-				() -> useCase.execute(request(UUID.randomUUID(), AttachedDocumentDomain.empty())));
+		final VisitAuthorizationDomain command = request(UUID.randomUUID(), AttachedDocumentDomain.empty());
+		assertThrows(SmartLifeException.class, () -> useCase.execute(command));
 
 		verify(registerAuthorization, never()).register(any(), anyBoolean());
 	}
@@ -240,8 +241,8 @@ class AuthorizeVisitUseCaseImplTest {
 		when(visitAuthorizationRepository.existsOverlappingAuthorization(eq(newVisitor.getId()), eq(propertyId),
 				any(), any())).thenReturn(true);
 
-		final SmartLifeException exception = assertThrows(SmartLifeException.class,
-				() -> useCase.execute(request(technicalReasonId, pdf())));
+		final VisitAuthorizationDomain command = request(technicalReasonId, pdf());
+		final SmartLifeException exception = assertThrows(SmartLifeException.class, () -> useCase.execute(command));
 
 		assertEquals(SmartLifeException.Type.BUSINESS, exception.getType());
 		verify(documentStorage, never()).store(any(), any());
@@ -280,8 +281,8 @@ class AuthorizeVisitUseCaseImplTest {
 
 	@Test
 	void shouldCountAFailedAuthorizationWhenTheRequestIsRejected() {
-		assertThrows(SmartLifeException.class,
-				() -> useCase.execute(request(technicalReasonId, AttachedDocumentDomain.empty())));
+		final VisitAuthorizationDomain command = request(technicalReasonId, AttachedDocumentDomain.empty());
+		assertThrows(SmartLifeException.class, () -> useCase.execute(command));
 
 		verify(telemetry).incrementCounter("smartlife.visits.authorizations.failed");
 		verify(telemetry).recordDuration(eq("smartlife.visits.authorizations.duration"), any(Duration.class));
@@ -292,8 +293,8 @@ class AuthorizeVisitUseCaseImplTest {
 	void shouldCountAFailedAuthorizationWhenPersistenceFails() {
 		doThrow(new IllegalStateException("db down")).when(registerAuthorization).register(any(), anyBoolean());
 
-		assertThrows(IllegalStateException.class,
-				() -> useCase.execute(request(familyReasonId, AttachedDocumentDomain.empty())));
+		final VisitAuthorizationDomain command = request(familyReasonId, AttachedDocumentDomain.empty());
+		assertThrows(IllegalStateException.class, () -> useCase.execute(command));
 
 		verify(telemetry).incrementCounter("smartlife.visits.authorizations.failed");
 		verify(telemetry, never()).incrementCounter("smartlife.visits.authorizations.created");

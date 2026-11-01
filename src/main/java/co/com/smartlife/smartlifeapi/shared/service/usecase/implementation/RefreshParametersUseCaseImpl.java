@@ -30,7 +30,7 @@ public class RefreshParametersUseCaseImpl implements RefreshParametersUseCase {
 	@Override
 	public void execute(final ParametersChangeDomain input) {
 		if (input.event() != ParametersChangeEventDomain.PUSH || !watchedReference.equals(input.reference())) {
-			LOGGER.debug("Webhook de parámetros ignorado: evento {} sobre {}", input.event(), input.reference());
+			LOGGER.debug("Webhook de parámetros ignorado: evento {} o rama no vigilada", input.event());
 			return;
 		}
 

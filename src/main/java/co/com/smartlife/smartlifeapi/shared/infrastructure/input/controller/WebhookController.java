@@ -92,7 +92,7 @@ public class WebhookController {
 		try {
 			return Optional.ofNullable(JSON.readValue(body, type));
 		} catch (final RuntimeException exception) {
-			LOGGER.warn("Cuerpo de webhook ilegible: {}", exception.getMessage());
+			LOGGER.warn("Cuerpo de webhook ilegible ({})", exception.getClass().getSimpleName());
 			return Optional.empty();
 		}
 	}

@@ -13,8 +13,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
- * Autentica los webhooks entrantes, que no traen sesion. Si un secreto no esta configurado, rechaza todo
- * (falla cerrado). Las comparaciones son de tiempo constante.
+ * Autentica los webhooks entrantes, que no traen sesion. Si un secreto no esta configurado, rechaza cualquier
+ * petición (falla cerrado). Las comparaciones son de tiempo constante.
  * <ul>
  * <li>Strapi: el secreto llega tal cual en la cabecera {@code X-Webhook-Secret}.</li>
  * <li>GitHub: firma HMAC-SHA256 del cuerpo exacto en {@code X-Hub-Signature-256} ({@code sha256=<hex>}).</li>
