@@ -149,10 +149,16 @@ jobs:
             R2_BUCKET=smartlife-documentos
             RESEND_FROM=no-reply@mail.smartlife.sarl
             CORS_ALLOWED_ORIGINS=https://smartlife.sarl
+            CACHE_TYPE=redis
+            REDIS_HOST=rapid-sculpin-44456.upstash.io
+            REDIS_PORT=6379
+            REDIS_USERNAME=default
+            REDIS_SSL=true
           env_vars_update_strategy: merge
           secrets: |-
             RESEND_API_KEY=resend-api-key:latest
             DB_PASSWORD=db-password:latest
             R2_ACCESS_KEY=r2-access-key:latest
             R2_SECRET_KEY=r2-secret-key:latest
+            REDIS_PASSWORD=redis-password:latest
           secrets_update_strategy: merge

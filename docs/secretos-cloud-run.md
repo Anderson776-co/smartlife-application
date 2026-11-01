@@ -18,7 +18,7 @@ Cada secreto está en una sola ubicación (`us-central1`) y con cifrado administ
 | `R2_ACCESS_KEY` | `r2-access-key` | Con valor (versión 1) y conectado en el despliegue |
 | `R2_SECRET_KEY` | `r2-secret-key` | Con valor (versión 1) y conectado en el despliegue |
 | `STRAPI_API_TOKEN` | `strapi-api-token` | Creado, vacío: falta el token de Strapi |
-| `REDIS_PASSWORD` | `redis-password` | Creado, vacío: falta el servidor de Redis |
+| `REDIS_PASSWORD` | `redis-password` | Con valor (versión 1): el token de la base de Upstash, y conectado en el despliegue |
 | `FIREBASE_CREDENTIALS_BASE64` | No se usa | El adaptador usa las credenciales de la cuenta de servicio de Cloud Run |
 
 ## Base de datos (Neon)
@@ -80,6 +80,19 @@ Según el ADR-0022, el frontend (Angular) se aloja en **Firebase Hosting**, dent
 - Los registros los agregó Mateo a mano en Cloudflare. No se usó la opción «Auto configure» de Resend, para no darle a un servicio externo permiso sobre el DNS del dominio.
 - Probado el 29 de octubre de 2026: se envió un correo de prueba desde Cloud Shell con la clave del baúl de secretos, desde `no-reply@mail.smartlife.sarl` a una dirección distinta a la de la cuenta de Resend, y llegó. Falta probar el envío desde la aplicación, que además necesita la plantilla del correo en Strapi.
 - Si cambia la persona responsable de la cuenta de Resend, hay que crear una clave en la cuenta nueva, verificar allí el dominio y guardar la clave como una versión nueva de `resend-api-key`.
+
+## Redis (caché de los textos de Strapi)
+
+Según el ADR-0036, la caché es Redis. Guarda los mensajes y las plantillas de correo que vienen de Strapi, para no consultarlo en cada petición.
+
+- Servicio: **Upstash**, plan **Free** (sin costo; la pantalla de la base muestra 500 mil comandos al mes y 250 MB), base `smartlife-cache`, en Google Cloud `us-central1` (Iowa), la misma región que Cloud Run. La conexión va cifrada (TLS) y con contraseña.
+- Datos de conexión (no son secretos): host `rapid-sculpin-44456.upstash.io`, puerto `6379`, usuario `default`, cifrado activado. Van en el `cicd.yml` como `REDIS_HOST`, `REDIS_PORT`, `REDIS_USERNAME` y `REDIS_SSL=true`, junto con `CACHE_TYPE=redis`.
+- La contraseña es el **Token** normal de la base (no el *Readonly Token*: la aplicación necesita escribir) y vive solo en el secreto `redis-password` (versión 1), que llega a la aplicación como `REDIS_PASSWORD`.
+- Comportamiento: los datos duran 1 hora (`CACHE_TTL`) y las claves llevan el prefijo `smartlife::`. Solo se guardan respuestas correctas de Strapi: si Strapi falla o no encuentra el texto, la aplicación lanza una excepción y Spring no la guarda. Si Redis se cae, un manejador (`LoggingCacheErrorHandler`) solo registra el error y la aplicación sigue consultando a Strapi. La revisión de salud de Redis está apagada para que una caída de Redis no marque la aplicación como enferma. Los objetos que se guardan (`MessageCatalogDTO` y `NotificationCatalogDTO`) implementan `Serializable`.
+- No se guardan datos personales ni credenciales: solo textos de mensajes y de plantillas.
+- Probado el 31 de octubre de 2026 desde Cloud Shell, con la contraseña leída del baúl de secretos: `PING`, guardar un dato con vencimiento de 60 segundos, leerlo y borrarlo. Falta probarlo desde la aplicación desplegada.
+- Si cambia la persona que administra la cuenta de Upstash, hay que crear la base o el token en la cuenta nueva y guardar el token como una versión nueva de `redis-password` (se lee con `:latest`, así que no hay que tocar el `cicd.yml`).
+- La alternativa sin servidor es `CACHE_TYPE=simple`, una caché en la memoria de la aplicación: sin vencimiento, una por instancia y se pierde al reiniciar. El ADR-0036 la descartó, pero sirve de respaldo.
 
 ## Camino de las peticiones (Cloudflare + API Gateway + Cloud Run)
 
@@ -144,7 +157,7 @@ Reenvía cada petición, tal cual, al API Gateway y le agrega la clave de API. L
 
 ## Variables normales (no son secretas)
 
-Van como variables de entorno del servicio de Cloud Run. Las primeras ocho se definen en `.github/workflows/cicd.yml`; el resto usa los valores por defecto de `application.properties`:
+Van como variables de entorno del servicio de Cloud Run. Las que aparecen en el bloque `env_vars` de `.github/workflows/cicd.yml` (ver más abajo) se definen en el despliegue; el resto usa los valores por defecto de `application.properties`:
 
 | Variable | Valor |
 |---|---|
@@ -158,9 +171,10 @@ Van como variables de entorno del servicio de Cloud Run. Las primeras ocho se de
 | `CORS_ALLOWED_ORIGINS` | `https://smartlife.sarl` (hace falta aunque el frontend use la ruta de Cloudflare: el backend ve el `Origin` del navegador y lo trata como otro sitio; una sola dirección, porque una coma dentro de la variable puede interpretarse como separador en el despliegue) |
 | `DDL_AUTO` | `none` |
 | `STRAPI_URL` | vacío (Strapi está a cargo de Anderson) |
-| `CACHE_TYPE` | `none` (para activar Redis: `redis`) |
+| `CACHE_TYPE` | `redis` (definida en el `cicd.yml`; `none` apaga la caché y `simple` usa una caché en memoria, sin vencimiento) |
 | `CACHE_TTL` | `1h` |
-| `REDIS_HOST`, `REDIS_PORT`, `REDIS_USERNAME`, `REDIS_SSL` | `localhost`, `6379`, vacío, `false` |
+| `REDIS_HOST`, `REDIS_PORT`, `REDIS_USERNAME`, `REDIS_SSL` | `rapid-sculpin-44456.upstash.io`, `6379`, `default`, `true` (definidas en el `cicd.yml`) |
+| `OTLP_METRICS_ENABLED`, `OTLP_TRACING_ENABLED` | `false`: la telemetría está apagada (ver Pendiente) |
 | `SESSION_DURATION`, `SESSION_COOKIE_NAME`, `SESSION_CHECK_REVOKED` | `5d`, `__Host-smartlife_session`, `true` |
 | `QR_BASE_URL` | `http://localhost:5173/visitas/autorizaciones/` (valor de respaldo; el servidor de parámetros entrega `https://smartlife.sarl/visitas/autorizaciones/`, que tiene prioridad) |
 
@@ -177,12 +191,18 @@ El paso `Deploy` de `.github/workflows/cicd.yml` usa la acción `google-github-a
       R2_BUCKET=smartlife-documentos
       RESEND_FROM=no-reply@mail.smartlife.sarl
       CORS_ALLOWED_ORIGINS=https://smartlife.sarl
+      CACHE_TYPE=redis
+      REDIS_HOST=<host de Upstash>
+      REDIS_PORT=6379
+      REDIS_USERNAME=default
+      REDIS_SSL=true
     env_vars_update_strategy: merge
     secrets: |-
       RESEND_API_KEY=resend-api-key:latest
       DB_PASSWORD=db-password:latest
       R2_ACCESS_KEY=r2-access-key:latest
       R2_SECRET_KEY=r2-secret-key:latest
+      REDIS_PASSWORD=redis-password:latest
     secrets_update_strategy: merge
 
 El despliegue solo corre con un push a `main`. El servicio se despliega con `--memory=1Gi --max-instances=1 --cpu-boost` (más memoria que la de por defecto, una sola instancia para quedar dentro de lo gratuito y más CPU durante el arranque de Spring Boot).
@@ -209,7 +229,9 @@ Si el despliegue falla por permisos sobre un secreto, la cuenta de servicio de l
 
 ## Costos
 
-Se usa una sola versión activa y una sola ubicación por secreto. Los secretos vacíos no tienen versiones. Los límites gratuitos de Secret Manager se confirman en https://cloud.google.com/secret-manager/pricing, porque Google puede cambiarlos. La base de datos está en el plan gratuito de Neon (https://neon.com/pricing), los documentos en R2 dentro de su capa gratuita (https://developers.cloudflare.com/r2/pricing/), los correos en el plan gratuito de Resend (https://resend.com/pricing), el WAF y el Worker en el plan gratuito de Cloudflare, y el API Gateway dentro de su capa gratuita mensual (https://cloud.google.com/api-gateway/pricing). No se debe pulsar «Actualizar» ni «Upgrade» en las cuentas de prueba de Google Cloud, Neon o Cloudflare sin avisar al equipo.
+Se usa una sola versión activa y una sola ubicación por secreto. Los secretos vacíos no tienen versiones. Los límites gratuitos de Secret Manager se confirman en https://cloud.google.com/secret-manager/pricing, porque Google puede cambiarlos. La base de datos está en el plan gratuito de Neon (https://neon.com/pricing), los documentos en R2 dentro de su capa gratuita (https://developers.cloudflare.com/r2/pricing/), los correos en el plan gratuito de Resend (https://resend.com/pricing), la caché en el plan gratuito de Upstash (https://upstash.com/pricing), el WAF y el Worker en el plan gratuito de Cloudflare, y el API Gateway dentro de su capa gratuita mensual (https://cloud.google.com/api-gateway/pricing). No se debe pulsar «Actualizar» ni «Upgrade» en las cuentas de prueba de Google Cloud, Neon, Cloudflare o Upstash sin avisar al equipo.
+
+La cuenta de Google Cloud está en **prueba gratuita**: tiene un crédito de 1.001.736 pesos (unos 300 USD) que vence el **9 de enero de 2027**. Lo que no tiene capa gratuita (por ejemplo, las métricas de Managed Service for Prometheus) se descuenta de ese crédito y no de una tarjeta. Cuando la prueba termine, o si el crédito se agota antes, los servicios de Google Cloud se pausan hasta que alguien actualice a una cuenta de pago.
 
 ## Pendiente
 
@@ -217,8 +239,9 @@ Se usa una sola versión activa y una sola ubicación por secreto. Los secretos 
 - Avisos de seguridad en las librerías del frontend: `npm ci` reportó 23 vulnerabilidades (17 moderadas y 6 altas). El escaneo de Trivy del Pull Request puede bloquear por las altas con corrección disponible: revisar con `npm audit` y actualizar lo necesario.
 - Pull Request de la rama de integración hacia `main`: la integración continua corre las pruebas, Sonar y el escaneo de seguridad de Trivy, que bloquea si encuentra vulnerabilidades graves con corrección disponible. Después, el despliegue y la primera prueba real en Cloud Run (arranque, memoria y tiempo de inicio).
 - Probar Neon, Firebase, R2 y el servidor de parámetros desde la aplicación desplegada.
-- Strapi (a cargo de Anderson): servidor, colecciones, mensajes, plantilla del correo y token. Sin él, los mensajes salen como códigos y no se envía el correo de la autorización. Cuando exista, agregar `STRAPI_URL`, el secreto `STRAPI_API_TOKEN` y `CACHE_TYPE=simple`.
+- Strapi (a cargo de Anderson): servidor, colecciones, mensajes, plantilla del correo y token. Sin él, los mensajes salen como códigos y no se envía el correo de la autorización. Cuando exista, agregar `STRAPI_URL` y el secreto `STRAPI_API_TOKEN` (la caché en Redis ya está configurada).
+- Probar la caché de Redis desde la aplicación desplegada (hoy solo se probó la conexión desde Cloud Shell).
 - Página de destino del QR en el frontend (`/visitas/autorizaciones/<id>`).
 - Registro de usuarios en el backend (caso de uso aparte): hoy los usuarios nuevos se crean a mano en Neon.
 - Cambiar la contraseña de `smartlife_app` en Neon (y agregar la nueva como versión de `db-password`) antes de cargar datos reales.
-- Telemetría: el código de OpenTelemetry está en la rama y apagado por defecto (sin variables en el despliegue). Para encenderla hace falta un destino para las métricas.
+- Telemetría (ADR-0030): el código de OpenTelemetry está conectado al caso de uso de autorizar visita (autorizaciones creadas y fallidas, correos no enviados y duración) y apagado por defecto. Están listos el collector (`infra/otel-collector`: configuración y Dockerfile), las APIs de Cloud Monitoring y Cloud Trace y los roles `roles/monitoring.metricWriter` y `roles/cloudtrace.agent` de `smartlife-runtime`. Falta construir la imagen del collector en la integración continua, desplegar Cloud Run con dos contenedores (la aplicación y el collector) y encender `OTLP_METRICS_ENABLED` y `OTLP_TRACING_ENABLED`; las direcciones por defecto ya apuntan al collector (`localhost:4318`). Las trazas tienen capa gratuita en Cloud Trace; las métricas de Managed Service for Prometheus cobran por muestra y se descuentan del crédito de prueba.
