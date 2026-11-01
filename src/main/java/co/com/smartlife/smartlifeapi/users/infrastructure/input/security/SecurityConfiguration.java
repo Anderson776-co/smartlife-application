@@ -29,13 +29,15 @@ import jakarta.servlet.http.HttpServletResponse;
 @EnableMethodSecurity
 public class SecurityConfiguration {
 	private static final String UNAUTHORIZED = "{\"messages\":[\"Sesión requerida\"],\"data\":[],\"responseSucceded\":false}";
+    private static final String WEBHOOKS = "/api/v1/internal/webhooks/**";
     private static final String FORBIDDEN = "{\"messages\":[\"Acceso denegado\"],\"data\":[],\"responseSucceded\":false}";
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http, ValidateSessionInputPort validateSession,
             SessionCookieManager cookies) throws Exception {
         http
-            .csrf(csrf -> csrf.spa())   // cookie XSRF-TOKEN + header X-XSRF-TOKEN
+            .csrf(csrf -> csrf.spa()   // cookie XSRF-TOKEN + header X-XSRF-TOKEN
+                .ignoringRequestMatchers(WEBHOOKS))   // los webhooks no traen sesion ni cookie: se autentican con un secreto
             .cors(Customizer.withDefaults())
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .httpBasic(AbstractHttpConfigurer::disable)
@@ -43,6 +45,7 @@ public class SecurityConfiguration {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.POST, "/api/v1/users/sessions").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/users/sessions/csrf").permitAll()
+                .requestMatchers(HttpMethod.POST, WEBHOOKS).permitAll()   // el controlador valida el secreto de cada webhook
                 .requestMatchers("/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .anyRequest().authenticated())
             .exceptionHandling(e -> e
