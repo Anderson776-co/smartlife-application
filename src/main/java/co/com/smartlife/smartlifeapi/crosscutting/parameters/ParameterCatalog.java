@@ -1,6 +1,7 @@
 package co.com.smartlife.smartlifeapi.crosscutting.parameters;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Catalogo de parametros de SmartLife. Los valores los carga
@@ -8,16 +9,16 @@ import java.util.Objects;
  */
 public final class ParameterCatalog {
 
-	private static volatile VisitParameters visits = VisitParameters.defaults();
+	private static final AtomicReference<VisitParameters> VISITS = new AtomicReference<>(VisitParameters.defaults());
 
 	private ParameterCatalog() {
 	}
 
 	public static VisitParameters visits() {
-		return visits;
+		return VISITS.get();
 	}
 
 	public static void load(final VisitParameters visitParameters) {
-		visits = Objects.requireNonNull(visitParameters, "Los parametros de visitas son obligatorios");
+		VISITS.set(Objects.requireNonNull(visitParameters, "Los parametros de visitas son obligatorio"));
 	}
 }
