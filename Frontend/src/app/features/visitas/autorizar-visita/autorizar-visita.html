@@ -47,9 +47,6 @@
                   <option [value]="p.id">{{ p.nombre }}</option>
                 }
               </select>
-              @if (esInvalido('propiedadId')) {
-                <small class="f-error">Selecciona la propiedad.</small>
-              }
             </div>
 
             <div class="f-campo">
@@ -60,42 +57,21 @@
                   <option [value]="m.id">{{ m.nombre }}</option>
                 }
               </select>
-              @if (esInvalido('motivoId')) {
-                <small class="f-error">Selecciona el motivo.</small>
-              }
             </div>
 
             <div class="f-campo">
               <label for="inicio">Inicio</label>
               <input id="inicio" type="datetime-local" formControlName="inicio" class="f-control" />
-              @if (esInvalido('inicio')) {
-                <small class="f-error">Indica la fecha y hora de inicio.</small>
-              }
             </div>
 
             <div class="f-campo">
               <label for="fin">Fin</label>
               <input id="fin" type="datetime-local" formControlName="fin" class="f-control" />
-              @if (esInvalido('fin')) {
-                <small class="f-error">Indica la fecha y hora de fin.</small>
-              }
             </div>
           </div>
 
-          @if (formulario.controls.inicio.touched || formulario.controls.fin.touched) {
-            @if (formulario.hasError('rangoInvalido')) {
-              <small class="f-error">La fecha de fin debe ser posterior a la de inicio.</small>
-            } @else if (formulario.hasError('enElPasado')) {
-              <small class="f-error">La visita no puede estar en el pasado.</small>
-            } @else if (formulario.hasError('muyLejos')) {
-              <small class="f-error">
-                Solo se puede programar con máximo 30 días de anticipación.
-              </small>
-            } @else if (formulario.hasError('duracionExcedida')) {
-              <small class="f-error">La autorización no puede durar más de 24 horas.</small>
-            } @else if (duracion(); as d) {
-              <small class="f-ayuda">Duración de la visita: {{ d }}</small>
-            }
+          @if (duracion(); as d) {
+            <small class="f-ayuda">Duración de la visita: {{ d }}</small>
           }
 
           <div class="f-campo">
@@ -107,16 +83,13 @@
               class="f-control"
               placeholder="Ej.: llega en moto y entregará un paquete"
             ></textarea>
-            @if (esInvalido('observacion')) {
-              <small class="f-error">Máximo 500 caracteres.</small>
-            }
           </div>
 
           @if (requiereDocumento()) {
             <div class="f-campo documento">
               <span class="etiqueta-suelta">Documento de soporte</span>
               <div class="subida-fila">
-                <label class="subida" [class.subida--error]="errorDocumento()">
+                <label class="subida">
                   <svg viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                     <path d="m17 8-5-5-5 5M12 3v12" />
@@ -127,7 +100,7 @@
                       <small>{{ tamano(d) }}</small>
                     } @else {
                       <strong>Haz clic para adjuntar el documento</strong>
-                      <small>PDF, JPG o PNG · máximo 5 MB</small>
+                      <small>PDF, JPG o PNG</small>
                     }
                   </span>
                   <input
@@ -149,9 +122,6 @@
                   </button>
                 }
               </div>
-              @if (errorDocumento(); as mensaje) {
-                <small class="f-error">{{ mensaje }}</small>
-              }
             </div>
           }
         </section>
@@ -175,9 +145,6 @@
                 class="f-control"
                 autocomplete="off"
               />
-              @if (esInvalido('documento')) {
-                <small class="f-error">Letras, números y guiones, de 4 a 30 caracteres.</small>
-              }
             </div>
 
             <div class="f-campo">
@@ -189,9 +156,6 @@
                 class="f-control"
                 autocomplete="off"
               />
-              @if (esInvalido('correo')) {
-                <small class="f-error">Ingresa un correo válido.</small>
-              }
             </div>
 
             <div class="f-campo">
@@ -202,9 +166,6 @@
                 formControlName="primerNombre"
                 class="f-control"
               />
-              @if (esInvalido('primerNombre')) {
-                <small class="f-error">Solo letras y espacios.</small>
-              }
             </div>
 
             <div class="f-campo">
@@ -215,9 +176,6 @@
                 formControlName="segundoNombre"
                 class="f-control"
               />
-              @if (esInvalido('segundoNombre')) {
-                <small class="f-error">Solo letras y espacios.</small>
-              }
             </div>
 
             <div class="f-campo">
@@ -228,9 +186,6 @@
                 formControlName="primerApellido"
                 class="f-control"
               />
-              @if (esInvalido('primerApellido')) {
-                <small class="f-error">Solo letras y espacios.</small>
-              }
             </div>
 
             <div class="f-campo">
@@ -243,9 +198,6 @@
                 formControlName="segundoApellido"
                 class="f-control"
               />
-              @if (esInvalido('segundoApellido')) {
-                <small class="f-error">Solo letras y espacios.</small>
-              }
             </div>
 
             <div class="f-campo">
@@ -257,9 +209,6 @@
                 class="f-control"
                 autocomplete="off"
               />
-              @if (esInvalido('placa')) {
-                <small class="f-error">Letras, números y guiones, de 3 a 20 caracteres.</small>
-              }
             </div>
           </div>
         </section>
@@ -327,8 +276,6 @@
         <section class="tarjeta tarjeta--reglas">
           <h2>Reglas de la autorización</h2>
           <ul>
-            <li>Dura máximo 24 horas.</li>
-            <li>Se programa con hasta 30 días de anticipación.</li>
             <li>Algunos motivos exigen un documento PDF, JPG o PNG.</li>
             <li>El visitante recibe su código QR por correo.</li>
           </ul>

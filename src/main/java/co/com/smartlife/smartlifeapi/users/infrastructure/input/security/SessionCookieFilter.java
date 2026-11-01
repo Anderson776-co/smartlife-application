@@ -54,6 +54,10 @@ public final class SessionCookieFilter extends OncePerRequestFilter{
             SecurityContextHolder.clearContext();
             response.addHeader(HttpHeaders.SET_COOKIE, cookies.clear().toString());
             // sin autenticación, Spring Security responderá 401 en las rutas protegidas
+        } catch (RuntimeException exception) {
+            // Fallo inesperado (p. ej. Firebase caído): no se cierra la sesión del usuario, solo queda sin autenticar
+            LOGGER.error("No se pudo validar la sesión: {}", exception.getMessage(), exception);
+            SecurityContextHolder.clearContext();
         }
     }
 }
