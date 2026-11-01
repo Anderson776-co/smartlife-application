@@ -17,7 +17,7 @@ Cada secreto está en una sola ubicación (`us-central1`) y con cifrado administ
 | `DB_PASSWORD` | `db-password` | Con valor y conectado. La **versión 3** es la contraseña del rol `smartlife_app` de Neon y es la que se lee (`latest`). Las versiones 1 y 2 eran de una base anterior en Cloud SQL, ya eliminada: no se usan y se pueden inhabilitar |
 | `R2_ACCESS_KEY` | `r2-access-key` | Con valor (versión 1) y conectado en el despliegue |
 | `R2_SECRET_KEY` | `r2-secret-key` | Con valor (versión 1) y conectado en el despliegue |
-| `STRAPI_API_TOKEN` | `strapi-api-token` | Creado, vacío: falta el token de Strapi |
+| `STRAPI_API_TOKEN` | `strapi-api-token` | Con valor (Anderson confirmó que tiene versión) y conectado en el despliegue: es el token que permite a la aplicación leer el catálogo de Strapi |
 | `REDIS_PASSWORD` | `redis-password` | Con valor (versión 1): el token de la base de Upstash, y conectado en el despliegue |
 | `FIREBASE_CREDENTIALS_BASE64` | No se usa | El adaptador usa las credenciales de la cuenta de servicio de Cloud Run |
 
@@ -78,8 +78,21 @@ Según el ADR-0022, el frontend (Angular) se aloja en **Firebase Hosting**, dent
   - `send.mail` y `rsend.mail` (CNAME): autorización de envío y recepción de rebotes.
   - `_dmarc` (TXT): política `v=DMARC1; p=none;`, que solo observa y no bloquea.
 - Los registros los agregó Mateo a mano en Cloudflare. No se usó la opción «Auto configure» de Resend, para no darle a un servicio externo permiso sobre el DNS del dominio.
-- Probado el 29 de octubre de 2026: se envió un correo de prueba desde Cloud Shell con la clave del baúl de secretos, desde `no-reply@mail.smartlife.sarl` a una dirección distinta a la de la cuenta de Resend, y llegó. Falta probar el envío desde la aplicación, que además necesita la plantilla del correo en Strapi.
+- Probado el 29 de octubre de 2026: se envió un correo de prueba desde Cloud Shell con la clave del baúl de secretos, desde `no-reply@mail.smartlife.sarl` a una dirección distinta a la de la cuenta de Resend, y llegó. Falta probar el envío desde la aplicación, que además necesita la plantilla del correo cargada y publicada en Strapi (ver la sección de Strapi).
 - Si cambia la persona responsable de la cuenta de Resend, hay que crear una clave en la cuenta nueva, verificar allí el dominio y guardar la clave como una versión nueva de `resend-api-key`.
+
+## Strapi (mensajes y plantillas de correo)
+
+Strapi guarda los textos que la aplicación muestra (mensajes de error y de respuesta) y las plantillas de los correos. Lo desplegó Anderson como un segundo servicio de Cloud Run.
+
+- Dirección: `https://strapi-cms-clfarpgyxa-uc.a.run.app` (el mismo proyecto de Google Cloud y la misma región que la aplicación). Va en el `cicd.yml` como `STRAPI_URL`.
+- Base de datos: PostgreSQL (lo confirmó Anderson el 1 de noviembre de 2026), así que el contenido persiste aunque Cloud Run reinicie el servicio. Falta anotar aquí en qué servicio vive esa base y su plan, para confirmar que sigue dentro de lo gratuito.
+- Token: el secreto `strapi-api-token` llega a la aplicación como `STRAPI_API_TOKEN` y le permite leer el catálogo.
+- Lo que la aplicación espera encontrar: dos colecciones, `message-catalog` (`code`, `title`, `content`) y `notification-catalog` (`code`, `subject`, `content`), con Internationalization y `es` como idioma por defecto, y las entradas publicadas. La plantilla del correo de la autorización es `VISIT_AUTHORIZATION_CREATED`, con los marcadores `{{visitorName}}`, `{{authorizatorName}}`, `{{location}}`, `{{reason}}`, `{{startDate}}`, `{{endDate}}`, `{{vehiclePlate}}` y `{{qrUrl}}`, y la imagen del QR como `<img src="cid:visit-qr">`.
+- Tiempos: la aplicación espera 3 segundos para conectar con Strapi y 5 para leer. Un servicio de Cloud Run que estuvo apagado tarda más en arrancar, y la primera consulta puede fallar (el mensaje sale como código y el correo no se envía). Conviene abrir la dirección de Strapi un minuto antes de una demostración. Después, Redis guarda los textos que respondieron bien durante 1 hora.
+- Si Strapi falla, la aplicación sigue funcionando: los mensajes salen como código y el correo no se envía.
+- Los JSON con los textos los tiene Anderson en su computador y no están en el repositorio. Falta guardar una copia (en el repositorio o con la exportación de Strapi).
+- Falta probarlo desde la aplicación desplegada: que las colecciones tengan los mensajes y la plantilla publicados, y que el correo llegue.
 
 ## Redis (caché de los textos de Strapi)
 
@@ -170,7 +183,7 @@ Van como variables de entorno del servicio de Cloud Run. Las que aparecen en el 
 | `RESEND_FROM` | `no-reply@mail.smartlife.sarl` |
 | `CORS_ALLOWED_ORIGINS` | `https://smartlife.sarl` (hace falta aunque el frontend use la ruta de Cloudflare: el backend ve el `Origin` del navegador y lo trata como otro sitio; una sola dirección, porque una coma dentro de la variable puede interpretarse como separador en el despliegue) |
 | `DDL_AUTO` | `none` |
-| `STRAPI_URL` | vacío (Strapi está a cargo de Anderson) |
+| `STRAPI_URL` | `https://strapi-cms-clfarpgyxa-uc.a.run.app` (definida en el `cicd.yml`; Strapi está a cargo de Anderson) |
 | `CACHE_TYPE` | `redis` (definida en el `cicd.yml`; `none` apaga la caché y `simple` usa una caché en memoria, sin vencimiento) |
 | `CACHE_TTL` | `1h` |
 | `REDIS_HOST`, `REDIS_PORT`, `REDIS_USERNAME`, `REDIS_SSL` | `rapid-sculpin-44456.upstash.io`, `6379`, `default`, `true` (definidas en el `cicd.yml`) |
@@ -191,6 +204,7 @@ El paso `Deploy` de `.github/workflows/cicd.yml` usa la acción `google-github-a
       R2_BUCKET=smartlife-documentos
       RESEND_FROM=no-reply@mail.smartlife.sarl
       CORS_ALLOWED_ORIGINS=https://smartlife.sarl
+      STRAPI_URL=<direccion de Strapi en Cloud Run>
       CACHE_TYPE=redis
       REDIS_HOST=<host de Upstash>
       REDIS_PORT=6379
@@ -202,6 +216,7 @@ El paso `Deploy` de `.github/workflows/cicd.yml` usa la acción `google-github-a
       DB_PASSWORD=db-password:latest
       R2_ACCESS_KEY=r2-access-key:latest
       R2_SECRET_KEY=r2-secret-key:latest
+      STRAPI_API_TOKEN=strapi-api-token:latest
       REDIS_PASSWORD=redis-password:latest
     secrets_update_strategy: merge
 
@@ -209,19 +224,19 @@ El despliegue solo corre con un push a `main`. El servicio se despliega con `--m
 
 ## Qué hacer cuando llega una clave
 
-**Paso 1.** En Secret Manager, abrir el secreto (por ejemplo `strapi-api-token`), pestaña **Versiones**, **Versión nueva**, pegar la clave y guardar. La clave se escribe **solo ahí**.
+**Paso 1.** En Secret Manager, abrir el secreto (por ejemplo `otro-token`), pestaña **Versiones**, **Versión nueva**, pegar la clave y guardar. La clave se escribe **solo ahí**.
 
-**Paso 2.** Agregar su línea al bloque `secrets` del paso `Deploy`. Por ejemplo, para Strapi quedaría:
+**Paso 2.** Agregar su línea al bloque `secrets` del paso `Deploy`. Por ejemplo, para un secreto nuevo (`otro-token`) quedaría:
 
     secrets: |-
       RESEND_API_KEY=resend-api-key:latest
       DB_PASSWORD=db-password:latest
       R2_ACCESS_KEY=r2-access-key:latest
       R2_SECRET_KEY=r2-secret-key:latest
-      STRAPI_API_TOKEN=strapi-api-token:latest
+      OTRO_TOKEN=otro-token:latest
     secrets_update_strategy: merge
 
-**Paso 3.** Agregar como variables normales las que acompañan a esa clave (por ejemplo `STRAPI_URL`).
+**Paso 3.** Agregar como variables normales las que acompañan a esa clave (por ejemplo, la dirección del servicio al que pertenece la clave).
 
 **Regla para no romper el despliegue:** una línea solo se agrega cuando el secreto **ya tiene al menos una versión**. Si apunta a un secreto vacío, el despliegue de Cloud Run falla.
 
@@ -239,7 +254,7 @@ La cuenta de Google Cloud está en **prueba gratuita**: tiene un crédito de 1.0
 - Avisos de seguridad en las librerías del frontend: `npm ci` reportó 23 vulnerabilidades (17 moderadas y 6 altas). El escaneo de Trivy del Pull Request puede bloquear por las altas con corrección disponible: revisar con `npm audit` y actualizar lo necesario.
 - Pull Request de la rama de integración hacia `main`: la integración continua corre las pruebas, Sonar y el escaneo de seguridad de Trivy, que bloquea si encuentra vulnerabilidades graves con corrección disponible. Después, el despliegue y la primera prueba real en Cloud Run (arranque, memoria y tiempo de inicio).
 - Probar Neon, Firebase, R2 y el servidor de parámetros desde la aplicación desplegada.
-- Strapi (a cargo de Anderson): servidor, colecciones, mensajes, plantilla del correo y token. Sin él, los mensajes salen como códigos y no se envía el correo de la autorización. Cuando exista, agregar `STRAPI_URL` y el secreto `STRAPI_API_TOKEN` (la caché en Redis ya está configurada).
+- Strapi (a cargo de Anderson): ya está desplegado en Cloud Run y conectado (`STRAPI_URL` y el secreto `STRAPI_API_TOKEN`). Falta confirmar que las colecciones tienen los mensajes y la plantilla `VISIT_AUTHORIZATION_CREATED` publicados, guardar una copia de los JSON (hoy solo están en el computador de Anderson), anotar dónde está la base PostgreSQL y su plan, revisar que el servicio de Strapi no tenga instancias mínimas encendidas (para no gastar la capa gratuita de Cloud Run) y probar el correo desde la aplicación desplegada.
 - Probar la caché de Redis desde la aplicación desplegada (hoy solo se probó la conexión desde Cloud Shell).
 - Página de destino del QR en el frontend (`/visitas/autorizaciones/<id>`).
 - Registro de usuarios en el backend (caso de uso aparte): hoy los usuarios nuevos se crean a mano en Neon.
