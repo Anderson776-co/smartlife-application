@@ -54,10 +54,11 @@ Según el ADR-0022, el frontend (Angular) se aloja en **Firebase Hosting**, dent
 - Configuración en la carpeta `Frontend`: `firebase.json` (publica `dist/smartlife-frontend/browser` y reescribe todas las rutas hacia `index.html`) y `.firebaserc` (proyecto `pocfirebase-c2915`).
 - Publicación manual, hecha el 31 de octubre de 2026 desde Cloud Shell con la cuenta de Anderson: clonar la rama, `npm ci`, `npm run build` y `npx firebase-tools@latest deploy --only hosting --project pocfirebase-c2915`. Para que la herramienta de Firebase funcione desde Cloud Shell hay que activar `firebase.googleapis.com` y `firebasehosting.googleapis.com` en el proyecto de Google Cloud de la aplicación.
 - Dirección gratuita: `https://pocfirebase-c2915.web.app`. Ahí la API **no responde**, porque esa dirección no pasa por Cloudflare.
-- Dominio `smartlife.sarl`: agregado como dominio personalizado en Firebase. En Cloudflare se reemplazó el registro CNAME hacia Vercel por un registro `A` (`199.36.158.100`) y un `TXT` (`hosting-site=pocfirebase-c2915`), ambos sin proxy («DNS only») mientras Firebase verifica el dominio y emite el certificado. Cuando quede en estado «Conectado», el registro `A` se pasa a «Proxied» para que funcione la ruta `/api/*` del Worker. El registro `www` sigue apuntando a Vercel y falta corregirlo.
+- Dominio `smartlife.sarl`: **conectado el 31 de octubre de 2026** como dominio personalizado de Firebase Hosting. En Cloudflare se reemplazó el registro CNAME hacia Vercel por un registro `A` (`199.36.158.100`) y un `TXT` (`hosting-site=pocfirebase-c2915`). Mientras Firebase verificaba el dominio y emitía el certificado, el registro `A` estuvo sin proxy («DNS only»); ya verificado, se pasó a «Proxied» para que funcione la ruta `/api/*` del Worker, con el modo de cifrado Full. Firebase puede mostrar que el DNS «no coincide» porque ve las direcciones de Cloudflare y no las suyas; mientras el certificado esté emitido, la página se sirve (es el costo de tener Firebase detrás de Cloudflare, previsto en el ADR-0022). Comprobado con `curl`: `/` y `/login` responden `200`.
+- Registro `www`: es un CNAME hacia `smartlife.sarl` (con proxy) y una regla de redirección de Cloudflare, `www-a-dominio-principal` (`301`, conserva la ruta y los parámetros), lo manda al dominio principal. Por eso no hace falta una ruta del Worker para `www`.
 - El frontend llama a la API como `/api/v1` (ruta relativa). En desarrollo lo atiende el proxy de `ng serve`; en producción lo atiende la ruta de Cloudflare `smartlife.sarl/api/*`.
 - El frontend no tiene página de destino para el enlace del QR (`/visitas/autorizaciones/<id>`): hoy esa ruta lleva al login.
-- Mientras el dominio no esté conectado, la demostración puede hacerse con el frontend local (`ng serve`), que redirige `/api` al backend local.
+- Si algo fallara el día de la demostración, el frontend puede correr en un computador (`ng serve`), que redirige `/api` al backend local.
 
 ## Cloudflare R2 (documentos de las visitas)
 
@@ -117,7 +118,7 @@ Reenvía cada petición, tal cual, al API Gateway y le agrega la clave de API. L
           },
         };
 
-- Dominio del Worker: `api.smartlife.sarl` (dominio personalizado), y la ruta `smartlife.sarl/api/*` (con el modo de fallo «Fail closed»). La dirección `workers.dev` está **desactivada**. Falta agregar la ruta de `www.smartlife.sarl/api/*`. Cuidado al crear una ruta: la ventana de Cloudflare propone por defecto `*.smartlife.sarl/*`, que enviaría toda la página al Worker.
+- Dominio del Worker: `api.smartlife.sarl` (dominio personalizado), y la ruta `smartlife.sarl/api/*` (con el modo de fallo «Fail closed»). La dirección `workers.dev` está **desactivada**. `www.smartlife.sarl` no necesita ruta propia porque redirige al dominio principal. Cuidado al crear una ruta: la ventana de Cloudflare propone por defecto `*.smartlife.sarl/*`, que enviaría toda la página al Worker.
 
 ## API Gateway (Google Cloud)
 
@@ -212,7 +213,8 @@ Se usa una sola versión activa y una sola ubicación por secreto. Los secretos 
 
 ## Pendiente
 
-- Terminar de conectar `smartlife.sarl` en Firebase Hosting (verificación y certificado) y después pasar el registro `A` a «Proxied». Corregir el registro `www` (hoy apunta a Vercel) y agregar la ruta `www.smartlife.sarl/api/*` del Worker.
+- Automatizar la publicación del frontend (hoy es manual, desde Cloud Shell): una acción de GitHub que compile y publique en Firebase Hosting.
+- Avisos de seguridad en las librerías del frontend: `npm ci` reportó 23 vulnerabilidades (17 moderadas y 6 altas). El escaneo de Trivy del Pull Request puede bloquear por las altas con corrección disponible: revisar con `npm audit` y actualizar lo necesario.
 - Pull Request de la rama de integración hacia `main`: la integración continua corre las pruebas, Sonar y el escaneo de seguridad de Trivy, que bloquea si encuentra vulnerabilidades graves con corrección disponible. Después, el despliegue y la primera prueba real en Cloud Run (arranque, memoria y tiempo de inicio).
 - Probar Neon, Firebase, R2 y el servidor de parámetros desde la aplicación desplegada.
 - Strapi (a cargo de Anderson): servidor, colecciones, mensajes, plantilla del correo y token. Sin él, los mensajes salen como códigos y no se envía el correo de la autorización. Cuando exista, agregar `STRAPI_URL`, el secreto `STRAPI_API_TOKEN` y `CACHE_TYPE=simple`.
