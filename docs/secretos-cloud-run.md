@@ -1,3 +1,113 @@
+# Secretos, variables y servicios externos de Cloud Run
+
+Este documento explica cómo se guardan las claves de SmartLife en **Google Cloud Secret Manager**, cómo llegan a Cloud Run, dónde vive la base de datos y cómo quedaron conectados los servicios externos. Las claves **nunca** se escriben en archivos del repositorio, en el chat ni en GitHub.
+
+- Proyecto de Google Cloud: `smartlife-application` (ID `project-078c9c72-e891-42db-98c`)
+- Servicio de Cloud Run: `smartlife-application`, región `us-central1`
+- Cuenta de servicio que lee los secretos: `smartlife-runtime@project-078c9c72-e891-42db-98c.iam.gserviceaccount.com`
+- Rol dado a esa cuenta, solo sobre cada secreto: **Usuario con acceso a secretos de Secret Manager** (`roles/secretmanager.secretAccessor`)
+
+## Secretos (van a Secret Manager)
+
+Cada secreto está en una sola ubicación (`us-central1`) y con cifrado administrado por Google, para mantenerse dentro de lo gratuito.
+
+| Variable que lee la aplicación | Secreto en Secret Manager | Estado |
+|---|---|---|
+| `RESEND_API_KEY` | `resend-api-key` | Con valor (versión 1), de la cuenta de Resend de Mateo, y conectado en el despliegue |
+| `DB_PASSWORD` | `db-password` | Con valor y conectado. La **versión 3** es la contraseña del rol `smartlife_app` de Neon y es la que se lee (`latest`). Las versiones 1 y 2 eran de una base anterior en Cloud SQL, ya eliminada: no se usan y se pueden inhabilitar |
+| `R2_ACCESS_KEY` | `r2-access-key` | Con valor (versión 1) y conectado en el despliegue |
+| `R2_SECRET_KEY` | `r2-secret-key` | Con valor (versión 1) y conectado en el despliegue |
+| `STRAPI_API_TOKEN` | `strapi-api-token` | Con valor (Anderson confirmó que tiene versión) y conectado en el despliegue: es el token que permite a la aplicación leer el catálogo de Strapi |
+| `REDIS_PASSWORD` | `redis-password` | Con valor (versión 1): el token de la base de Upstash, y conectado en el despliegue |
+| `CONFIG_WEBHOOK_SECRET` | `config-webhook-secret` | Con valor (versión 1) y conectado en el despliegue: es el mismo que tiene el webhook de GitHub del repositorio de parámetros (ver la sección de Webhooks) |
+| `STRAPI_WEBHOOK_SECRET` | `strapi-webhook-secret` | Conectado en el despliegue; Anderson debe confirmar que tiene al menos una versión y registrar el mismo valor en el webhook de Strapi |
+| `FIREBASE_CREDENTIALS_BASE64` | No se usa | El adaptador usa las credenciales de la cuenta de servicio de Cloud Run |
+
+## Base de datos (Neon)
+
+La base de datos de SmartLife es PostgreSQL en **Neon**, plan gratuito, en la cuenta de Neon de Anderson. Antes se había creado una instancia en Cloud SQL, pero se eliminó: no se usa y no hace falta ningún conector de Google ni permiso de Cloud SQL.
+
+- Proyecto de Neon: `smartlife`, rama `production`, región AWS US East 2 (Ohio).
+- Base: `smartlife`. Rol de la aplicación: `smartlife_app`, dueño de la base.
+- Host (conexión directa, sin pooler): `ep-round-frost-b4icbrl3.c-6.us-east-2.aws.neon.tech`. El host no es secreto; la contraseña sí y vive solo en `db-password`.
+- `DB_URL`: `jdbc:postgresql://` + host + `/smartlife?sslmode=require`. El cifrado es obligatorio.
+- Estructura: se creó con los scripts de `src/main/resources/db/init`, ejecutados en este orden con el rol `smartlife_app`: `01-esquemas.sql`, `02-tablas.sql` y `03-vistasmaterializadas.sql`. Resultado: 5 esquemas, 15 tablas y 8 vistas materializadas.
+- La tabla `visits.visit_authorization` en Neon ya tiene la columna `is_active`, que usa el caso de uso de autorizar visita. El `02-tablas.sql` de esta rama todavía no la trae: viene en la rama `fix/authorize_visit_arranque`.
+- Las vistas materializadas se refrescan a mano (`db/test/07-refrescarvistas.sql`): nada las refresca solas.
+- Neon suspende la base cuando no se usa, y la primera consulta después de un rato tarda más. Conviene hacer una consulta antes de una demostración.
+- Probado el 29 de octubre de 2026: conexión desde pgAdmin con el usuario `smartlife_app` y la contraseña de la versión 3 de `db-password`, con la estructura completa visible. Falta probar la conexión desde Cloud Run.
+- Datos de prueba cargados el 30 de octubre de 2026: una urbanización, dos usuarios (`carlos@example.com`, propietario de la casa 101 del bloque A y del apartamento 202 del bloque B, y `maria@example.com`, residente del 202 del bloque B), los motivos de visita y una autorización de ejemplo. Los `external_id` de esos dos usuarios son los UID reales de sus cuentas de Firebase. El `05-datosprueba.sql` del repositorio trae UID inventados: para Neon hay que usar los reales.
+- **Los usuarios nuevos se crean a mano en Neon** (decisión del equipo; el registro de usuarios es un caso de uso aparte). El registro del frontend solo crea la cuenta en Firebase, y el login busca al usuario en Neon por su UID de Firebase (`users.user.external_id`). Para que alguien pueda entrar hay que sacar su UID de Firebase, crear su fila en `users.user` y su rol en `users.user_role`, y refrescar las vistas materializadas (`dwellings.user_owner`, `residents.user_resident` y `visits.authorizator`). Para autorizar visitas, además debe ser propietario de una vivienda o residente activo de ella.
+
+## Firebase (inicio de sesión)
+
+- Proyecto de Firebase: `pocfirebase-c2915`, **confirmado por el equipo como el definitivo**. Su nombre visible es «Smartlife-firebaseComponent»; el ID conserva `poc` porque nació como prueba de concepto y no se puede cambiar.
+- La aplicación **no usa ningún archivo de claves**: toma las credenciales de la cuenta de servicio de Cloud Run (`smartlife-runtime`), a la que se le dio el rol **Firebase Authentication Admin** (`roles/firebaseauth.admin`) dentro del proyecto de Firebase.
+- La API `identitytoolkit.googleapis.com` está activada en el proyecto de Google Cloud de la aplicación.
+- La variable `FIREBASE_PROJECT_ID` se define en `.github/workflows/cicd.yml`.
+- Nunca se debe guardar un archivo de claves de Firebase (por ejemplo `firebase-service-account.json`) en un repositorio.
+- El inicio de sesión del frontend usa correo y contraseña (activado en el proyecto); el acceso anónimo está apagado. Los dominios autorizados son los de por defecto, y no hace falta agregar `smartlife.sarl` mientras el frontend no pida enlaces de retorno en los correos de verificación.
+- Falta probar un inicio de sesión real desde Cloud Run.
+
+## Frontend (Firebase Hosting)
+
+Según el ADR-0022, el frontend (Angular) se aloja en **Firebase Hosting**, dentro del mismo proyecto de Firebase (`pocfirebase-c2915`, plan Spark, sin costo). Los registros DNS de `smartlife.sarl` y `www` apuntaban a un nombre de Vercel que no tenía ningún despliegue: es un resto y no la decisión del equipo.
+
+- Configuración en la carpeta `Frontend`: `firebase.json` (publica `dist/smartlife-frontend/browser` y reescribe todas las rutas hacia `index.html`) y `.firebaserc` (proyecto `pocfirebase-c2915`).
+- Publicación manual, hecha el 31 de octubre de 2026 desde Cloud Shell con la cuenta de Anderson: clonar la rama, `npm ci`, `npm run build` y `npx firebase-tools@latest deploy --only hosting --project pocfirebase-c2915`. Para que la herramienta de Firebase funcione desde Cloud Shell hay que activar `firebase.googleapis.com` y `firebasehosting.googleapis.com` en el proyecto de Google Cloud de la aplicación.
+- Dirección gratuita: `https://pocfirebase-c2915.web.app`. Ahí la API **no responde**, porque esa dirección no pasa por Cloudflare.
+- Dominio `smartlife.sarl`: **conectado el 31 de octubre de 2026** como dominio personalizado de Firebase Hosting. En Cloudflare se reemplazó el registro CNAME hacia Vercel por un registro `A` (`199.36.158.100`) y un `TXT` (`hosting-site=pocfirebase-c2915`). Mientras Firebase verificaba el dominio y emitía el certificado, el registro `A` estuvo sin proxy («DNS only»); ya verificado, se pasó a «Proxied» para que funcione la ruta `/api/*` del Worker, con el modo de cifrado Full. Firebase puede mostrar que el DNS «no coincide» porque ve las direcciones de Cloudflare y no las suyas; mientras el certificado esté emitido, la página se sirve (es el costo de tener Firebase detrás de Cloudflare, previsto en el ADR-0022). Comprobado con `curl`: `/` y `/login` responden `200`.
+- Registro `www`: es un CNAME hacia `smartlife.sarl` (con proxy) y una regla de redirección de Cloudflare, `www-a-dominio-principal` (`301`, conserva la ruta y los parámetros), lo manda al dominio principal. Por eso no hace falta una ruta del Worker para `www`.
+- El frontend llama a la API como `/api/v1` (ruta relativa). En desarrollo lo atiende el proxy de `ng serve`; en producción lo atiende la ruta de Cloudflare `smartlife.sarl/api/*`.
+- El frontend no tiene página de destino para el enlace del QR (`/visitas/autorizaciones/<id>`): hoy esa ruta lleva al login.
+- Si algo fallara el día de la demostración, el frontend puede correr en un computador (`ng serve`), que redirige `/api` al backend local.
+
+## Cloudflare R2 (documentos de las visitas)
+
+- Bucket: `smartlife-documentos`, **privado** (sin dominio personalizado y con la dirección pública `r2.dev` desactivada), clase de almacenamiento **Standard**.
+- Acceso: un token de cuenta con permiso **Object Read & Write**, limitado solo a ese bucket. Sus dos claves están en los secretos `r2-access-key` y `r2-secret-key`.
+- `R2_ENDPOINT` es la dirección S3 de la cuenta (`https://<ID-de-cuenta>.r2.cloudflarestorage.com`, sin el nombre del bucket) y `R2_BUCKET` es el nombre del bucket. Ambos van en el `cicd.yml`.
+- Costo: la suscripción está activa y hay una alerta de presupuesto en Cloudflare. Los límites gratuitos mensuales que mostró la pantalla de R2 son 10 GB de almacenamiento, 1 millón de operaciones de escritura y 10 millones de lectura; la descarga no se cobra. Solo se cobra si se superan.
+- Probado el 29 de octubre de 2026 con un archivo de prueba: se subió, se leyó con las claves y se borró; una petición sin claves no recibió el archivo. Falta probarlo desde la aplicación.
+
+## Resend (correos)
+
+- La cuenta de Resend es la de Mateo, en el plan gratuito (los límites diarios y mensuales se confirman en https://resend.com/pricing). La clave de API está en el secreto `resend-api-key`.
+- Dominio de envío: `mail.smartlife.sarl`, un subdominio de `smartlife.sarl` solo para correo, para que sus registros no se mezclen con los de la página. Región `us-east-1` (North Virginia). **Verificado.** Solo envío: la recepción está apagada, y el seguimiento de clics y de aperturas también (para no alterar el enlace del QR).
+- Remitente: `no-reply@mail.smartlife.sarl`, que se define con la variable `RESEND_FROM` en `.github/workflows/cicd.yml`. Si no se define, la aplicación usa `onboarding@resend.dev`, que solo sirve para pruebas.
+- Registros DNS creados en Cloudflare (todos en modo «DNS only», sin proxy):
+  - `resend._domainkey.mail` (TXT): la firma del correo (DKIM).
+  - `send.mail` y `rsend.mail` (CNAME): autorización de envío y recepción de rebotes.
+  - `_dmarc` (TXT): política `v=DMARC1; p=none;`, que solo observa y no bloquea.
+- Los registros los agregó Mateo a mano en Cloudflare. No se usó la opción «Auto configure» de Resend, para no darle a un servicio externo permiso sobre el DNS del dominio.
+- Probado el 29 de octubre de 2026: se envió un correo de prueba desde Cloud Shell con la clave del baúl de secretos, desde `no-reply@mail.smartlife.sarl` a una dirección distinta a la de la cuenta de Resend, y llegó. Falta probar el envío desde la aplicación, que además necesita la plantilla del correo cargada y publicada en Strapi (ver la sección de Strapi).
+- Si cambia la persona responsable de la cuenta de Resend, hay que crear una clave en la cuenta nueva, verificar allí el dominio y guardar la clave como una versión nueva de `resend-api-key`.
+
+## Strapi (mensajes y plantillas de correo)
+
+Strapi guarda los textos que la aplicación muestra (mensajes de error y de respuesta) y las plantillas de los correos. Lo desplegó Anderson como un segundo servicio de Cloud Run.
+
+- Dirección: `https://strapi-cms-clfarpgyxa-uc.a.run.app` (el mismo proyecto de Google Cloud y la misma región que la aplicación). Va en el `cicd.yml` como `STRAPI_URL`.
+- Base de datos: PostgreSQL (lo confirmó Anderson el 1 de noviembre de 2026), así que el contenido persiste aunque Cloud Run reinicie el servicio. Falta anotar aquí en qué servicio vive esa base y su plan, para confirmar que sigue dentro de lo gratuito.
+- Token: el secreto `strapi-api-token` llega a la aplicación como `STRAPI_API_TOKEN` y le permite leer el catálogo.
+- Lo que la aplicación espera encontrar: dos colecciones, `message-catalog` (`code`, `title`, `content`) y `notification-catalog` (`code`, `subject`, `content`), con Internationalization y `es` como idioma por defecto, y las entradas publicadas. La plantilla del correo de la autorización es `VISIT_AUTHORIZATION_CREATED`, con los marcadores `{{visitorName}}`, `{{authorizatorName}}`, `{{location}}`, `{{reason}}`, `{{startDate}}`, `{{endDate}}`, `{{vehiclePlate}}` y `{{qrUrl}}`, y la imagen del QR como `<img src="cid:visit-qr">`.
+- Tiempos: la aplicación espera 3 segundos para conectar con Strapi y 5 para leer. Un servicio de Cloud Run que estuvo apagado tarda más en arrancar, y la primera consulta puede fallar (el mensaje sale como código y el correo no se envía). Conviene abrir la dirección de Strapi un minuto antes de una demostración. Después, Redis guarda los textos que respondieron bien durante 1 hora.
+- Si Strapi falla, la aplicación sigue funcionando: los mensajes salen como código y el correo no se envía.
+- Los JSON con los textos los tiene Anderson en su computador y no están en el repositorio. Falta guardar una copia (en el repositorio o con la exportación de Strapi).
+- Falta probarlo desde la aplicación desplegada: que las colecciones tengan los mensajes y la plantilla publicados, y que el correo llegue.
+
+## Redis (caché de los textos de Strapi)
+
+Según el ADR-0036, la caché es Redis. Guarda los mensajes y las plantillas de correo que vienen de Strapi, para no consultarlo en cada petición.
+
+- Servicio: **Upstash**, plan **Free** (sin costo; la pantalla de la base muestra 500 mil comandos al mes y 250 MB), base `smartlife-cache`, en Google Cloud `us-central1` (Iowa), la misma región que Cloud Run. La conexión va cifrada (TLS) y con contraseña.
+- Datos de conexión (no son secretos): host `rapid-sculpin-44456.upstash.io`, puerto `6379`, usuario `default`, cifrado activado. Van en el `cicd.yml` como `REDIS_HOST`, `REDIS_PORT`, `REDIS_USERNAME` y `REDIS_SSL=true`, junto con `CACHE_TYPE=redis`.
+- La contraseña es el **Token** normal de la base (no el *Readonly Token*: la aplicación necesita escribir) y vive solo en el secreto `redis-password` (versión 1), que llega a la aplicación como `REDIS_PASSWORD`.
+- Comportamiento: los datos duran 1 hora (`CACHE_TTL`) y las claves llevan el prefijo `smartlife::`. Solo se guardan respuestas correctas de Strapi: si Strapi falla o no encuentra el texto, la aplicación lanza una excepción y Spring no la guarda. Si Redis se cae, un manejador (`LoggingCacheErrorHandler`) solo registra el error y la aplicación sigue consultando a Strapi. La revisión de salud de Redis está apagada para que una caída de Redis no marque la aplicación como enferma. Los objetos que se guardan (`MessageCatalogDTO` y `NotificationCatalogDTO`) implementan `Serializable`.
+- No se guardan datos personales ni credenciales: solo textos de mensajes y de plantillas.
+- Probado el 31 de octubre de 2026 desde Cloud Shell, con la contraseña leída del baúl de secretos: `PING`, guardar un dato con vencimiento de 60 segundos, leerlo y borrarlo. Falta probarlo desde la aplicación desplegada.
+- Si cambia la persona que administra la cuenta de Upstash, hay que crear la base o el token en la cuenta nueva y guardar el token como una versión nueva de `redis-password` (se lee con `:latest`, así que no hay que tocar el `cicd.yml`).
+- La alternativa sin servidor es `CACHE_TYPE=simple`, una caché en la memoria de la aplicación: sin vencimiento, una por instancia y se pierde al reiniciar. El ADR-0036 la descartó, pero sirve de respaldo.
 
 ## Webhooks entrantes (mantienen al día lo que el backend guarda en memoria)
 
