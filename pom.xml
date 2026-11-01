@@ -46,7 +46,8 @@
 
 		<!-- Librerías -->
 		<mapstruct.version>1.6.3</mapstruct.version>
-		<jackson2-core.version>2.21.7</jackson2-core.version>
+		<jackson2-bom.version>2.21.7</jackson2-bom.version>
+		<guava.version>33.7.2-jre</guava.version>
 		<aws-sdk.version>2.31.0</aws-sdk.version>
 		<firebase-admin.version>9.11.0</firebase-admin.version>
 		<zxing.version>3.5.3</zxing.version>
@@ -178,6 +179,13 @@
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
+	            <groupId>com.fasterxml.jackson</groupId>
+	            <artifactId>jackson-bom</artifactId>
+	            <version>${jackson2-bom.version}</version>
+	            <type>pom</type>
+	            <scope>import</scope>
+        	</dependency>
+			<dependency>
 				<groupId>org.springframework.modulith</groupId>
 				<artifactId>spring-modulith-bom</artifactId>
 				<version>${spring-modulith.version}</version>
@@ -197,9 +205,9 @@
 				<version>${archunit.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>com.fasterxml.jackson.core</groupId>
-				<artifactId>jackson-core</artifactId>
-				<version>${jackson2-core.version}</version>
+   				 <groupId>com.google.guava</groupId>
+    			<artifactId>guava</artifactId>
+    			<version>${guava.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
