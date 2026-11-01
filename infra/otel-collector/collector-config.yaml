@@ -1,0 +1,50 @@
+# Collector de OpenTelemetry que corre como segundo contenedor de Cloud Run, junto a la aplicacion.
+# La aplicacion le manda trazas y metricas por OTLP/HTTP (localhost:4318) y el collector las reenvia a
+# Google Cloud: las trazas a Cloud Trace y las metricas a Managed Service for Prometheus (ADR-0030).
+# Se autentica solo, con la cuenta de servicio del servicio de Cloud Run (smartlife-runtime).
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  # Descarta datos si la memoria del contenedor se acerca al limite, para no tumbar el collector.
+  memory_limiter:
+    check_interval: 1s
+    limit_percentage: 65
+    spike_limit_percentage: 20
+  # Agrupa los datos antes de enviarlos, para hacer menos llamadas a la API de Google.
+  batch:
+    send_batch_size: 200
+    send_batch_max_size: 200
+    timeout: 5s
+  # Agrega a cada dato el proyecto, la region y el servicio de Cloud Run.
+  resourcedetection:
+    detectors: [env, gcp]
+    timeout: 2s
+    override: false
+
+exporters:
+  googlecloud:
+  googlemanagedprometheus:
+
+extensions:
+  # Lo usa Cloud Run para saber que el collector ya arranco (startupProbe en el puerto 13133).
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+service:
+  extensions: [health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, resourcedetection, batch]
+      exporters: [googlecloud]
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, resourcedetection, batch]
+      exporters: [googlemanagedprometheus]

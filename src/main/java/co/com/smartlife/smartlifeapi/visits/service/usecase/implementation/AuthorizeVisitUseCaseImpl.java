@@ -1,6 +1,7 @@
 package co.com.smartlife.smartlifeapi.visits.service.usecase.implementation;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
@@ -14,6 +15,7 @@ import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.AttachedDocumentDomain;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationDomain;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitorDomain;
+import co.com.smartlife.smartlifeapi.visits.service.output.port.TelemetryOutputPort;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.VisitParametersOutputPort;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.VisitParametersDTO;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.AuthorizatorRepository;
@@ -51,9 +53,15 @@ import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.valid
  * <li>persiste visitante y autorizacion en una transaccion (si falla, retira el documento);</li>
  * <li>envia al visitante el correo con el QR, sin que un fallo del correo deshaga lo guardado.</li>
  * </ol>
+ * Ademas registra la telemetria de la operacion: autorizaciones creadas y fallidas, correos no enviados y duracion.
  */
 @Service
 public class AuthorizeVisitUseCaseImpl implements AuthorizeVisitUseCase {
+
+	static final String AUTHORIZATIONS_CREATED = "smartlife.visits.authorizations.created";
+	static final String AUTHORIZATIONS_FAILED = "smartlife.visits.authorizations.failed";
+	static final String NOTIFICATIONS_FAILED = "smartlife.visits.notifications.failed";
+	static final String AUTHORIZATION_DURATION = "smartlife.visits.authorizations.duration";
 
 	private final AuthorizatorRepository authorizatorRepository;
 	private final PropertyVisitRepository propertyVisitRepository;
@@ -65,6 +73,7 @@ public class AuthorizeVisitUseCaseImpl implements AuthorizeVisitUseCase {
 	private final RegisterVisitAuthorization registerAuthorization;
 	private final VisitAuthorizationNotifier notifier;
 	private final VisitParametersOutputPort parametersPort;
+	private final TelemetryOutputPort telemetry;
 	private final Clock clock;
 
 	public AuthorizeVisitUseCaseImpl(final AuthorizatorRepository authorizatorRepository,
@@ -73,7 +82,7 @@ public class AuthorizeVisitUseCaseImpl implements AuthorizeVisitUseCase {
 			final VerifyVisitAuthorizationAccessUseCase verifyAccess, final ResolveVisitor resolveVisitor,
 			final VisitDocumentStorage documentStorage, final RegisterVisitAuthorization registerAuthorization,
 			final VisitAuthorizationNotifier notifier, final VisitParametersOutputPort parametersPort,
-			final Clock clock) {
+			final TelemetryOutputPort telemetry, final Clock clock) {
 		this.authorizatorRepository = authorizatorRepository;
 		this.propertyVisitRepository = propertyVisitRepository;
 		this.visitReasonRepository = visitReasonRepository;
@@ -84,11 +93,26 @@ public class AuthorizeVisitUseCaseImpl implements AuthorizeVisitUseCase {
 		this.registerAuthorization = registerAuthorization;
 		this.notifier = notifier;
 		this.parametersPort = parametersPort;
+		this.telemetry = telemetry;
 		this.clock = clock;
 	}
 
 	@Override
 	public VisitAuthorizationDomain execute(final VisitAuthorizationDomain input) {
+		final long startedAt = System.nanoTime();
+		try {
+			final VisitAuthorizationDomain result = authorize(input);
+			telemetry.incrementCounter(AUTHORIZATIONS_CREATED);
+			return result;
+		} catch (final RuntimeException exception) {
+			telemetry.incrementCounter(AUTHORIZATIONS_FAILED);
+			throw exception;
+		} finally {
+			telemetry.recordDuration(AUTHORIZATION_DURATION, Duration.ofNanos(System.nanoTime() - startedAt));
+		}
+	}
+
+	private VisitAuthorizationDomain authorize(final VisitAuthorizationDomain input) {
 		final Instant now = Instant.now(clock);
 		final VisitParametersDTO parameters = parametersPort.get();
 
@@ -111,6 +135,9 @@ public class AuthorizeVisitUseCaseImpl implements AuthorizeVisitUseCase {
 		register(authorization, visitor.isNew());
 
 		final boolean notificationSent = notifier.notifyVisitor(authorization);
+		if (!notificationSent) {
+			telemetry.incrementCounter(NOTIFICATIONS_FAILED);
+		}
 		return toDomain(authorization, input, notificationSent);
 	}
 

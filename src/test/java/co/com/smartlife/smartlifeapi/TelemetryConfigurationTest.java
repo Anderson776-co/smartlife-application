@@ -2,6 +2,7 @@ package co.com.smartlife.smartlifeapi;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -62,6 +63,24 @@ class TelemetryConfigurationTest {
 
 		assertEquals("${MANAGEMENT_ENDPOINTS:health}",
 				properties.getProperty("management.endpoints.web.exposure.include"));
+	}
+
+	@Test
+	void theTracingEndpointShouldUseTheSpringBoot4PrefixAndPointToTheLocalCollector() throws IOException {
+		Properties properties = loadMainProperties();
+
+		assertEquals("${OTLP_TRACING_ENDPOINT:http://localhost:4318/v1/traces}",
+				properties.getProperty("management.opentelemetry.tracing.export.otlp.endpoint"));
+		assertNull(properties.getProperty("management.otlp.tracing.endpoint"),
+				"El prefijo management.otlp.tracing es de Spring Boot 3 y Spring Boot 4 lo ignora");
+	}
+
+	@Test
+	void theMetricsUrlShouldPointToTheLocalCollectorByDefault() throws IOException {
+		Properties properties = loadMainProperties();
+
+		assertEquals("${OTLP_METRICS_URL:http://localhost:4318/v1/metrics}",
+				properties.getProperty("management.otlp.metrics.export.url"));
 	}
 
 	@Test

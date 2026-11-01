@@ -34,6 +34,7 @@ import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.AuthorizatorDo
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationAccessDomain;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationDomain;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitorDomain;
+import co.com.smartlife.smartlifeapi.visits.service.output.port.TelemetryOutputPort;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.VisitParametersOutputPort;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.VisitParametersDTO;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.AuthorizatorRepository;
@@ -73,6 +74,7 @@ class AuthorizeVisitUseCaseImplTest {
 	private VisitDocumentStorage documentStorage;
 	private RegisterVisitAuthorization registerAuthorization;
 	private VisitAuthorizationNotifier notifier;
+	private TelemetryOutputPort telemetry;
 	private AuthorizeVisitUseCaseImpl useCase;
 
 	private AuthorizatorDomain authorizator;
@@ -89,6 +91,7 @@ class AuthorizeVisitUseCaseImplTest {
 		documentStorage = mock(VisitDocumentStorage.class);
 		registerAuthorization = mock(RegisterVisitAuthorization.class);
 		notifier = mock(VisitAuthorizationNotifier.class);
+		telemetry = mock(TelemetryOutputPort.class);
 		final VisitParametersOutputPort parameters = mock(VisitParametersOutputPort.class);
 		when(parameters.get()).thenReturn(new VisitParametersDTO(Duration.ofHours(24), Duration.ofDays(30),
 				Duration.ofMinutes(10), 5L * 1024 * 1024, Set.of("application/pdf", "image/jpeg", "image/png"),
@@ -96,7 +99,7 @@ class AuthorizeVisitUseCaseImplTest {
 
 		useCase = new AuthorizeVisitUseCaseImpl(authorizatorRepository, propertyVisitRepository,
 				visitReasonRepository, visitAuthorizationRepository, verifyAccess, resolveVisitor, documentStorage,
-				registerAuthorization, notifier, parameters, Clock.fixed(NOW, ZoneOffset.UTC));
+				registerAuthorization, notifier, parameters, telemetry, Clock.fixed(NOW, ZoneOffset.UTC));
 
 		authorizator = new AuthorizatorDomain(authorizatorId, urbanizationId, Set.of("OWNER"));
 		newVisitor = new VisitorEntity(UUID.randomUUID(), "Luis", "", "Torres", "", "2001", "luis@example.com", null);
@@ -263,6 +266,48 @@ class AuthorizeVisitUseCaseImplTest {
 		assertThrows(SmartLifeException.class, () -> useCase.execute(pastRequest));
 
 		verify(registerAuthorization, never()).register(any(), anyBoolean());
+	}
+
+	@Test
+	void shouldCountTheCreatedAuthorizationAndRecordItsDuration() {
+		useCase.execute(request(familyReasonId, AttachedDocumentDomain.empty()));
+
+		verify(telemetry).incrementCounter("smartlife.visits.authorizations.created");
+		verify(telemetry).recordDuration(eq("smartlife.visits.authorizations.duration"), any(Duration.class));
+		verify(telemetry, never()).incrementCounter("smartlife.visits.authorizations.failed");
+		verify(telemetry, never()).incrementCounter("smartlife.visits.notifications.failed");
+	}
+
+	@Test
+	void shouldCountAFailedAuthorizationWhenTheRequestIsRejected() {
+		assertThrows(SmartLifeException.class,
+				() -> useCase.execute(request(technicalReasonId, AttachedDocumentDomain.empty())));
+
+		verify(telemetry).incrementCounter("smartlife.visits.authorizations.failed");
+		verify(telemetry).recordDuration(eq("smartlife.visits.authorizations.duration"), any(Duration.class));
+		verify(telemetry, never()).incrementCounter("smartlife.visits.authorizations.created");
+	}
+
+	@Test
+	void shouldCountAFailedAuthorizationWhenPersistenceFails() {
+		doThrow(new IllegalStateException("db down")).when(registerAuthorization).register(any(), anyBoolean());
+
+		assertThrows(IllegalStateException.class,
+				() -> useCase.execute(request(familyReasonId, AttachedDocumentDomain.empty())));
+
+		verify(telemetry).incrementCounter("smartlife.visits.authorizations.failed");
+		verify(telemetry, never()).incrementCounter("smartlife.visits.authorizations.created");
+	}
+
+	@Test
+	void shouldCountTheNotificationFailureWithoutFailingTheAuthorization() {
+		when(notifier.notifyVisitor(any())).thenReturn(false);
+
+		useCase.execute(request(familyReasonId, AttachedDocumentDomain.empty()));
+
+		verify(telemetry).incrementCounter("smartlife.visits.notifications.failed");
+		verify(telemetry).incrementCounter("smartlife.visits.authorizations.created");
+		verify(telemetry, never()).incrementCounter("smartlife.visits.authorizations.failed");
 	}
 
 	private VisitAuthorizationDomain request(final UUID reasonId, final AttachedDocumentDomain document) {
