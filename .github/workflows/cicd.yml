@@ -164,4 +164,6 @@ jobs:
             R2_SECRET_KEY=r2-secret-key:latest
             STRAPI_API_TOKEN=strapi-api-token:latest
             REDIS_PASSWORD=redis-password:latest
+            STRAPI_WEBHOOK_SECRET=strapi-webhook-secret:latest
+            CONFIG_WEBHOOK_SECRET=config-webhook-secret:latest
           secrets_update_strategy: merge
