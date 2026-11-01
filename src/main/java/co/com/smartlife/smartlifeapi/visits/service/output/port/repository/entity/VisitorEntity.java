@@ -4,14 +4,14 @@ import java.util.UUID;
 
 public class VisitorEntity {
 	private UUID id;
+	private String documentNumber;
 	private String firstName;
 	private String middleName;
 	private String lastName;
 	private String secondLastName;
-	private String documentNumber;
 	private String email;
 	private String vehiclePlate;
-
+	
 	public VisitorEntity(
 		final UUID id,
 		final String firstName,

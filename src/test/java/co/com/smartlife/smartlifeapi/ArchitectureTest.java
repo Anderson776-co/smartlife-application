@@ -25,11 +25,12 @@ class ArchitectureTest {
     @ArchTest
     static final ArchRule DoNotUseLibrariesInDomain =
             classes().that().resideInAPackage("..domain..")
+            		.and().doNotHaveSimpleName("package-info")
                     .should().onlyDependOnClassesThat().resideInAnyPackage("java..", "..domain..");
 
     @ArchTest
     static final ArchRule ServicesDoNotUsePersistenceDirectly =
             noClasses().that().resideInAPackage("..infrastructure.input..")
                     .should().dependOnClassesThat().resideInAnyPackage(
-                            "..services.usecases..", "..services.output..", "..infrastructure.output..").allowEmptyShould(true);
+                            "..service.usecase..", "..service.output..", "..infrastructure.output..").allowEmptyShould(true);
 }

@@ -6,17 +6,19 @@ public class VisitReasonEntity {
 	
 	private UUID id;
 	private String name;
+	private Boolean requiresDocument;
 	
-	public VisitReasonEntity(final UUID id, final String name) {
+	public VisitReasonEntity(final UUID id, final String name, final Boolean requiresDocument) {
 		setId(id);
 		setName(name);
+		setRequiresDocument(requiresDocument);
 	}
 	
 	public UUID getId() {
 		return id;
 	}
 	
-	private void setId(final UUID id) {
+	public void setId(final UUID id) {
 		this.id = id;
 	}
 	
@@ -24,7 +26,15 @@ public class VisitReasonEntity {
 		return name;
 	}
 	
-	private void setName(final String name) {
+	public void setName(final String name) {
 		this.name = name;
+	}
+
+	public Boolean getRequiresDocument() {
+		return requiresDocument;
+	}
+
+	public void setRequiresDocument(Boolean requiresDocument) {
+		this.requiresDocument = requiresDocument;
 	}
 }

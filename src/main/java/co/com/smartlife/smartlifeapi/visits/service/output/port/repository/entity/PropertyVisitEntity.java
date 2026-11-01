@@ -6,14 +6,14 @@ public class PropertyVisitEntity {
 	
 	private final UUID id;
 	private final String location; // Location: Ubicacion -> Es un dato calculado que proviene del contexto de viviendas.
-	private final AuthorizingOwnerEntity owner;
+	private final UUID ownerId;
 	
 	
 	
-	public PropertyVisitEntity(final UUID id, final String location, final AuthorizingOwnerEntity owner) {
+	public PropertyVisitEntity(final UUID id, final String location, final UUID ownerId) {
 		this.id = id;
 		this.location = location;
-		this.owner = owner;
+		this.ownerId = ownerId;
 	}
 
 	public UUID getId() {
@@ -23,8 +23,8 @@ public class PropertyVisitEntity {
 	public String getLocation() {
 		return location;
 	}
-	
-	public AuthorizingOwnerEntity getOwner() {
-		return owner;
+
+	public UUID getOwnerId() {
+		return ownerId;
 	}
 }

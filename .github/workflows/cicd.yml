@@ -139,4 +139,31 @@ jobs:
           image: ${{ env.IMAGEN }}:${{ github.sha }}
           region: ${{ vars.GCP_REGION }}
           project_id: ${{ vars.GCP_PROJECT_ID }}
-          flags: --service-account=smartlife-runtime@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com
+          flags: --service-account=smartlife-runtime@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com --memory=1Gi --max-instances=1 --cpu-boost
+          env_vars: |-
+            CONFIG_SERVER_URL=https://parameter-catalog-smartlife-177841439929.us-central1.run.app
+            DB_URL=jdbc:postgresql://ep-round-frost-b4icbrl3.c-6.us-east-2.aws.neon.tech/smartlife?sslmode=require
+            DB_USER=smartlife_app
+            FIREBASE_PROJECT_ID=pocfirebase-c2915
+            R2_ENDPOINT=https://6b2aa7dd089d2ccd1ce24c3d6bb2eda2.r2.cloudflarestorage.com
+            R2_BUCKET=smartlife-documentos
+            RESEND_FROM=no-reply@mail.smartlife.sarl
+            CORS_ALLOWED_ORIGINS=https://smartlife.sarl
+            STRAPI_URL=https://strapi-cms-clfarpgyxa-uc.a.run.app
+            CACHE_TYPE=redis
+            REDIS_HOST=rapid-sculpin-44456.upstash.io
+            REDIS_PORT=6379
+            REDIS_USERNAME=default
+            REDIS_SSL=true
+
+          env_vars_update_strategy: merge
+          secrets: |-
+            RESEND_API_KEY=resend-api-key:latest
+            DB_PASSWORD=db-password:latest
+            R2_ACCESS_KEY=r2-access-key:latest
+            R2_SECRET_KEY=r2-secret-key:latest
+            STRAPI_API_TOKEN=strapi-api-token:latest
+            REDIS_PASSWORD=redis-password:latest
+            STRAPI_WEBHOOK_SECRET=strapi-webhook-secret:latest
+            CONFIG_WEBHOOK_SECRET=config-webhook-secret:latest
+          secrets_update_strategy: merge

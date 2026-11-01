@@ -1,0 +1,1 @@
+SELECT schemaname, matviewname FROM pg_matviews ORDER BY schemaname, matviewname;

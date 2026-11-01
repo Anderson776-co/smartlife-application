@@ -1,0 +1,288 @@
+<app-encabezado />
+
+<header class="banda">
+  <div class="banda-contenido">
+    <nav class="migas revelar" style="--i: 0" aria-label="Ruta de navegación">
+      <a routerLink="/inicio">Inicio</a>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">Autorizar visita</span>
+    </nav>
+    <h1 class="revelar" style="--i: 1">Autorizar visita</h1>
+    <p class="revelar" style="--i: 2">
+      Completa los datos y enviaremos al visitante su código QR de acceso.
+    </p>
+  </div>
+</header>
+
+<main class="visita">
+  @if (resultado(); as r) {
+    <app-visita-autorizada
+      [resultado]="r"
+      [resumen]="resumen()"
+      (otra)="nueva()"
+      (volver)="volver()"
+    />
+  } @else {
+    <div class="distribucion">
+      <form class="formulario" [formGroup]="formulario" (ngSubmit)="enviar()" novalidate>
+        @if (error(); as mensaje) {
+          <div class="alerta" role="alert">{{ mensaje }}</div>
+        }
+
+        <section class="bloque revelar" style="--i: 1">
+          <header class="bloque-cabecera">
+            <span class="paso">1</span>
+            <div>
+              <h2>Datos de la visita</h2>
+              <p>¿Dónde, por qué y cuándo llega tu visitante?</p>
+            </div>
+          </header>
+
+          <div class="rejilla">
+            <div class="f-campo">
+              <label for="propiedadId">Propiedad</label>
+              <select id="propiedadId" formControlName="propiedadId" class="f-control">
+                <option value="" disabled>Selecciona una propiedad</option>
+                @for (p of propiedades; track p.id) {
+                  <option [value]="p.id">{{ p.nombre }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="f-campo">
+              <label for="motivoId">Motivo de la visita</label>
+              <select id="motivoId" formControlName="motivoId" class="f-control">
+                <option value="" disabled>Selecciona un motivo</option>
+                @for (m of motivos; track m.id) {
+                  <option [value]="m.id">{{ m.nombre }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="f-campo">
+              <label for="inicio">Inicio</label>
+              <input id="inicio" type="datetime-local" formControlName="inicio" class="f-control" />
+            </div>
+
+            <div class="f-campo">
+              <label for="fin">Fin</label>
+              <input id="fin" type="datetime-local" formControlName="fin" class="f-control" />
+            </div>
+          </div>
+
+          @if (duracion(); as d) {
+            <small class="f-ayuda">Duración de la visita: {{ d }}</small>
+          }
+
+          <div class="f-campo">
+            <label for="observacion">Observación <span class="opcional">(opcional)</span></label>
+            <textarea
+              id="observacion"
+              rows="3"
+              formControlName="observacion"
+              class="f-control"
+              placeholder="Ej.: llega en moto y entregará un paquete"
+            ></textarea>
+          </div>
+
+          @if (requiereDocumento()) {
+            <div class="f-campo documento">
+              <span class="etiqueta-suelta">Documento de soporte</span>
+              <div class="subida-fila">
+                <label class="subida">
+                  <svg viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <path d="m17 8-5-5-5 5M12 3v12" />
+                  </svg>
+                  <span class="subida-texto">
+                    @if (documento(); as d) {
+                      <strong>{{ d.name }}</strong>
+                      <small>{{ tamano(d) }}</small>
+                    } @else {
+                      <strong>Haz clic para adjuntar el documento</strong>
+                      <small>PDF, JPG o PNG</small>
+                    }
+                  </span>
+                  <input
+                    #archivo
+                    class="subida-entrada"
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+                    (change)="elegirArchivo($event)"
+                  />
+                </label>
+                @if (documento()) {
+                  <button
+                    type="button"
+                    class="quitar"
+                    (click)="quitarArchivo(archivo)"
+                    aria-label="Quitar el documento"
+                  >
+                    Quitar
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </section>
+
+        <section class="bloque revelar" style="--i: 2">
+          <header class="bloque-cabecera">
+            <span class="paso">2</span>
+            <div>
+              <h2>Datos del visitante</h2>
+              <p>Con esta información se genera su código de acceso.</p>
+            </div>
+          </header>
+
+          <div class="rejilla">
+            <div class="f-campo">
+              <label for="documento">Número de documento</label>
+              <input
+                id="documento"
+                type="text"
+                formControlName="documento"
+                class="f-control"
+                autocomplete="off"
+              />
+            </div>
+
+            <div class="f-campo">
+              <label for="correo">Correo electrónico</label>
+              <input
+                id="correo"
+                type="email"
+                formControlName="correo"
+                class="f-control"
+                autocomplete="off"
+              />
+            </div>
+
+            <div class="f-campo">
+              <label for="primerNombre">Primer nombre</label>
+              <input
+                id="primerNombre"
+                type="text"
+                formControlName="primerNombre"
+                class="f-control"
+              />
+            </div>
+
+            <div class="f-campo">
+              <label for="segundoNombre">Segundo nombre <span class="opcional">(opcional)</span></label>
+              <input
+                id="segundoNombre"
+                type="text"
+                formControlName="segundoNombre"
+                class="f-control"
+              />
+            </div>
+
+            <div class="f-campo">
+              <label for="primerApellido">Primer apellido</label>
+              <input
+                id="primerApellido"
+                type="text"
+                formControlName="primerApellido"
+                class="f-control"
+              />
+            </div>
+
+            <div class="f-campo">
+              <label for="segundoApellido">
+                Segundo apellido <span class="opcional">(opcional)</span>
+              </label>
+              <input
+                id="segundoApellido"
+                type="text"
+                formControlName="segundoApellido"
+                class="f-control"
+              />
+            </div>
+
+            <div class="f-campo">
+              <label for="placa">Placa del vehículo <span class="opcional">(opcional)</span></label>
+              <input
+                id="placa"
+                type="text"
+                formControlName="placa"
+                class="f-control"
+                autocomplete="off"
+              />
+            </div>
+          </div>
+        </section>
+
+        <div class="acciones revelar" style="--i: 3">
+          <button type="button" class="btn btn-secundario" (click)="volver()">Cancelar</button>
+          <button type="submit" class="btn btn-primario" [disabled]="cargando()">
+            @if (cargando()) {
+              <span class="giro" aria-hidden="true"></span>
+              Autorizando…
+            } @else {
+              Autorizar visita
+            }
+          </button>
+        </div>
+      </form>
+
+      <aside class="lateral revelar" style="--i: 2" aria-label="Resumen de la autorización">
+        <section class="tarjeta">
+          <div class="progreso-cabecera">
+            <h2>Resumen</h2>
+            <span class="progreso-valor">{{ progreso() }}%</span>
+          </div>
+          <div
+            class="progreso"
+            role="progressbar"
+            aria-label="Formulario completado"
+            [attr.aria-valuenow]="progreso()"
+            aria-valuemin="0"
+            aria-valuemax="100"
+          >
+            <span class="progreso-barra" [style.width.%]="progreso()"></span>
+          </div>
+
+          <dl class="resumen">
+            <div>
+              <dt>Propiedad</dt>
+              <dd>{{ resumen().propiedad ?? '—' }}</dd>
+            </div>
+            <div>
+              <dt>Motivo</dt>
+              <dd>{{ resumen().motivo ?? '—' }}</dd>
+            </div>
+            <div>
+              <dt>Desde</dt>
+              <dd>{{ resumen().inicio }}</dd>
+            </div>
+            <div>
+              <dt>Hasta</dt>
+              <dd>{{ resumen().fin }}</dd>
+            </div>
+            @if (resumen().duracion; as d) {
+              <div>
+                <dt>Duración</dt>
+                <dd>{{ d }}</dd>
+              </div>
+            }
+            <div>
+              <dt>Visitante</dt>
+              <dd>{{ resumen().visitante ?? '—' }}</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="tarjeta tarjeta--reglas">
+          <h2>Reglas de la autorización</h2>
+          <ul>
+            <li>Algunos motivos exigen un documento PDF, JPG o PNG.</li>
+            <li>El visitante recibe su código QR por correo.</li>
+          </ul>
+        </section>
+      </aside>
+    </div>
+  }
+</main>
+
+<app-pie />
