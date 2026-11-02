@@ -1,6 +1,7 @@
 package co.com.smartlife.smartlifeapi.visits.service.output.port.repository;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -16,5 +17,10 @@ UpdateRepository<UUID, VisitAuthorizationEntity>{
 
 	/** Hay una autorizacion activa del visitante en la propiedad que se cruza con el rango dado. */
 	boolean existsOverlappingAuthorization(UUID visitorId, UUID propertyId, Instant startDate, Instant endDate);
-	
+
+    /** Autorizaciones creadas por un autorizador, de la mas reciente a la mas antigua. */
+    List<VisitAuthorizationEntity> findByAuthorizatorId(UUID authorizatorId);
+
+    /** Una autorizacion, solo si fue creada por ese autorizador. */
+    Optional<VisitAuthorizationEntity> findByIdAndAuthorizatorId(UUID id, UUID authorizatorId);
 }
