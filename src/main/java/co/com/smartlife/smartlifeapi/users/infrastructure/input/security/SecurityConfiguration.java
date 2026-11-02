@@ -1,6 +1,5 @@
 package co.com.smartlife.smartlifeapi.users.infrastructure.input.security;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -8,8 +7,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -23,15 +20,12 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import co.com.smartlife.smartlifeapi.users.service.input.port.ValidateSessionInputPort;
-import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfiguration {
-	private static final String UNAUTHORIZED = "{\"messages\":[\"Sesión requerida\"],\"data\":[],\"responseSucceded\":false}";
     private static final String WEBHOOKS = "/api/v1/internal/webhooks/**";
-    private static final String FORBIDDEN = "{\"messages\":[\"Acceso denegado\"],\"data\":[],\"responseSucceded\":false}";
 
     /**
      * Cadena propia de los webhooks entrantes (Strapi y GitHub). Es sin estado, no lee la cookie de sesion
@@ -57,7 +51,7 @@ public class SecurityConfiguration {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http, ValidateSessionInputPort validateSession,
-            SessionCookieManager cookies) throws Exception {
+            SessionCookieManager cookies, SecurityErrorResponseWriter errors) throws Exception {
         http
             .csrf(csrf -> csrf.spa())   // cookie XSRF-TOKEN + header X-XSRF-TOKEN
             .cors(Customizer.withDefaults())
@@ -70,8 +64,8 @@ public class SecurityConfiguration {
                 .requestMatchers("/error", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .anyRequest().authenticated())
             .exceptionHandling(e -> e
-                .authenticationEntryPoint((req, res, ex) -> write(res, HttpStatus.UNAUTHORIZED, UNAUTHORIZED))
-                .accessDeniedHandler((req, res, ex) -> write(res, HttpStatus.FORBIDDEN, FORBIDDEN)))
+                .authenticationEntryPoint((req, res, ex) -> errors.unauthorized(res))
+                .accessDeniedHandler((req, res, ex) -> errors.forbidden(res)))
             .addFilterBefore(new SessionCookieFilter(validateSession, cookies),
                     UsernamePasswordAuthenticationFilter.class);
         return http.build();
@@ -89,11 +83,5 @@ public class SecurityConfiguration {
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
-    }
-
-    private static void write(HttpServletResponse res, HttpStatus status, String body) throws IOException {
-        res.setStatus(status.value());
-        res.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        res.getWriter().write(body);
     }
 }
