@@ -16,10 +16,13 @@ import static org.mockito.Mockito.when;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
+import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogProvider;
+import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.dto.MessageCatalogDTO;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitorDomain;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.VisitorRepository;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitorEntity;
@@ -34,6 +37,14 @@ class ResolveVisitorTest {
 		repository = mock(VisitorRepository.class);
 		when(repository.findByDocumentNumber(anyString())).thenReturn(Optional.empty());
 		resolveVisitor = new ResolveVisitor(repository);
+	}
+
+	/** El catálogo es estático: se deja como "sin configurar" (devuelve el código) para no afectar otras pruebas. */
+	@AfterEach
+	void resetMessageCatalog() {
+		MessageCatalogProvider.init((code, locale) -> {
+			throw new IllegalStateException("Catálogo de mensajes no configurado en la prueba");
+		});
 	}
 
 	private static VisitorDomain visitor(final String document, final String first, final String middle,
@@ -115,5 +126,53 @@ class ResolveVisitorTest {
 		assertRejected(visitor("2001", "Luis", "", "Torres", "", "", ""));
 		assertRejected(visitor("2001", "Luis", "", "Torres", "", "luis@example.com", "ab"));
 		assertRejected(visitor("2001", "Luis", "", "Torres", "", "luis@example.com", "AB#123"));
+	}
+
+	@Test
+	void shouldRejectANewVisitorWhoseEmailBelongsToAnotherVisitor() {
+		MessageCatalogProvider.init((code, locale) -> new MessageCatalogDTO(code, "", "texto:" + code, locale));
+		final VisitorEntity owner = new VisitorEntity(UUID.randomUUID(), "Luis", "", "Torres", "", "2001",
+				"luis@example.com", null);
+		when(repository.findByEmail("luis@example.com")).thenReturn(Optional.of(owner));
+
+		final SmartLifeException exception = assertThrows(SmartLifeException.class,
+				() -> resolveVisitor.resolve(visitor("9999", "Ana", "", "Perez", "", "  LUIS@Example.COM ", "")));
+
+		assertEquals(SmartLifeException.Type.BUSINESS, exception.getType());
+		assertEquals("texto:USER_MESSAGE_VISITOR_EMAIL_ALREADY_REGISTERED", exception.getUserMessage());
+		assertEquals("texto:TECHNICAL_MESSAGE_VISITOR_EMAIL_ALREADY_REGISTERED", exception.getTechnicalMessage());
+		verify(repository).findByEmail("luis@example.com");
+	}
+
+	@Test
+	void shouldNotLookUpTheEmailWhenTheDocumentAlreadyExists() {
+		final VisitorEntity existing = new VisitorEntity(UUID.randomUUID(), "Luis", "", "Torres", "", "2001",
+				"luis@example.com", null);
+		when(repository.findByDocumentNumber("2001")).thenReturn(Optional.of(existing));
+
+		resolveVisitor.resolve(visitor("2001", "", "", "", "", "otro@example.com", ""));
+
+		verify(repository, never()).findByEmail(anyString());
+	}
+
+	@Test
+	void shouldTakeBothMessagesOfEveryRejectionFromTheCatalog() {
+		MessageCatalogProvider.init((code, locale) -> new MessageCatalogDTO(code, "", "texto:" + code, locale));
+
+		assertCatalogRejection("VISITOR_DOCUMENT_REQUIRED", visitor("   ", "Luis", "", "Torres", "", "luis@example.com", ""));
+		assertCatalogRejection("VISITOR_DOCUMENT_INVALID", visitor("ab", "Luis", "", "Torres", "", "luis@example.com", ""));
+		assertCatalogRejection("VISITOR_FIRST_NAME_INVALID", visitor("2001", "Luis1", "", "Torres", "", "luis@example.com", ""));
+		assertCatalogRejection("VISITOR_LAST_NAME_INVALID", visitor("2001", "Luis", "", "", "", "luis@example.com", ""));
+		assertCatalogRejection("VISITOR_MIDDLE_NAME_INVALID", visitor("2001", "Luis", "Ma3", "Torres", "", "luis@example.com", ""));
+		assertCatalogRejection("VISITOR_SECOND_LAST_NAME_INVALID", visitor("2001", "Luis", "", "Torres", "Gom3z", "luis@example.com", ""));
+		assertCatalogRejection("VISITOR_EMAIL_INVALID", visitor("2001", "Luis", "", "Torres", "", "no-es-un-correo", ""));
+		assertCatalogRejection("VISITOR_PLATE_INVALID", visitor("2001", "Luis", "", "Torres", "", "luis@example.com", "ab"));
+	}
+
+	private void assertCatalogRejection(final String code, final VisitorDomain data) {
+		final SmartLifeException exception = assertThrows(SmartLifeException.class, () -> resolveVisitor.resolve(data));
+
+		assertEquals("texto:USER_MESSAGE_" + code, exception.getUserMessage());
+		assertEquals("texto:TECHNICAL_MESSAGE_" + code, exception.getTechnicalMessage());
 	}
 }
