@@ -45,12 +45,15 @@ public class ResolveVisitor {
 	}
 	
 	private VisitorEntity buildNewVisitor(final String documentNumber, final VisitorDomain data) {
-		final String firstName = requiredName(data.firstName(), "VISITOR_FIRST_NAME_INVALID");
-		final String lastName = requiredName(data.lastName(), "VISITOR_LAST_NAME_INVALID");
+		final String firstName = requiredName(data.firstName(), "VISITOR_FIRST_NAME_REQUIRED", "VISITOR_FIRST_NAME_INVALID");
+		final String lastName = requiredName(data.lastName(), "VISITOR_LAST_NAME_REQUIRED", "VISITOR_LAST_NAME_INVALID");
 		final String middleName = optionalName(data.middleName(), "VISITOR_MIDDLE_NAME_INVALID");
 		final String secondLastName = optionalName(data.secondLastName(), "VISITOR_SECOND_LAST_NAME_INVALID");
 
 		final String email = TextHelper.getDefaultWithTrim(data.email()).toLowerCase(Locale.ROOT);
+		if (email.isEmpty()) {
+			throw catalogError("VISITOR_EMAIL_REQUIRED");
+		}
 		if (!TextHelper.isValidEmail(email) || email.length() > EMAIL_MAX_LENGTH) {
 			throw catalogError("VISITOR_EMAIL_INVALID");
 		}
@@ -66,17 +69,28 @@ public class ResolveVisitor {
 				lastName, secondLastName, documentNumber, email, plate.isEmpty() ? null : plate);
 	}
 
-	private static String requiredName(final String value, final String code) {
+	/** Un nombre obligatorio tiene dos rechazos distintos: vacio (REQUIRED) y con formato incorrecto (INVALID). */
+	private static String requiredName(final String value, final String requiredCode, final String invalidCode) {
 		final String name = TextHelper.getDefaultWithTrim(value);
+		if (name.isEmpty()) {
+			throw catalogError(requiredCode);
+		}
 		if (!name.matches(NAME_PATTERN)) {
-			throw catalogError(code);   
+			throw catalogError(invalidCode);
 		}
 		return name;
 	}
 
-	private static String optionalName(final String value, final String code) {
+	/** Un nombre opcional solo se rechaza si viene con formato incorrecto. */
+	private static String optionalName(final String value, final String invalidCode) {
 		final String name = TextHelper.getDefaultWithTrim(value);
-		return name.isEmpty() ? name : requiredName(name, code);
+		if (name.isEmpty()) {
+			return name;
+		}
+		if (!name.matches(NAME_PATTERN)) {
+			throw catalogError(invalidCode);
+		}
+		return name;
 	}
 
 	/** Mensaje de usuario (USER_MESSAGE_X) y mensaje técnico (TECHNICAL_MESSAGE_X), ambos del catálogo de Strapi. */

@@ -2,6 +2,7 @@ package co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.supp
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -161,12 +162,28 @@ class ResolveVisitorTest {
 
 		assertCatalogRejection("VISITOR_DOCUMENT_REQUIRED", visitor("   ", "Luis", "", "Torres", "", "luis@example.com", ""));
 		assertCatalogRejection("VISITOR_DOCUMENT_INVALID", visitor("ab", "Luis", "", "Torres", "", "luis@example.com", ""));
+		assertCatalogRejection("VISITOR_FIRST_NAME_REQUIRED", visitor("2001", "   ", "", "Torres", "", "luis@example.com", ""));
 		assertCatalogRejection("VISITOR_FIRST_NAME_INVALID", visitor("2001", "Luis1", "", "Torres", "", "luis@example.com", ""));
-		assertCatalogRejection("VISITOR_LAST_NAME_INVALID", visitor("2001", "Luis", "", "", "", "luis@example.com", ""));
+		assertCatalogRejection("VISITOR_LAST_NAME_REQUIRED", visitor("2001", "Luis", "", "", "", "luis@example.com", ""));
+		assertCatalogRejection("VISITOR_LAST_NAME_INVALID", visitor("2001", "Luis", "", "Tor3es", "", "luis@example.com", ""));
 		assertCatalogRejection("VISITOR_MIDDLE_NAME_INVALID", visitor("2001", "Luis", "Ma3", "Torres", "", "luis@example.com", ""));
 		assertCatalogRejection("VISITOR_SECOND_LAST_NAME_INVALID", visitor("2001", "Luis", "", "Torres", "Gom3z", "luis@example.com", ""));
+		assertCatalogRejection("VISITOR_EMAIL_REQUIRED", visitor("2001", "Luis", "", "Torres", "", "   ", ""));
 		assertCatalogRejection("VISITOR_EMAIL_INVALID", visitor("2001", "Luis", "", "Torres", "", "no-es-un-correo", ""));
 		assertCatalogRejection("VISITOR_PLATE_INVALID", visitor("2001", "Luis", "", "Torres", "", "luis@example.com", "ab"));
+	}
+
+	@Test
+	void aRequiredFieldShouldGetADifferentMessageThanAnInvalidOne() {
+		MessageCatalogProvider.init((code, locale) -> new MessageCatalogDTO(code, "", "texto:" + code, locale));
+
+		final SmartLifeException empty = assertThrows(SmartLifeException.class,
+				() -> resolveVisitor.resolve(visitor("2001", "", "", "Torres", "", "luis@example.com", "")));
+		final SmartLifeException malformed = assertThrows(SmartLifeException.class,
+				() -> resolveVisitor.resolve(visitor("2001", "Luis1", "", "Torres", "", "luis@example.com", "")));
+
+		assertNotEquals(empty.getUserMessage(), malformed.getUserMessage());
+		assertNotEquals(empty.getTechnicalMessage(), malformed.getTechnicalMessage());
 	}
 
 	private void assertCatalogRejection(final String code, final VisitorDomain data) {
