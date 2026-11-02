@@ -14,6 +14,7 @@ import co.com.smartlife.smartlifeapi.crosscutting.helper.TextHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.specification.Specification;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogProvider;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationFilterDomain;
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationPageDomain;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationStatus;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationSummaryDomain;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.VisitAuthorizationRepository;
@@ -51,6 +52,12 @@ public class ConsultVisitAuthorizationsUseCaseImpl implements ConsultVisitAuthor
 				.filter(specification::isSatisfiedBy)
 				.map(authorization -> toSummary(authorization, now))
 				.toList();
+	}
+
+	@Override
+	public VisitAuthorizationPageDomain listPage(final UUID authorizatorId, final VisitAuthorizationFilterDomain filter,
+			final int page, final int size) {
+		return VisitAuthorizationPageDomain.of(list(authorizatorId, filter), page, size);
 	}
 
 	@Override

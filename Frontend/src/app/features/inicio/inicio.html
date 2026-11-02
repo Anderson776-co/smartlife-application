@@ -71,6 +71,32 @@
         </button>
       }
 
+      @if (puedeAutorizar()) {
+        <button
+          type="button"
+          class="servicio servicio--activo revelar"
+          style="--i: 3"
+          (click)="irMisAutorizaciones()"
+        >
+          <span class="servicio-icono">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9 11l3 3 8-8" />
+              <path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h9" />
+            </svg>
+          </span>
+          <span class="servicio-titulo">Mis autorizaciones</span>
+          <span class="servicio-texto">
+            Consulta las visitas que has autorizado y revisa su horario y estado.
+          </span>
+          <span class="servicio-cta">
+            Ver historial
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </span>
+        </button>
+      }
+
       <div class="servicio servicio--pronto revelar" style="--i: 3" aria-disabled="true">
         <span class="servicio-icono">
           <svg viewBox="0 0 24 24" aria-hidden="true">

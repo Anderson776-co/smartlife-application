@@ -27,6 +27,7 @@ import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.AuthorizeV
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.GetVisitAuthorizationDtoRequest;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.ListVisitAuthorizationsDtoRequest;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.response.VisitAuthorizationDtoResponse;
+import co.com.smartlife.smartlifeapi.visits.service.input.dto.response.VisitAuthorizationPageDtoResponse;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.response.VisitAuthorizationSummaryDtoResponse;
 import co.com.smartlife.smartlifeapi.visits.service.input.port.AuthorizeVisitInputPort;
 import co.com.smartlife.smartlifeapi.visits.service.input.port.GetVisitAuthorizationInputPort;
@@ -67,29 +68,33 @@ class VisitAuthorizationControllerTest {
 	@Test
 	void listShouldAnswer200WithTheAuthorizationsOfTheSessionUser() {
 		final VisitAuthorizationSummaryDtoResponse summary = summary();
-		when(listPort.execute(new ListVisitAuthorizationsDtoRequest(null, null, null, null, USER)))
-				.thenReturn(List.of(summary));
+		final VisitAuthorizationPageDtoResponse page = new VisitAuthorizationPageDtoResponse(List.of(summary), 0, 10, 1,
+				1);
+		when(listPort.execute(new ListVisitAuthorizationsDtoRequest(null, null, null, null, USER, 0, 10)))
+				.thenReturn(page);
 
-		final ResponseEntity<Response<VisitAuthorizationSummaryDtoResponse>> response = controller.list(null, null,
-				null, null, USER);
+		final ResponseEntity<Response<VisitAuthorizationPageDtoResponse>> response = controller.list(null, null,
+				null, null, 0, 10, USER);
 
 		assertEquals(200, response.getStatusCode().value());
 		assertTrue(response.getBody().isResponseSucceded());
 		assertEquals(1, response.getBody().getData().size());
-		assertSame(summary, response.getBody().getData().get(0));
+		assertSame(page, response.getBody().getData().get(0));
+		assertSame(summary, response.getBody().getData().get(0).content().get(0));
 	}
 
 	@Test
-	void listShouldPassEveryFilterAndTheSessionUserToThePort() {
-		when(listPort.execute(org.mockito.ArgumentMatchers.any())).thenReturn(List.of());
+	void listShouldPassEveryFilterThePageAndTheSessionUserToThePort() {
+		when(listPort.execute(org.mockito.ArgumentMatchers.any()))
+				.thenReturn(new VisitAuthorizationPageDtoResponse(List.of(), 2, 5, 0, 0));
 
-		controller.list(VisitAuthorizationStatus.CURRENT, FROM, TO, PROPERTY_ID, USER);
+		controller.list(VisitAuthorizationStatus.CURRENT, FROM, TO, PROPERTY_ID, 2, 5, USER);
 
 		final ArgumentCaptor<ListVisitAuthorizationsDtoRequest> captor = ArgumentCaptor
 				.forClass(ListVisitAuthorizationsDtoRequest.class);
 		verify(listPort).execute(captor.capture());
 		assertEquals(new ListVisitAuthorizationsDtoRequest(VisitAuthorizationStatus.CURRENT, FROM, TO, PROPERTY_ID,
-				USER), captor.getValue());
+				USER, 2, 5), captor.getValue());
 	}
 
 	@Test

@@ -30,6 +30,36 @@ export interface AutorizacionCreada {
   notificationSent: boolean;
 }
 
+/** Estado de una autorización, calculado por el backend: próxima, vigente, vencida o cancelada. */
+export type EstadoAutorizacion = 'UPCOMING' | 'CURRENT' | 'EXPIRED' | 'CANCELLED';
+
+/** Una autorización ya registrada, tal como la devuelve GET /visits/authorizations. */
+export interface AutorizacionResumen {
+  authorizationId: string;
+  authorizationStartDate: string;
+  authorizationEndDate: string;
+  registerDate: string;
+  observation: string;
+  qrUrl: string;
+  propertyLocation: string;
+  visitReason: string;
+  documentAttached: boolean;
+  visitorDocumentNumber: string;
+  visitorFullName: string;
+  visitorEmail: string;
+  vehiclePlate: string;
+  status: EstadoAutorizacion;
+}
+
+/** Una página de resultados (los números de página empiezan en 0, como en el backend). */
+export interface PaginaAutorizaciones {
+  content: AutorizacionResumen[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+}
+
 interface RespuestaApi<T> {
   messages: string[];
   data: T[];
@@ -69,5 +99,27 @@ export class VisitAuthorizationService {
       throw new Error('El servidor no devolvió la autorización creada.');
     }
     return creada;
+  }
+
+  /**
+   * Una página de las autorizaciones que hizo el usuario en sesión, de la más reciente a la más antigua
+   * (GET /visits/authorizations?page=0&size=10, con `status` opcional). La paginación la hace el
+   * servidor: la respuesta trae `data[0]` con `content`, `page`, `size`, `totalElements` y `totalPages`.
+   */
+  async listar(
+    pagina: number,
+    tamano: number,
+    estado?: EstadoAutorizacion,
+  ): Promise<PaginaAutorizaciones> {
+    const params: Record<string, string | number> = { page: pagina, size: tamano };
+    if (estado) params['status'] = estado;
+    const respuesta = await firstValueFrom(
+      this.http.get<RespuestaApi<PaginaAutorizaciones>>(this.url, { params }),
+    );
+    const resultado = respuesta.data[0];
+    if (!resultado) {
+      throw new Error('El servidor no devolvió la lista de autorizaciones.');
+    }
+    return resultado;
   }
 }

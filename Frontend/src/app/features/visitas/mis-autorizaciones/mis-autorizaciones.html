@@ -1,0 +1,126 @@
+<app-encabezado />
+
+<header class="banda">
+  <div class="banda-contenido">
+    <nav class="migas revelar" style="--i: 0" aria-label="Ruta de navegación">
+      <a routerLink="/inicio">Inicio</a>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">Mis autorizaciones</span>
+    </nav>
+    <h1 class="revelar" style="--i: 1">Mis autorizaciones</h1>
+    <p class="revelar" style="--i: 2">
+      Todas las visitas que has autorizado, de la más reciente a la más antigua.
+    </p>
+  </div>
+</header>
+
+<main class="listado">
+  <section class="panel revelar" style="--i: 1" aria-busy="{{ cargando() }}">
+    <div class="panel-cabecera">
+      <div>
+        <h2>Historial de visitas</h2>
+        @if (resultado(); as r) {
+          <span class="total">{{ r.totalElements }} en total</span>
+        }
+      </div>
+      <div class="panel-acciones">
+        <label class="filtro">
+          <span>Estado</span>
+          <select [value]="filtroEstado()" (change)="cambiarEstado($event)">
+            <option value="" [selected]="filtroEstado() === ''">Todas</option>
+            @for (e of estados; track e.valor) {
+              <option [value]="e.valor" [selected]="e.valor === filtroEstado()">
+                {{ e.etiqueta }}
+              </option>
+            }
+          </select>
+        </label>
+        <a class="btn btn-primario" routerLink="/visitas/autorizar">Autorizar visita</a>
+      </div>
+    </div>
+
+    @if (error(); as mensaje) {
+      <div class="estado estado--error" role="alert">
+        <p>{{ mensaje }}</p>
+        <button type="button" class="btn btn-secundario" (click)="cargar()">Reintentar</button>
+      </div>
+    } @else if (vacio()) {
+      <div class="estado">
+        @if (filtroEstado()) {
+          <h3>No hay autorizaciones con ese estado</h3>
+          <p>Prueba con otro estado o muestra todas.</p>
+        } @else {
+          <h3>Aún no has autorizado visitas</h3>
+          <p>Cuando autorices una, aparecerá aquí.</p>
+          <a class="btn btn-primario" routerLink="/visitas/autorizar">Autorizar mi primera visita</a>
+        }
+      </div>
+    } @else {
+      <div class="lista" [class.lista--cargando]="cargando()">
+        @if (cargando() && items().length === 0) {
+          @for (n of [1, 2, 3, 4]; track n) {
+            <div class="fila fila--esqueleto" aria-hidden="true"></div>
+          }
+        }
+        @for (a of items(); track a.authorizationId) {
+          <article class="fila">
+            <div class="fila-visitante">
+              <span class="avatar" aria-hidden="true">{{ a.visitorFullName.charAt(0) }}</span>
+              <div>
+                <h3>{{ a.visitorFullName }}</h3>
+                <p>{{ a.visitorEmail }} · Doc. {{ a.visitorDocumentNumber }}</p>
+              </div>
+            </div>
+
+            <dl class="fila-datos">
+              <div>
+                <dt>Propiedad</dt>
+                <dd>{{ a.propertyLocation }}</dd>
+              </div>
+              <div>
+                <dt>Motivo</dt>
+                <dd>{{ a.visitReason }}</dd>
+              </div>
+              <div>
+                <dt>Desde</dt>
+                <dd>{{ fecha(a.authorizationStartDate) }}</dd>
+              </div>
+              <div>
+                <dt>Hasta</dt>
+                <dd>{{ fecha(a.authorizationEndDate) }}</dd>
+              </div>
+            </dl>
+
+            <div class="fila-extra">
+              <span class="estado-chip estado-chip--{{ a.status.toLowerCase() }}">{{ etiqueta(a.status) }}</span>
+              <span class="codigo" title="Código completo: {{ a.authorizationId }}">
+                #{{ codigoCorto(a.authorizationId) }}
+              </span>
+              @if (a.vehiclePlate) {
+                <span class="etiqueta">Placa {{ a.vehiclePlate }}</span>
+              }
+              @if (a.documentAttached) {
+                <span class="etiqueta">Con documento</span>
+              }
+            </div>
+          </article>
+        }
+      </div>
+
+      @if (resultado(); as r) {
+        <app-paginador
+          [pagina]="r.page"
+          [tamano]="r.size"
+          [totalElementos]="r.totalElements"
+          [totalPaginas]="r.totalPages"
+          [opcionesTamano]="tamanos"
+          [deshabilitado]="cargando()"
+          (cambiarPagina)="irAPagina($event)"
+          (cambiarTamano)="cambiarTamano($event)"
+        />
+      }
+    }
+  </section>
+</main>
+
+<app-pie />

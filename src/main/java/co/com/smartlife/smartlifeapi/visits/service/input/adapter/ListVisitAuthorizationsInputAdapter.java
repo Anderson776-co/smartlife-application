@@ -1,13 +1,12 @@
 package co.com.smartlife.smartlifeapi.visits.service.input.adapter;
 
-import java.util.List;
-
 import org.springframework.stereotype.Service;
 
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationFilterDomain;
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationPageDomain;
 import co.com.smartlife.smartlifeapi.visits.service.input.adapter.mapper.VisitAuthorizationSummaryDtoMapper;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.ListVisitAuthorizationsDtoRequest;
-import co.com.smartlife.smartlifeapi.visits.service.input.dto.response.VisitAuthorizationSummaryDtoResponse;
+import co.com.smartlife.smartlifeapi.visits.service.input.dto.response.VisitAuthorizationPageDtoResponse;
 import co.com.smartlife.smartlifeapi.visits.service.input.port.ListVisitAuthorizationsInputPort;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.contract.ConsultVisitAuthorizationsUseCase;
 
@@ -21,12 +20,13 @@ public class ListVisitAuthorizationsInputAdapter implements ListVisitAuthorizati
 	}
 
 	@Override
-	public List<VisitAuthorizationSummaryDtoResponse> execute(final ListVisitAuthorizationsDtoRequest data) {
+	public VisitAuthorizationPageDtoResponse execute(final ListVisitAuthorizationsDtoRequest data) {
 		final VisitAuthorizationFilterDomain filter = new VisitAuthorizationFilterDomain(data.status(), data.from(),
 				data.to(), data.propertyId());
-
-		return useCase.list(data.currentUser().userId(), filter).stream()
-				.map(VisitAuthorizationSummaryDtoMapper::toDto)
-				.toList();
+		final VisitAuthorizationPageDomain page = useCase.listPage(data.currentUser().userId(), filter, data.page(),
+				data.size());
+		return new VisitAuthorizationPageDtoResponse(
+				page.content().stream().map(VisitAuthorizationSummaryDtoMapper::toDto).toList(), page.page(),
+				page.size(), page.totalElements(), page.totalPages());
 	}
 }

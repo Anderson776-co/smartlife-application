@@ -27,5 +27,13 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/visitas/autorizar-visita/autorizar-visita').then((m) => m.AutorizarVisita),
   },
+  {
+    path: 'visitas/mis-autorizaciones',
+    canActivate: [rolGuard('OWNER', 'RESIDENT')],
+    loadComponent: () =>
+      import('./features/visitas/mis-autorizaciones/mis-autorizaciones').then(
+        (m) => m.MisAutorizaciones,
+      ),
+  },
   { path: '**', redirectTo: 'login' },
 ];

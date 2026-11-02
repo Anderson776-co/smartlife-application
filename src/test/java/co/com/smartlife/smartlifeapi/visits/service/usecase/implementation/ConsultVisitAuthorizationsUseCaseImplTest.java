@@ -24,6 +24,7 @@ import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogProvider;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.dto.MessageCatalogDTO;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationFilterDomain;
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationPageDomain;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationStatus;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationSummaryDomain;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.VisitAuthorizationRepository;
@@ -116,6 +117,52 @@ class ConsultVisitAuthorizationsUseCaseImplTest {
 
 		assertEquals(1, result.size());
 		assertEquals(hours(10), result.get(0).authorizationStartDate());
+	}
+
+	@Test
+	void listPageShouldReturnOnlyTheRequestedPageKeepingTheOrder() {
+		final List<VisitAuthorizationEntity> stored = new java.util.ArrayList<>();
+		for (int i = 0; i < 7; i++) {
+			stored.add(authorization(hours(10 + i), hours(11 + i), true, PROPERTY_A));
+		}
+		when(repository.findByAuthorizatorId(AUTHORIZATOR)).thenReturn(stored);
+
+		final VisitAuthorizationPageDomain page = useCase.listPage(AUTHORIZATOR, VisitAuthorizationFilterDomain.none(), 1, 3);
+
+		assertEquals(3, page.content().size());
+		assertEquals(hours(13), page.content().get(0).authorizationStartDate());
+		assertEquals(hours(15), page.content().get(2).authorizationStartDate());
+		assertEquals(1, page.page());
+		assertEquals(3, page.size());
+		assertEquals(7, page.totalElements());
+		assertEquals(3, page.totalPages());
+	}
+
+	@Test
+	void listPageShouldCountOnlyTheAuthorizationsThatMatchTheFilter() {
+		when(repository.findByAuthorizatorId(AUTHORIZATOR)).thenReturn(List.of(
+				authorization(hours(1), hours(3), true, PROPERTY_A), authorization(hours(-3), hours(-1), true, PROPERTY_A),
+				authorization(hours(2), hours(4), true, PROPERTY_A), authorization(hours(5), hours(6), true, PROPERTY_A)));
+
+		final VisitAuthorizationPageDomain page = useCase.listPage(AUTHORIZATOR,
+				new VisitAuthorizationFilterDomain(VisitAuthorizationStatus.UPCOMING, null, null, null), 0, 2);
+
+		assertEquals(3, page.totalElements());
+		assertEquals(2, page.totalPages());
+		assertEquals(2, page.content().size());
+		assertTrue(page.content().stream().allMatch(summary -> summary.status() == VisitAuthorizationStatus.UPCOMING));
+	}
+
+	@Test
+	void listPageShouldOnlyAskForTheAuthorizatorsOwnAuthorizations() {
+		when(repository.findByAuthorizatorId(AUTHORIZATOR)).thenReturn(List.of());
+
+		final VisitAuthorizationPageDomain page = useCase.listPage(AUTHORIZATOR, null, 0, 10);
+
+		assertTrue(page.content().isEmpty());
+		assertEquals(0, page.totalPages());
+		verify(repository).findByAuthorizatorId(AUTHORIZATOR);
+		verify(repository, never()).findAll();
 	}
 
 	@Test

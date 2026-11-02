@@ -20,11 +20,13 @@ import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
 import co.com.smartlife.smartlifeapi.crosscutting.helper.UUIDHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.session.CurrentUser;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationFilterDomain;
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationPageDomain;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationStatus;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationSummaryDomain;
 import co.com.smartlife.smartlifeapi.visits.service.input.adapter.mapper.VisitAuthorizationSummaryDtoMapper;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.GetVisitAuthorizationDtoRequest;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.ListVisitAuthorizationsDtoRequest;
+import co.com.smartlife.smartlifeapi.visits.service.input.dto.response.VisitAuthorizationPageDtoResponse;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.response.VisitAuthorizationSummaryDtoResponse;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.contract.ConsultVisitAuthorizationsUseCase;
 
@@ -57,25 +59,34 @@ class ConsultVisitAuthorizationsInputAdaptersTest {
 	@Test
 	void theListShouldAskForTheSessionUsersAuthorizationsWithTheFiltersAndMapTheResult() {
 		final VisitAuthorizationSummaryDomain summary = summary();
-		when(useCase.list(USER_ID,
-				new VisitAuthorizationFilterDomain(VisitAuthorizationStatus.CURRENT, FROM, TO, PROPERTY_ID)))
-				.thenReturn(List.of(summary));
+		when(useCase.listPage(USER_ID,
+				new VisitAuthorizationFilterDomain(VisitAuthorizationStatus.CURRENT, FROM, TO, PROPERTY_ID), 2, 5))
+				.thenReturn(new VisitAuthorizationPageDomain(List.of(summary), 2, 5, 11, 3));
 
-		final List<VisitAuthorizationSummaryDtoResponse> result = listAdapter.execute(
-				new ListVisitAuthorizationsDtoRequest(VisitAuthorizationStatus.CURRENT, FROM, TO, PROPERTY_ID, USER));
+		final VisitAuthorizationPageDtoResponse result = listAdapter.execute(new ListVisitAuthorizationsDtoRequest(
+				VisitAuthorizationStatus.CURRENT, FROM, TO, PROPERTY_ID, USER, 2, 5));
 
-		assertEquals(1, result.size());
-		assertEquals(summary.id(), result.get(0).authorizationId());
-		assertEquals(summary.qrCode(), result.get(0).qrUrl());
-		assertEquals("Luis Torres", result.get(0).visitorFullName());
-		assertEquals(VisitAuthorizationStatus.CURRENT, result.get(0).status());
+		assertEquals(1, result.content().size());
+		assertEquals(summary.id(), result.content().get(0).authorizationId());
+		assertEquals(summary.qrCode(), result.content().get(0).qrUrl());
+		assertEquals("Luis Torres", result.content().get(0).visitorFullName());
+		assertEquals(VisitAuthorizationStatus.CURRENT, result.content().get(0).status());
+		assertEquals(2, result.page());
+		assertEquals(5, result.size());
+		assertEquals(11, result.totalElements());
+		assertEquals(3, result.totalPages());
 	}
 
 	@Test
 	void theListShouldBeEmptyWhenThereAreNoAuthorizations() {
-		when(useCase.list(USER_ID, VisitAuthorizationFilterDomain.none())).thenReturn(List.of());
+		when(useCase.listPage(USER_ID, VisitAuthorizationFilterDomain.none(), 0, 10))
+				.thenReturn(new VisitAuthorizationPageDomain(List.of(), 0, 10, 0, 0));
 
-		assertTrue(listAdapter.execute(new ListVisitAuthorizationsDtoRequest(null, null, null, null, USER)).isEmpty());
+		final VisitAuthorizationPageDtoResponse result = listAdapter
+				.execute(new ListVisitAuthorizationsDtoRequest(null, null, null, null, USER));
+
+		assertTrue(result.content().isEmpty());
+		assertEquals(0, result.totalElements());
 	}
 
 	@Test

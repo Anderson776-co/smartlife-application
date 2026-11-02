@@ -170,6 +170,10 @@ export class AutorizarVisita {
     this.formulario.patchValue(this.fechasIniciales());
   }
 
+  protected verMisAutorizaciones(): Promise<boolean> {
+    return this.router.navigate(['/visitas/mis-autorizaciones']);
+  }
+
   protected volver(): Promise<boolean> {
     return this.router.navigate(['/inicio']);
   }

@@ -29,6 +29,7 @@ import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.AuthorizeV
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.GetVisitAuthorizationDtoRequest;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.ListVisitAuthorizationsDtoRequest;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.response.VisitAuthorizationDtoResponse;
+import co.com.smartlife.smartlifeapi.visits.service.input.dto.response.VisitAuthorizationPageDtoResponse;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.response.VisitAuthorizationSummaryDtoResponse;
 import co.com.smartlife.smartlifeapi.visits.service.input.port.AuthorizeVisitInputPort;
 import co.com.smartlife.smartlifeapi.visits.service.input.port.GetVisitAuthorizationInputPort;
@@ -74,21 +75,23 @@ public class VisitAuthorizationController {
 	/**
 	 * Las autorizaciones de quien tiene la sesion, de la mas reciente a la mas antigua. Filtros opcionales:
 	 * status (UPCOMING, CURRENT, EXPIRED o CANCELLED), from y to (fechas ISO-8601, por ejemplo 2026-11-03T15:00:00Z)
-	 * y propertyId.
+	 * y propertyId. Se devuelve una pagina por llamada: page (desde 0, por defecto 0) y size (por defecto 10, maximo 50).
 	 */
 	@CanConsultVisitAuthorizations
 	@GetMapping
-	public ResponseEntity<Response<VisitAuthorizationSummaryDtoResponse>> list(
+	public ResponseEntity<Response<VisitAuthorizationPageDtoResponse>> list(
 			@RequestParam(value = "status", required = false) final VisitAuthorizationStatus status,
 			@RequestParam(value = "from", required = false) final Instant from,
 			@RequestParam(value = "to", required = false) final Instant to,
 			@RequestParam(value = "propertyId", required = false) final UUID propertyId,
+			@RequestParam(value = "page", defaultValue = "0") final int page,
+			@RequestParam(value = "size", defaultValue = "10") final int size,
 			@AuthenticationPrincipal final CurrentUser currentUser) {
 		
-		List<VisitAuthorizationSummaryDtoResponse> authorizations = listVisitAuthorizationsInputPort
-				.execute(new ListVisitAuthorizationsDtoRequest(status, from, to, propertyId, currentUser));
+		VisitAuthorizationPageDtoResponse authorizations = listVisitAuthorizationsInputPort
+				.execute(new ListVisitAuthorizationsDtoRequest(status, from, to, propertyId, currentUser, page, size));
 		
-		return ResponseEntity.ok(Response.createSuccededResponse(authorizations));
+		return ResponseEntity.ok(Response.createSuccededResponse(List.of(authorizations)));
 	}
 	
 	/** Una autorizacion de quien tiene la sesion. Si no existe o es de otra persona, se rechaza igual. */
