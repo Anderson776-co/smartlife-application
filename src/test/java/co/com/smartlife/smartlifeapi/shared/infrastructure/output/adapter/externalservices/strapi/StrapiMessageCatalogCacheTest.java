@@ -58,7 +58,8 @@ class StrapiMessageCatalogCacheTest {
 		@Bean
 		MessageCatalogOutputPort messageCatalogOutputPort(final RestClient.Builder builder,
 				final MockRestServiceServer strapiServer, final MessageCatalogMapper mapper) {
-			return new StrapiMessageCatalogAdapter(builder, mapper, "http://strapi.test", "test-token");
+			return new StrapiMessageCatalogAdapter(builder, mapper, "http://strapi.test", "test-token",
+					"/api/message-catalogs");
 		}
 	}
 

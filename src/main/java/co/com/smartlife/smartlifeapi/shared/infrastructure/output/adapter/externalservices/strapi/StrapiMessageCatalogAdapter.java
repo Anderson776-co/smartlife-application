@@ -1,6 +1,7 @@
 package co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.strapi;
 
 import java.time.Duration;
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -11,7 +12,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientException;
 
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
 import co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.strapi.dto.StrapiMessageCatalogData;
@@ -26,11 +26,12 @@ import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices
 public class StrapiMessageCatalogAdapter implements MessageCatalogOutputPort {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(StrapiMessageCatalogAdapter.class);
-	
-	private static final String MESSAGES_PATH = "/api/message-catalogs";
-	private static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(3);
-	private static final Duration READ_TIMEOUT = Duration.ofSeconds(5);
 
+	private static final String QUERY_CODE = "filters[code][$eq]";
+	private static final String QUERY_LOCALE = "locale";
+	private static final String CODE_PLACEHOLDER = "{code}";
+	private static final String LOCALE_PLACEHOLDER = "{locale}";
+	
 	private static final String USER_ERROR_TRYING_TO_MAKE_AN_OPERATION = "USER_ERROR_TRYING_TO_MAKE_AN_OPERATION";
 	private static final String MESSAGE_CATALOG_NOT_FOUND = "MESSAGE_CATALOG_NOT_FOUND";
 	private static final String MESSAGE_CATALOG_UNAVAILABLE = "MESSAGE_CATALOG_UNAVAILABLE";
@@ -40,24 +41,31 @@ public class StrapiMessageCatalogAdapter implements MessageCatalogOutputPort {
 	private static final String DEFAULT_USER_MESSAGE =
 			"Se ha presentado un problema tratando de realizar la operación. Por favor intente de nuevo.";
 	private static final String DEFAULT_NOT_FOUND_MESSAGE =
-			"No se encontró en el catálogo de Strapi el mensaje con código: ";
+			"No se encontró en el catálogo de Strapi el mensaje con código {code} ({locale})";
 	private static final String DEFAULT_UNAVAILABLE_MESSAGE =
-			"No fue posible consultar el catálogo de mensajes de Strapi para el código: ";
-	
+			"No fue posible consultar el catálogo de mensajes de Strapi para el código {code} ({locale})";
+
 	private final RestClient restClient;
 	private final MessageCatalogMapper mapper;
 	private final String baseUrl;
+	private final String messagesPath;
 
 	@Autowired
-	public StrapiMessageCatalogAdapter(final MessageCatalogMapper mapper, @Value("${strapi.url:}") final String baseUrl,
-			@Value("${strapi.api-token:}") final String apiToken) {
-		this(RestClient.builder().requestFactory(requestFactory()), mapper, baseUrl, apiToken);
+	public StrapiMessageCatalogAdapter(final MessageCatalogMapper mapper,
+			@Value("${strapi.url:}") final String baseUrl,
+			@Value("${strapi.api-token:}") final String apiToken,
+			@Value("${strapi.message-catalog-path:/api/message-catalogs}") final String messagesPath,
+			@Value("${strapi.connect-timeout:3s}") final Duration connectTimeout,
+			@Value("${strapi.read-timeout:5s}") final Duration readTimeout) {
+		this(RestClient.builder().requestFactory(requestFactory(connectTimeout, readTimeout)), mapper, baseUrl,
+				apiToken, messagesPath);
 	}
 
-	public StrapiMessageCatalogAdapter(final RestClient.Builder builder, final MessageCatalogMapper mapper, 
-			final String baseUrl, final String apiToken) {
+	public StrapiMessageCatalogAdapter(final RestClient.Builder builder, final MessageCatalogMapper mapper,
+			final String baseUrl, final String apiToken, final String messagesPath) {
 		this.mapper = mapper;
 		this.baseUrl = baseUrl;
+		this.messagesPath = messagesPath;
 		this.restClient = builder.baseUrl(baseUrl).defaultHeaders(headers -> {
 			if (!apiToken.isBlank()) {
 				headers.setBearerAuth(apiToken);
@@ -69,57 +77,79 @@ public class StrapiMessageCatalogAdapter implements MessageCatalogOutputPort {
 	@Cacheable(value = "message-catalog", key = "#code + ':' + #locale")
 	public MessageCatalogDTO findByCodeAndLocale(final String code, final String locale) {
 		if (baseUrl.isBlank()) {
-			throw SmartLifeException.create(DEFAULT_USER_MESSAGE, DEFAULT_NOT_FOUND_MESSAGE + code + " (" + locale + ")");
+			LOGGER.warn("La URL de Strapi no está configurada (strapi.url): no se puede consultar el mensaje {} ({})",
+					code, locale);
+			throw unavailable(null, code, locale);
 		}
-		
-		final StrapiMessageCatalogResponse response;
 
 		try {
-			response = restClient.get()
-					.uri(uriBuilder -> uriBuilder.path(MESSAGES_PATH)
-							.queryParam("filters[code][$eq]", code)
-							.queryParam("locale", locale)
-							.build())
-					.retrieve()
-					.body(StrapiMessageCatalogResponse.class);
-
-		} catch (final RestClientException exception) {
+			final StrapiMessageCatalogData message = query(code, locale).orElseThrow(() -> notFound(code, locale));
+			return mapper.toDTO(message);
+		} catch (final SmartLifeException exception) {
+			throw exception;
+		} catch (final RuntimeException exception) {
+			// Sin conexion, tiempo agotado, 4XX/5XX, respuesta que no es JSON, cuerpo ilegible, etc.
 			LOGGER.warn("Falló la consulta a Strapi del mensaje {} ({}): {}", code, locale, exception.getMessage());
-			throw SmartLifeException.create(exception,
-					resolve(USER_ERROR_TRYING_TO_MAKE_AN_OPERATION, locale, DEFAULT_USER_MESSAGE, code),
-					resolve(MESSAGE_CATALOG_UNAVAILABLE, locale, DEFAULT_UNAVAILABLE_MESSAGE, code)
-							+ code + " (" + locale + ")");
+			throw unavailable(exception, code, locale);
 		}
-		
-		if (response == null || response.data() == null || response.data().isEmpty()) {
-			throw SmartLifeException.create(
-					resolve(USER_ERROR_TRYING_TO_MAKE_AN_OPERATION, locale, DEFAULT_USER_MESSAGE, code),
-					resolve(MESSAGE_CATALOG_NOT_FOUND, locale, DEFAULT_NOT_FOUND_MESSAGE, code)
-							+ code + " (" + locale + ")");
-		}
-
-		StrapiMessageCatalogData message = response.data().get(0);
-		return mapper.toDTO(message);
 	}
+
+	private Optional<StrapiMessageCatalogData> query(final String code, final String locale) {
+		final StrapiMessageCatalogResponse response = restClient.get()
+				.uri(uriBuilder -> uriBuilder.path(messagesPath)
+						.queryParam(QUERY_CODE, code)
+						.queryParam(QUERY_LOCALE, locale)
+						.build())
+				.retrieve()
+				.body(StrapiMessageCatalogResponse.class);
+
+		return Optional.ofNullable(response)
+				.map(StrapiMessageCatalogResponse::data)
+				.flatMap(data -> data.stream().findFirst());
+	}
+
+	private static SmartLifeException notFound(final String code, final String locale) {
+		final String userMessage = catalogText(USER_ERROR_TRYING_TO_MAKE_AN_OPERATION, locale, code)
+				.orElse(DEFAULT_USER_MESSAGE);
+		final String technicalTemplate = catalogText(MESSAGE_CATALOG_NOT_FOUND, locale, code)
+				.orElse(DEFAULT_NOT_FOUND_MESSAGE);
+		return SmartLifeException.create(userMessage, describe(technicalTemplate, code, locale));
+	}
+
 	
-	private static String resolve(final String messageCode, final String locale,
-			final String defaultMessage, final String requestedCode) {
-
-		if (RESERVED_CODES.contains(requestedCode)) {
-			return defaultMessage;
-		}
-
-		final String content = MessageCatalogProvider.getContent(messageCode, locale);
-
-		return content == null || content.isBlank() || content.equals(messageCode)
-				? defaultMessage
-				: content;
+	private static SmartLifeException unavailable(final Throwable cause, final String code, final String locale) {
+		final Optional<String> userMessage = catalogText(USER_ERROR_TRYING_TO_MAKE_AN_OPERATION, locale, code);
+		final Optional<String> technicalTemplate = userMessage.isPresent()
+				? catalogText(MESSAGE_CATALOG_UNAVAILABLE, locale, code)
+				: Optional.empty();
+		return SmartLifeException.create(cause, userMessage.orElse(DEFAULT_USER_MESSAGE),
+				describe(technicalTemplate.orElse(DEFAULT_UNAVAILABLE_MESSAGE), code, locale));
 	}
 
-	private static SimpleClientHttpRequestFactory requestFactory() {
+	private static Optional<String> catalogText(final String reservedCode, final String locale,
+			final String requestedCode) {
+		if (RESERVED_CODES.contains(requestedCode)) {
+			return Optional.empty();
+		}
+		final String content = MessageCatalogProvider.getContent(reservedCode, locale);
+		return content == null || content.isBlank() || content.equals(reservedCode)
+				? Optional.empty()
+				: Optional.of(content);
+	}
+
+	private static String describe(final String template, final String code, final String locale) {
+		final String codeText = String.valueOf(code);
+		final String localeText = String.valueOf(locale);
+		return template.contains(CODE_PLACEHOLDER) || template.contains(LOCALE_PLACEHOLDER)
+				? template.replace(CODE_PLACEHOLDER, codeText).replace(LOCALE_PLACEHOLDER, localeText)
+				: template + " (" + codeText + ", " + localeText + ")";
+	}
+
+	private static SimpleClientHttpRequestFactory requestFactory(final Duration connectTimeout,
+			final Duration readTimeout) {
 		final SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-		factory.setConnectTimeout(CONNECT_TIMEOUT);
-		factory.setReadTimeout(READ_TIMEOUT);
+		factory.setConnectTimeout(connectTimeout);
+		factory.setReadTimeout(readTimeout);
 		return factory;
 	}
 }
