@@ -8,14 +8,14 @@ import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entit
 /** La autorizacion ya termino: su fin es la fecha de referencia o una anterior. */
 public final class AuthorizationHasEndedSpecification extends Specification<VisitAuthorizationEntity> {
 
-    private final Instant reference;
+	private final Instant reference;
 
-    public AuthorizationHasEndedSpecification(final Instant reference) {
-        this.reference = reference;
-    }
+	public AuthorizationHasEndedSpecification(final Instant reference) {
+		this.reference = reference;
+	}
 
-    @Override
-    public boolean isSatisfiedBy(final VisitAuthorizationEntity data) {
-        return data != null && !data.getAuthorizationEndDate().isAfter(reference);
-    }
+	@Override
+	public boolean isSatisfiedBy(final VisitAuthorizationEntity data) {
+		return data != null && !data.getAuthorizationEndDate().isAfter(reference);
+	}
 }

@@ -14,19 +14,19 @@ import co.com.smartlife.smartlifeapi.visits.service.usecase.contract.ConsultVisi
 @Service
 public class ListVisitAuthorizationsInputAdapter implements ListVisitAuthorizationsInputPort {
 
-    private final ConsultVisitAuthorizationsUseCase useCase;
+	private final ConsultVisitAuthorizationsUseCase useCase;
 
-    public ListVisitAuthorizationsInputAdapter(final ConsultVisitAuthorizationsUseCase useCase) {
-        this.useCase = useCase;
-    }
+	public ListVisitAuthorizationsInputAdapter(final ConsultVisitAuthorizationsUseCase useCase) {
+		this.useCase = useCase;
+	}
 
-    @Override
-    public List<VisitAuthorizationSummaryDtoResponse> execute(final ListVisitAuthorizationsDtoRequest data) {
-        final VisitAuthorizationFilterDomain filter = new VisitAuthorizationFilterDomain(data.status(), data.from(),
-                data.to(), data.propertyId());
+	@Override
+	public List<VisitAuthorizationSummaryDtoResponse> execute(final ListVisitAuthorizationsDtoRequest data) {
+		final VisitAuthorizationFilterDomain filter = new VisitAuthorizationFilterDomain(data.status(), data.from(),
+				data.to(), data.propertyId());
 
-        return useCase.list(data.currentUser().userId(), filter).stream()
-                .map(VisitAuthorizationSummaryDtoMapper::toDto)
-                .toList();
-    }
+		return useCase.list(data.currentUser().userId(), filter).stream()
+				.map(VisitAuthorizationSummaryDtoMapper::toDto)
+				.toList();
+	}
 }

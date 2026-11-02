@@ -11,15 +11,15 @@ import co.com.smartlife.smartlifeapi.visits.service.usecase.contract.ConsultVisi
 @Service
 public class GetVisitAuthorizationInputAdapter implements GetVisitAuthorizationInputPort {
 
-    private final ConsultVisitAuthorizationsUseCase useCase;
+	private final ConsultVisitAuthorizationsUseCase useCase;
 
-    public GetVisitAuthorizationInputAdapter(final ConsultVisitAuthorizationsUseCase useCase) {
-        this.useCase = useCase;
-    }
+	public GetVisitAuthorizationInputAdapter(final ConsultVisitAuthorizationsUseCase useCase) {
+		this.useCase = useCase;
+	}
 
-    @Override
-    public VisitAuthorizationSummaryDtoResponse execute(final GetVisitAuthorizationDtoRequest data) {
-        return VisitAuthorizationSummaryDtoMapper
-                .toDto(useCase.find(data.authorizationId(), data.currentUser().userId()));
-    }
+	@Override
+	public VisitAuthorizationSummaryDtoResponse execute(final GetVisitAuthorizationDtoRequest data) {
+		return VisitAuthorizationSummaryDtoMapper
+				.toDto(useCase.find(data.authorizationId(), data.currentUser().userId()));
+	}
 }

@@ -10,11 +10,11 @@ import co.com.smartlife.smartlifeapi.crosscutting.session.CurrentUser;
 /** Consulta de una autorizacion de quien tiene la sesion. */
 public record GetVisitAuthorizationDtoRequest(UUID authorizationId, CurrentUser currentUser) {
 
-    private static final CurrentUser ANONYMOUS = new CurrentUser(UUIDHelper.getUUIDHelper().getDefault(), "",
-            Set.of(), UUIDHelper.getUUIDHelper().getDefault());
+	private static final CurrentUser ANONYMOUS = new CurrentUser(UUIDHelper.getUUIDHelper().getDefault(), "",
+			Set.of(), UUIDHelper.getUUIDHelper().getDefault());
 
-    public GetVisitAuthorizationDtoRequest {
-        authorizationId = UUIDHelper.getUUIDHelper().getDefault(authorizationId);
-        currentUser = ObjectHelper.getDefault(currentUser, ANONYMOUS);
-    }
+	public GetVisitAuthorizationDtoRequest {
+		authorizationId = UUIDHelper.getUUIDHelper().getDefault(authorizationId);
+		currentUser = ObjectHelper.getDefault(currentUser, ANONYMOUS);
+	}
 }

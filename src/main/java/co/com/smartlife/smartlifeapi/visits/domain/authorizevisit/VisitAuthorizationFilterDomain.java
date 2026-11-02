@@ -8,10 +8,10 @@ import java.util.UUID;
  * from y to delimitan un rango de fechas: se devuelven las autorizaciones que se cruzan con el.
  */
 public record VisitAuthorizationFilterDomain(VisitAuthorizationStatus status, Instant from, Instant to,
-        UUID propertyId) {
+		UUID propertyId) {
 
-    /** Sin ningun filtro. */
-    public static VisitAuthorizationFilterDomain none() {
-        return new VisitAuthorizationFilterDomain(null, null, null, null);
-    }
+	/** Sin ningun filtro. */
+	public static VisitAuthorizationFilterDomain none() {
+		return new VisitAuthorizationFilterDomain(null, null, null, null);
+	}
 }

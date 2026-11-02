@@ -9,9 +9,9 @@ import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthoriza
 /** Consulta de las autorizaciones que creo un autorizador. Nadie ve las de otra persona. */
 public interface ConsultVisitAuthorizationsUseCase {
 
-    /** Las autorizaciones del autorizador que cumplen los filtros, de la mas reciente a la mas antigua. */
-    List<VisitAuthorizationSummaryDomain> list(UUID authorizatorId, VisitAuthorizationFilterDomain filter);
+	/** Las autorizaciones del autorizador que cumplen los filtros, de la mas reciente a la mas antigua. */
+	List<VisitAuthorizationSummaryDomain> list(UUID authorizatorId, VisitAuthorizationFilterDomain filter);
 
-    /** Una autorizacion del autorizador. Si no existe o es de otra persona, se rechaza con el mismo mensaje. */
-    VisitAuthorizationSummaryDomain find(UUID authorizationId, UUID authorizatorId);
+	/** Una autorizacion del autorizador. Si no existe o es de otra persona, se rechaza con el mismo mensaje. */
+	VisitAuthorizationSummaryDomain find(UUID authorizationId, UUID authorizatorId);
 }

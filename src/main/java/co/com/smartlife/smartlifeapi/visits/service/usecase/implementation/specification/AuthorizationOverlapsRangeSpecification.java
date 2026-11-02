@@ -11,21 +11,21 @@ import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entit
  */
 public final class AuthorizationOverlapsRangeSpecification extends Specification<VisitAuthorizationEntity> {
 
-    private final Instant from;
-    private final Instant to;
+	private final Instant from;
+	private final Instant to;
 
-    public AuthorizationOverlapsRangeSpecification(final Instant from, final Instant to) {
-        this.from = from;
-        this.to = to;
-    }
+	public AuthorizationOverlapsRangeSpecification(final Instant from, final Instant to) {
+		this.from = from;
+		this.to = to;
+	}
 
-    @Override
-    public boolean isSatisfiedBy(final VisitAuthorizationEntity data) {
-        if (data == null) {
-            return false;
-        }
-        final boolean startsBeforeTheRangeEnds = to == null || data.getAuthorizationStartDate().isBefore(to);
-        final boolean endsAfterTheRangeStarts = from == null || data.getAuthorizationEndDate().isAfter(from);
-        return startsBeforeTheRangeEnds && endsAfterTheRangeStarts;
-    }
+	@Override
+	public boolean isSatisfiedBy(final VisitAuthorizationEntity data) {
+		if (data == null) {
+			return false;
+		}
+		final boolean startsBeforeTheRangeEnds = to == null || data.getAuthorizationStartDate().isBefore(to);
+		final boolean endsAfterTheRangeStarts = from == null || data.getAuthorizationEndDate().isAfter(from);
+		return startsBeforeTheRangeEnds && endsAfterTheRangeStarts;
+	}
 }

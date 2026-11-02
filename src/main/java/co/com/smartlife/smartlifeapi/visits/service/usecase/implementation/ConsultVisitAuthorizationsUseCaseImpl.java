@@ -29,71 +29,71 @@ import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.speci
 @Service
 public class ConsultVisitAuthorizationsUseCaseImpl implements ConsultVisitAuthorizationsUseCase {
 
-    private static final String NOT_FOUND_CODE = "VISIT_AUTHORIZATION_NOT_FOUND";
+	private static final String NOT_FOUND_CODE = "VISIT_AUTHORIZATION_NOT_FOUND";
 
-    private final VisitAuthorizationRepository repository;
-    private final Clock clock;
+	private final VisitAuthorizationRepository repository;
+	private final Clock clock;
 
-    public ConsultVisitAuthorizationsUseCaseImpl(final VisitAuthorizationRepository repository, final Clock clock) {
-        this.repository = repository;
-        this.clock = clock;
-    }
+	public ConsultVisitAuthorizationsUseCaseImpl(final VisitAuthorizationRepository repository, final Clock clock) {
+		this.repository = repository;
+		this.clock = clock;
+	}
 
-    @Override
-    public List<VisitAuthorizationSummaryDomain> list(final UUID authorizatorId,
-            final VisitAuthorizationFilterDomain filter) {
-        final Instant now = Instant.now(clock);
-        final VisitAuthorizationFilterDomain criteria = filter == null ? VisitAuthorizationFilterDomain.none() : filter;
-        final Specification<VisitAuthorizationEntity> specification = AuthorizationSpecifications
-                .matching(criteria.status(), criteria.from(), criteria.to(), criteria.propertyId(), now);
+	@Override
+	public List<VisitAuthorizationSummaryDomain> list(final UUID authorizatorId,
+			final VisitAuthorizationFilterDomain filter) {
+		final Instant now = Instant.now(clock);
+		final VisitAuthorizationFilterDomain criteria = filter == null ? VisitAuthorizationFilterDomain.none() : filter;
+		final Specification<VisitAuthorizationEntity> specification = AuthorizationSpecifications
+				.matching(criteria.status(), criteria.from(), criteria.to(), criteria.propertyId(), now);
 
-        return repository.findByAuthorizatorId(authorizatorId).stream()
-                .filter(specification::isSatisfiedBy)
-                .map(authorization -> toSummary(authorization, now))
-                .toList();
-    }
+		return repository.findByAuthorizatorId(authorizatorId).stream()
+				.filter(specification::isSatisfiedBy)
+				.map(authorization -> toSummary(authorization, now))
+				.toList();
+	}
 
-    @Override
-    public VisitAuthorizationSummaryDomain find(final UUID authorizationId, final UUID authorizatorId) {
-        final Instant now = Instant.now(clock);
-        return repository.findByIdAndAuthorizatorId(authorizationId, authorizatorId)
-                .map(authorization -> toSummary(authorization, now))
-                .orElseThrow(() -> SmartLifeException.create(
-                        MessageCatalogProvider.getContent("USER_MESSAGE_" + NOT_FOUND_CODE),
-                        MessageCatalogProvider.getContent("TECHNICAL_MESSAGE_" + NOT_FOUND_CODE)));
-    }
+	@Override
+	public VisitAuthorizationSummaryDomain find(final UUID authorizationId, final UUID authorizatorId) {
+		final Instant now = Instant.now(clock);
+		return repository.findByIdAndAuthorizatorId(authorizationId, authorizatorId)
+				.map(authorization -> toSummary(authorization, now))
+				.orElseThrow(() -> SmartLifeException.create(
+						MessageCatalogProvider.getContent("USER_MESSAGE_" + NOT_FOUND_CODE),
+						MessageCatalogProvider.getContent("TECHNICAL_MESSAGE_" + NOT_FOUND_CODE)));
+	}
 
-    private static VisitAuthorizationSummaryDomain toSummary(final VisitAuthorizationEntity authorization,
-            final Instant now) {
-        final VisitorEntity visitor = authorization.getVisitor();
-        return new VisitAuthorizationSummaryDomain(authorization.getId(), authorization.getAuthorizationStartDate(),
-                authorization.getAuthorizationEndDate(), authorization.getRegisterDate(),
-                TextHelper.getDefault(authorization.getObservation()), authorization.getQrCode(),
-                authorization.getProperty() == null ? "" : authorization.getProperty().getLocation(),
-                authorization.getVisitReason() == null ? "" : authorization.getVisitReason().getName(),
-                !TextHelper.getDefault(authorization.getFileReference()).isBlank(),
-                visitor == null ? "" : visitor.getDocumentNumber(), fullName(visitor),
-                visitor == null ? "" : visitor.getEmail(),
-                visitor == null ? "" : TextHelper.getDefault(visitor.getVehiclePlate()),
-                statusOf(authorization, now));
-    }
+	private static VisitAuthorizationSummaryDomain toSummary(final VisitAuthorizationEntity authorization,
+			final Instant now) {
+		final VisitorEntity visitor = authorization.getVisitor();
+		return new VisitAuthorizationSummaryDomain(authorization.getId(), authorization.getAuthorizationStartDate(),
+				authorization.getAuthorizationEndDate(), authorization.getRegisterDate(),
+				TextHelper.getDefault(authorization.getObservation()), authorization.getQrCode(),
+				authorization.getProperty() == null ? "" : authorization.getProperty().getLocation(),
+				authorization.getVisitReason() == null ? "" : authorization.getVisitReason().getName(),
+				!TextHelper.getDefault(authorization.getFileReference()).isBlank(),
+				visitor == null ? "" : visitor.getDocumentNumber(), fullName(visitor),
+				visitor == null ? "" : visitor.getEmail(),
+				visitor == null ? "" : TextHelper.getDefault(visitor.getVehiclePlate()),
+				statusOf(authorization, now));
+	}
 
-    /** Cada autorizacion tiene exactamente un estado: se busca cual de las Specification de estado cumple. */
-    private static VisitAuthorizationStatus statusOf(final VisitAuthorizationEntity authorization, final Instant now) {
-        for (final VisitAuthorizationStatus status : VisitAuthorizationStatus.values()) {
-            if (AuthorizationSpecifications.withStatus(status, now).isSatisfiedBy(authorization)) {
-                return status;
-            }
-        }
-        return VisitAuthorizationStatus.CANCELLED;
-    }
+	/** Cada autorizacion tiene exactamente un estado: se busca cual de las Specification de estado cumple. */
+	private static VisitAuthorizationStatus statusOf(final VisitAuthorizationEntity authorization, final Instant now) {
+		for (final VisitAuthorizationStatus status : VisitAuthorizationStatus.values()) {
+			if (AuthorizationSpecifications.withStatus(status, now).isSatisfiedBy(authorization)) {
+				return status;
+			}
+		}
+		return VisitAuthorizationStatus.CANCELLED;
+	}
 
-    private static String fullName(final VisitorEntity visitor) {
-        if (visitor == null) {
-            return "";
-        }
-        return Stream.of(visitor.getFirstName(), visitor.getMiddleName(), visitor.getLastName(),
-                visitor.getSecondLastName()).filter(part -> part != null && !part.isBlank())
-                .collect(Collectors.joining(" "));
-    }
+	private static String fullName(final VisitorEntity visitor) {
+		if (visitor == null) {
+			return "";
+		}
+		return Stream.of(visitor.getFirstName(), visitor.getMiddleName(), visitor.getLastName(),
+				visitor.getSecondLastName()).filter(part -> part != null && !part.isBlank())
+				.collect(Collectors.joining(" "));
+	}
 }

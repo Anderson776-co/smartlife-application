@@ -14,12 +14,12 @@ import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthoriza
  * La persona sale de la sesion, nunca de la direccion: nadie puede pedir las autorizaciones de otro.
  */
 public record ListVisitAuthorizationsDtoRequest(VisitAuthorizationStatus status, Instant from, Instant to,
-        UUID propertyId, CurrentUser currentUser) {
+		UUID propertyId, CurrentUser currentUser) {
 
-    private static final CurrentUser ANONYMOUS = new CurrentUser(UUIDHelper.getUUIDHelper().getDefault(), "",
-            Set.of(), UUIDHelper.getUUIDHelper().getDefault());
+	private static final CurrentUser ANONYMOUS = new CurrentUser(UUIDHelper.getUUIDHelper().getDefault(), "",
+			Set.of(), UUIDHelper.getUUIDHelper().getDefault());
 
-    public ListVisitAuthorizationsDtoRequest {
-        currentUser = ObjectHelper.getDefault(currentUser, ANONYMOUS);
-    }
+	public ListVisitAuthorizationsDtoRequest {
+		currentUser = ObjectHelper.getDefault(currentUser, ANONYMOUS);
+	}
 }

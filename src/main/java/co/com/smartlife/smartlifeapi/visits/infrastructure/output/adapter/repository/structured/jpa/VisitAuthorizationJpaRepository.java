@@ -38,9 +38,9 @@ public interface VisitAuthorizationJpaRepository extends JpaRepository<VisitAuth
 	boolean existsOverlappingAuthorization(@Param("visitorId") UUID visitorId, @Param("propertyId") UUID propertyId,
 			@Param("startDate") Instant startDate, @Param("endDate") Instant endDate);
 
-    /** Las autorizaciones de un autorizador, de la mas reciente a la mas antigua. */
-    List<VisitAuthorizationJpaEntity> findByAuthorizatorIdOrderByAuthorizationStartDateDesc(UUID authorizatorId);
+	/** Las autorizaciones de un autorizador, de la mas reciente a la mas antigua. */
+	List<VisitAuthorizationJpaEntity> findByAuthorizatorIdOrderByAuthorizationStartDateDesc(UUID authorizatorId);
 
-    /** Una autorizacion, solo si es de ese autorizador. */
-    Optional<VisitAuthorizationJpaEntity> findByIdAndAuthorizatorId(UUID id, UUID authorizatorId);
+	/** Una autorizacion, solo si es de ese autorizador. */
+	Optional<VisitAuthorizationJpaEntity> findByIdAndAuthorizatorId(UUID id, UUID authorizatorId);
 }

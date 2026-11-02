@@ -6,8 +6,8 @@ import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entit
 /** La autorizacion esta marcada como activa. */
 public final class AuthorizationIsActiveSpecification extends Specification<VisitAuthorizationEntity> {
 
-    @Override
-    public boolean isSatisfiedBy(final VisitAuthorizationEntity data) {
-        return data != null && Boolean.TRUE.equals(data.getIsActive());
-    }
+	@Override
+	public boolean isSatisfiedBy(final VisitAuthorizationEntity data) {
+		return data != null && Boolean.TRUE.equals(data.getIsActive());
+	}
 }

@@ -8,15 +8,15 @@ import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entit
 /** La autorizacion es para la propiedad indicada. */
 public final class AuthorizationOfPropertySpecification extends Specification<VisitAuthorizationEntity> {
 
-    private final UUID propertyId;
+	private final UUID propertyId;
 
-    public AuthorizationOfPropertySpecification(final UUID propertyId) {
-        this.propertyId = propertyId;
-    }
+	public AuthorizationOfPropertySpecification(final UUID propertyId) {
+		this.propertyId = propertyId;
+	}
 
-    @Override
-    public boolean isSatisfiedBy(final VisitAuthorizationEntity data) {
-        return data != null && data.getProperty() != null && propertyId != null
-                && propertyId.equals(data.getProperty().getId());
-    }
+	@Override
+	public boolean isSatisfiedBy(final VisitAuthorizationEntity data) {
+		return data != null && data.getProperty() != null && propertyId != null
+				&& propertyId.equals(data.getProperty().getId());
+	}
 }

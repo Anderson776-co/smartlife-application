@@ -7,5 +7,5 @@ import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.ListVisitA
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.response.VisitAuthorizationSummaryDtoResponse;
 
 public interface ListVisitAuthorizationsInputPort
-        extends InputPortWithReturn<ListVisitAuthorizationsDtoRequest, List<VisitAuthorizationSummaryDtoResponse>> {
+		extends InputPortWithReturn<ListVisitAuthorizationsDtoRequest, List<VisitAuthorizationSummaryDtoResponse>> {
 }

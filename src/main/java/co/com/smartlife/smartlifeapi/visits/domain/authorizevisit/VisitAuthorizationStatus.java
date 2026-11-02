@@ -10,5 +10,5 @@ package co.com.smartlife.smartlifeapi.visits.domain.authorizevisit;
  * </ul>
  */
 public enum VisitAuthorizationStatus {
-    UPCOMING, CURRENT, EXPIRED, CANCELLED
+	UPCOMING, CURRENT, EXPIRED, CANCELLED
 }
