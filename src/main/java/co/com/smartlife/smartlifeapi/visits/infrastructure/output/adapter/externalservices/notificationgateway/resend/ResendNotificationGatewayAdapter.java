@@ -1,10 +1,12 @@
 package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.notificationgateway.resend;
 
+import java.time.Duration;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -17,23 +19,27 @@ import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices
 @Component
 public class ResendNotificationGatewayAdapter implements NotificationGatewayOutputPort {
 
-	private static final String EMAILS_PATH = "/emails";
-
 	private final RestClient restClient;
 	private final String apiKey;
 	private final String from;
+	private final String emailsPath;
 
 	@Autowired
 	public ResendNotificationGatewayAdapter(@Value("${resend.url:https://api.resend.com}") final String baseUrl,
 			@Value("${resend.api-key:}") final String apiKey,
-			@Value("${resend.from:onboarding@resend.dev}") final String from) {
-		this(RestClient.builder(), baseUrl, apiKey, from);
+			@Value("${resend.from:onboarding@resend.dev}") final String from,
+			@Value("${resend.emails-path:/emails}") final String emailsPath,
+			@Value("${resend.connect-timeout:3s}") final Duration connectTimeout,
+			@Value("${resend.read-timeout:10s}") final Duration readTimeout) {
+		this(RestClient.builder().requestFactory(requestFactory(connectTimeout, readTimeout)), baseUrl, apiKey, from,
+				emailsPath);
 	}
 
-	public ResendNotificationGatewayAdapter(final RestClient.Builder builder, final String baseUrl, final String apiKey,
-			final String from) {
+	public ResendNotificationGatewayAdapter(final RestClient.Builder builder, final String baseUrl,
+			final String apiKey, final String from, final String emailsPath) {
 		this.apiKey = apiKey;
 		this.from = from;
+		this.emailsPath = emailsPath;
 		this.restClient = builder.baseUrl(baseUrl).defaultHeaders(headers -> {
 			if (!apiKey.isBlank()) {
 				headers.setBearerAuth(apiKey);
@@ -54,7 +60,7 @@ public class ResendNotificationGatewayAdapter implements NotificationGatewayOutp
 				email.content(), attachments);
 
 		ResendEmailResponse response = restClient.post()
-				.uri(EMAILS_PATH)
+				.uri(emailsPath)
 				.contentType(MediaType.APPLICATION_JSON)
 				.body(request)
 				.retrieve()
@@ -65,5 +71,13 @@ public class ResendNotificationGatewayAdapter implements NotificationGatewayOutp
 		}
 
 		return response.id();
+	}
+
+	private static SimpleClientHttpRequestFactory requestFactory(final Duration connectTimeout,
+			final Duration readTimeout) {
+		final SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+		factory.setConnectTimeout(connectTimeout);
+		factory.setReadTimeout(readTimeout);
+		return factory;
 	}
 }

@@ -7,6 +7,11 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.time.Duration;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
@@ -15,6 +20,9 @@ import org.springframework.mock.http.client.MockClientHttpRequest;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.client.RequestMatcher;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
+
+import com.sun.net.httpserver.HttpServer;
 
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.notificationgateway.resend.ResendNotificationGatewayAdapter;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.EmailNotificationDTO;
@@ -22,6 +30,7 @@ import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices
 class ResendNotificationGatewayAdapterTest {
 
 	private static final String BASE_URL = "http://resend.test";
+	private static final String EMAILS_PATH = "/emails";
 
 	private MockRestServiceServer server;
 	private ResendNotificationGatewayAdapter adapter;
@@ -30,7 +39,7 @@ class ResendNotificationGatewayAdapterTest {
 	void setUp() {
 		RestClient.Builder builder = RestClient.builder();
 		server = MockRestServiceServer.bindTo(builder).build();
-		adapter = new ResendNotificationGatewayAdapter(builder, BASE_URL, "test-key", "smartlife@test.dev");
+		adapter = new ResendNotificationGatewayAdapter(builder, BASE_URL, "test-key", "smartlife@test.dev", EMAILS_PATH);
 	}
 
 	private static RequestMatcher urlContains(final String text) {
@@ -73,10 +82,38 @@ class ResendNotificationGatewayAdapterTest {
 
 	@Test
 	void sendEmailShouldFailWhenApiKeyIsNotConfigured() {
-		ResendNotificationGatewayAdapter withoutKey = new ResendNotificationGatewayAdapter(BASE_URL, "",
-				"smartlife@test.dev");
+		ResendNotificationGatewayAdapter withoutKey = new ResendNotificationGatewayAdapter(RestClient.builder(), BASE_URL,
+				"", "smartlife@test.dev", EMAILS_PATH);
 
 		assertThrows(IllegalStateException.class, () -> withoutKey
 				.sendEmail(new EmailNotificationDTO("residente@test.com", "Asunto", "<p>Hola</p>")));
+	}
+
+	@Test
+	void sendEmailShouldGiveUpWhenResendDoesNotAnswerInTime() throws IOException {
+		HttpServer slow = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
+		slow.createContext("/", exchange -> {
+			try {
+				Thread.sleep(1500);
+			} catch (InterruptedException interrupted) {
+				Thread.currentThread().interrupt();
+			}
+			exchange.close();
+		});
+		slow.start();
+		try {
+			ResendNotificationGatewayAdapter withTimeouts = new ResendNotificationGatewayAdapter(
+					"http://127.0.0.1:" + slow.getAddress().getPort(), "test-key", "smartlife@test.dev",
+					EMAILS_PATH, Duration.ofMillis(500), Duration.ofMillis(300));
+
+			long start = System.nanoTime();
+			assertThrows(RestClientException.class, () -> withTimeouts
+					.sendEmail(new EmailNotificationDTO("residente@test.com", "Asunto", "<p>Hola</p>")));
+			long elapsedMillis = Duration.ofNanos(System.nanoTime() - start).toMillis();
+
+			assertTrue(elapsedMillis < 1200, "Tardó " + elapsedMillis + " ms: el tiempo de espera no se aplicó");
+		} finally {
+			slow.stop(0);
+		}
 	}
 }

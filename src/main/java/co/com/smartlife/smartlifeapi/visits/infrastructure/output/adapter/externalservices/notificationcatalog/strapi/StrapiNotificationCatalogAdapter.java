@@ -1,8 +1,11 @@
 package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.notificationcatalog.strapi;
 
+import java.time.Duration;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -14,20 +17,24 @@ import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices
 @Component
 public class StrapiNotificationCatalogAdapter implements NotificationCatalogOutputPort {
 
-	private static final String NOTIFICATIONS_PATH = "/api/notification-catalogs";
-
 	private final RestClient restClient;
 	private final String baseUrl;
+	private final String notificationsPath;
 
 	@Autowired
 	public StrapiNotificationCatalogAdapter(@Value("${strapi.url:}") final String baseUrl,
-			@Value("${strapi.api-token:}") final String apiToken) {
-		this(RestClient.builder(), baseUrl, apiToken);
+			@Value("${strapi.api-token:}") final String apiToken,
+			@Value("${strapi.notification-catalog-path:/api/notification-catalogs}") final String notificationsPath,
+			@Value("${strapi.connect-timeout:3s}") final Duration connectTimeout,
+			@Value("${strapi.read-timeout:5s}") final Duration readTimeout) {
+		this(RestClient.builder().requestFactory(requestFactory(connectTimeout, readTimeout)), baseUrl, apiToken,
+				notificationsPath);
 	}
 
 	public StrapiNotificationCatalogAdapter(final RestClient.Builder builder, final String baseUrl,
-			final String apiToken) {
+			final String apiToken, final String notificationsPath) {
 		this.baseUrl = baseUrl;
+		this.notificationsPath = notificationsPath;
 		this.restClient = builder.baseUrl(baseUrl).defaultHeaders(headers -> {
 			if (!apiToken.isBlank()) {
 				headers.setBearerAuth(apiToken);
@@ -43,7 +50,7 @@ public class StrapiNotificationCatalogAdapter implements NotificationCatalogOutp
 		}
 
 		StrapiNotificationCatalogResponse response = restClient.get()
-				.uri(uriBuilder -> uriBuilder.path(NOTIFICATIONS_PATH)
+				.uri(uriBuilder -> uriBuilder.path(notificationsPath)
 						.queryParam("filters[code][$eq]", code)
 						.queryParam("locale", locale)
 						.build())
@@ -58,5 +65,13 @@ public class StrapiNotificationCatalogAdapter implements NotificationCatalogOutp
 		StrapiNotificationCatalogData notification = response.data().get(0);
 		return new NotificationCatalogDTO(notification.code(), notification.subject(),
 				notification.content(), notification.locale());
+	}
+
+	private static SimpleClientHttpRequestFactory requestFactory(final Duration connectTimeout,
+			final Duration readTimeout) {
+		final SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+		factory.setConnectTimeout(connectTimeout);
+		factory.setReadTimeout(readTimeout);
+		return factory;
 	}
 }
