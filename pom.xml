@@ -50,7 +50,7 @@
 		<guava.version>33.7.2-jre</guava.version>
 		<aws-sdk.version>2.31.0</aws-sdk.version>
 		<firebase-admin.version>9.11.0</firebase-admin.version>
-		<zxing.version>3.5.3</zxing.version>
+		<zxing.version>3.5.4</zxing.version>
 		<springdoc.version>3.1.0</springdoc.version>
 		<archunit.version>1.5.1</archunit.version>
 		<archunit-junit.version>1.5.1</archunit-junit.version>
