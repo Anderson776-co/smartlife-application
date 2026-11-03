@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.notificationcatalog.strapi;
+package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.notificationcatalog.strapi;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;

@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.notificationgateway.resend;
+package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.notificationgateway.resend;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

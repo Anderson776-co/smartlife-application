@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.visits.infrastructure.output.externalservices.telemetry.micrometer.adapter;
+package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.telemetry;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 
+import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.telemetry.MicrometerTelemetryAdapter;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 class MicrometerTelemetryAdapterTest {

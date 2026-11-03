@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.filestorage.r2;
+package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.nonstructured.filestorage.r2;
 
 import java.net.URI;
 
