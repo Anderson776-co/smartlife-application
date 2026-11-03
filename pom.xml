@@ -56,7 +56,7 @@
 		<archunit-junit.version>1.5.1</archunit-junit.version>
 
 		<!-- Plugins -->
-		<jacoco.version>0.8.15</jacoco.version>
+		<jacoco.version>0.8.16</jacoco.version>
 	</properties>
 
 	<dependencies>
