@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.session.CurrentUser;
 import co.com.smartlife.smartlifeapi.shared.infrastructure.input.controller.dto.Response;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationStatus;
@@ -103,7 +104,7 @@ public class VisitAuthorizationController {
 	}
 	
 	private static AttachedDocumentDtoRequest toAttachedDocument(final MultipartFile document) throws IOException {
-		if (document == null || document.isEmpty()) {
+		if (ObjectHelper.isNull(document) || document.isEmpty()) {
 			return null;
 		}
 		return new AttachedDocumentDtoRequest(document.getOriginalFilename(), document.getContentType(), document.getBytes());

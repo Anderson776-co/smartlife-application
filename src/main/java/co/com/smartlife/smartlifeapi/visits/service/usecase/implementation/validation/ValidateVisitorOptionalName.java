@@ -5,12 +5,6 @@ import co.com.smartlife.smartlifeapi.shared.service.usecase.Validator;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.rules.TextFormatIsValid;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.rules.TextLengthIsValid;
 
-/**
- * Un nombre o apellido opcional: si no se ingreso no se exige nada; si se ingreso, su formato y su largo deben ser
- * correctos ({@code <campo>_INVALID}). Datos: el texto, el codigo base del campo (por ejemplo
- * {@code VISITOR_MIDDLE_NAME}), la expresion regular, el largo minimo y el largo maximo, que salen de los parametros
- * del campo en el {@code ParameterCatalog}.
- */
 public final class ValidateVisitorOptionalName implements Validator {
 
 	private static final Validator instance = new ValidateVisitorOptionalName();

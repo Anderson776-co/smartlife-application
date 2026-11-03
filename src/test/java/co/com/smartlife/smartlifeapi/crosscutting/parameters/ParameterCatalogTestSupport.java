@@ -3,10 +3,6 @@ package co.com.smartlife.smartlifeapi.crosscutting.parameters;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Carga en el {@link ParameterCatalog} los mismos valores que se configuran en {@code smartlife-api.yaml}, para
- * que las pruebas unitarias no dependan del servidor de configuracion.
- */
 public final class ParameterCatalogTestSupport {
 
 	public static final String NAME_PATTERN = "^[A-Za-zÁÉÍÓÚáéíóúÑñÜü' ]+$";
@@ -53,7 +49,6 @@ public final class ParameterCatalogTestSupport {
 		ParameterCatalog.markLoaded(List.of());
 	}
 
-	/** Deja el catalogo como si no se hubiera cargado, para no afectar otras pruebas. */
 	public static void unload() {
 		ParameterCatalog.markLoaded(List.of("sin cargar"));
 	}

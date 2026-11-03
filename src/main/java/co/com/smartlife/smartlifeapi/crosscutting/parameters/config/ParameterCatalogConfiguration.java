@@ -18,14 +18,6 @@ import org.springframework.core.env.Environment;
 import co.com.smartlife.smartlifeapi.crosscutting.parameters.ParameterCatalog;
 import jakarta.annotation.PostConstruct;
 
-/**
- * Llena el {@link ParameterCatalog} con las llaves {@code smartlife.visits.validation.*} del servidor de
- * configuracion, al arrancar y cada vez que se refrescan los parametros (webhook del Config Server).
- * <p>
- * Arrancar no depende de que esten: si falta o es invalida alguna llave se registra el error con la lista exacta y
- * {@link ParameterCatalog#ensureLoaded()} falla al usarlas. Si un refresco llega incompleto se conservan los valores
- * anteriores, para que un error de configuracion no tumbe lo que ya funcionaba.
- */
 @Configuration
 public class ParameterCatalogConfiguration {
 
@@ -133,7 +125,6 @@ public class ParameterCatalogConfiguration {
 		LOGGER.info("Parametros de validacion cargados desde el servidor de configuracion");
 	}
 
-	/** Una expresion regular: debe existir y compilar. */
 	private String pattern(final String key, final List<String> missing) {
 		final String value = environment.getProperty(key);
 		if (value == null || value.isBlank()) {
@@ -149,7 +140,6 @@ public class ParameterCatalogConfiguration {
 		}
 	}
 
-	/** Un numero entero: debe existir y serlo. */
 	private Integer number(final String key, final List<String> missing) {
 		final String value = environment.getProperty(key);
 		if (value == null || value.isBlank()) {
@@ -164,10 +154,9 @@ public class ParameterCatalogConfiguration {
 		}
 	}
 
-	/** Un largo minimo y maximo coherentes: el minimo no es negativo y el maximo es al menos 1 y no menor que el minimo. */
 	private static void range(final String keyPrefix, final Integer min, final Integer max, final List<String> missing) {
 		if (min == null || max == null) {
-			return;   // ya se reporto que falta o no es un numero
+			return;
 		}
 		if (min < 0) {
 			missing.add(keyPrefix + "-min (no puede ser negativo)");
@@ -177,10 +166,6 @@ public class ParameterCatalogConfiguration {
 		}
 	}
 
-	/**
-	 * Las firmas, como {@code tipo=HEX,tipo=HEX} (por ejemplo {@code application/pdf=25504446}). El tipo se guarda en
-	 * minusculas, que es como llega el tipo del documento adjunto.
-	 */
 	private Map<String, byte[]> signatures(final String key, final List<String> missing) {
 		final String value = environment.getProperty(key);
 		if (value == null || value.isBlank()) {

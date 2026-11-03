@@ -19,6 +19,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
 import co.com.smartlife.smartlifeapi.crosscutting.helper.UUIDHelper;
@@ -32,6 +33,7 @@ import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entit
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitAuthorizationEntity;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitReasonEntity;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitorEntity;
+import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.mapper.VisitAuthorizationMapperUseCase;
 
 class ConsultVisitAuthorizationsUseCaseImplTest {
 
@@ -52,7 +54,8 @@ class ConsultVisitAuthorizationsUseCaseImplTest {
 	@BeforeEach
 	void setUp() {
 		repository = mock(VisitAuthorizationRepository.class);
-		useCase = new ConsultVisitAuthorizationsUseCaseImpl(repository, Clock.fixed(NOW, ZoneOffset.UTC));
+		useCase = new ConsultVisitAuthorizationsUseCaseImpl(repository, Clock.fixed(NOW, ZoneOffset.UTC),
+				Mappers.getMapper(VisitAuthorizationMapperUseCase.class));
 	}
 
 	/** El catalogo es estatico: se deja como "sin configurar" para no afectar otras pruebas. */

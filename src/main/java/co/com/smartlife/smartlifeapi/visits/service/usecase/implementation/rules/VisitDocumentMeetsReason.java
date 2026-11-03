@@ -48,11 +48,7 @@ public final class VisitDocumentMeetsReason implements Rule {
 		}
 	}
 
-	/**
-	 * El tipo viene del cliente; se contrasta con los primeros bytes que define el parametro {@code DOCUMENT_SIGNATURES}
-	 * del {@link ParameterCatalog}. Un tipo permitido que no tenga firma es un error de configuracion y no se acepta
-	 * a ciegas: se falla indicando cual falta, igual que cuando falta cualquier otro parametro.
-	 */
+	/** El tipo viene del cliente; se contrasta con los primeros bytes. Un tipo sin firma conocida se acepta. */
 	private static boolean matchesSignature(final AttachedDocumentDomain document) {
 		final byte[] signature = ParameterCatalog.DOCUMENT_SIGNATURES.get(document.contentType());
 		if (signature == null) {

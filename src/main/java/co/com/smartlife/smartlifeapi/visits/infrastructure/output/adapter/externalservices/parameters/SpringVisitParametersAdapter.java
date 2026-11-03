@@ -26,9 +26,8 @@ import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices
  * Lee los parametros {@code smartlife.visits.*} del {@link Environment}, que Spring Cloud Config
  * alimenta. Se enlazan en cada consulta para respetar los valores vigentes tras un refresh.
  * <p>
- * No hay valores por defecto en el codigo: si el servidor de parametros no entrego alguno, o entrego un valor que no
- * tiene sentido (una duracion negativa, una zona horaria desconocida, una URL relativa), falla con un mensaje que
- * lista exactamente cuales son, en vez de seguir en silencio con valores inventados.
+ * No hay valores por defecto en el codigo: si el servidor de parametros no entrego alguno, falla con un
+ * mensaje que lista exactamente cuales faltan, en vez de seguir en silencio con valores inventados.
  */
 @Component
 public class SpringVisitParametersAdapter implements VisitParametersOutputPort {
@@ -82,7 +81,6 @@ public class SpringVisitParametersAdapter implements VisitParametersOutputPort {
 				documentMaxSize.toBytes(), normalizedTypes(allowedTypes), qrBaseUrl, zone);
 	}
 
-	/** Los tipos se comparan en minusculas porque asi llega el tipo del documento adjunto. */
 	private static Set<String> normalizedTypes(final List<String> allowedTypes) {
 		return allowedTypes.stream().map(type -> type.trim().toLowerCase(Locale.ROOT)).collect(Collectors.toSet());
 	}
@@ -104,7 +102,7 @@ public class SpringVisitParametersAdapter implements VisitParametersOutputPort {
 
 	private static ZoneId zoneOrNull(final String timeZone, final List<String> missing) {
 		if (timeZone == null) {
-			return null;   // ya se reporto que falta
+			return null;
 		}
 		try {
 			return ZoneId.of(timeZone.trim());

@@ -6,12 +6,6 @@ import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.rules
 import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.rules.TextIsPresent;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.rules.TextLengthIsValid;
 
-/**
- * El correo de un visitante nuevo es obligatorio. Primero se pregunta si se ingreso ({@code VISITOR_EMAIL_REQUIRED})
- * y despues si su formato y su largo son correctos ({@code VISITOR_EMAIL_INVALID}); ambos salen de los parametros
- * {@code EMAIL_*} del {@link ParameterCatalog}.
- * Dato: el correo; si no llega, se trata como no ingresado.
- */
 public final class ValidateVisitorEmail implements Validator {
 
 	static final String FIELD = "VISITOR_EMAIL";

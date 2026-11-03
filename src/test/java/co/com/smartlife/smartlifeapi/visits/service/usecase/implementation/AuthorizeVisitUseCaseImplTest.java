@@ -3,6 +3,7 @@ package co.com.smartlife.smartlifeapi.visits.service.usecase.implementation;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -26,6 +27,7 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
 
 import co.com.smartlife.smartlifeapi.crosscutting.parameters.ParameterCatalogTestSupport;
@@ -47,6 +49,7 @@ import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entit
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitAuthorizationEntity;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitReasonEntity;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitorEntity;
+import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.mapper.VisitAuthorizationMapperUseCase;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.contract.VerifyVisitAuthorizationAccessUseCase;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.support.RegisterVisitAuthorization;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.support.ResolveVisitor;
@@ -101,7 +104,8 @@ class AuthorizeVisitUseCaseImplTest {
 
 		useCase = new AuthorizeVisitUseCaseImpl(authorizatorRepository, propertyVisitRepository,
 				visitReasonRepository, visitAuthorizationRepository, verifyAccess, resolveVisitor, documentStorage,
-				registerAuthorization, notifier, parameters, telemetry, Clock.fixed(NOW, ZoneOffset.UTC));
+				registerAuthorization, notifier, parameters, telemetry, Clock.fixed(NOW, ZoneOffset.UTC),
+				Mappers.getMapper(VisitAuthorizationMapperUseCase.class));
 
 		authorizator = new AuthorizatorDomain(authorizatorId, urbanizationId, Set.of("OWNER"));
 		newVisitor = new VisitorEntity(UUID.randomUUID(), "Luis", "", "Torres", "", "2001", "luis@example.com", null);
@@ -129,12 +133,28 @@ class AuthorizeVisitUseCaseImplTest {
 		assertEquals("", result.fileReference());
 		assertTrue(result.notificationSent());
 		assertEquals(newVisitor.getId(), result.visitor().id());
+		assertEquals("2001", result.visitor().documentNumber());
+		assertEquals("", result.visitor().vehiclePlate());
+		assertEquals(propertyId, result.propertyId());
+		assertEquals(familyReasonId, result.visitReasonId());
+		assertEquals(authorizator, result.authorizator());
+		assertFalse(result.attachedDocument().hasContent());
+		assertEquals(familyReasonId, result.visitReasonId());
+		assertEquals(authorizator, result.authorizator());
+		assertFalse(result.attachedDocument().hasContent());
 
 		final ArgumentCaptor<VisitAuthorizationEntity> saved = ArgumentCaptor.forClass(VisitAuthorizationEntity.class);
 		verify(registerAuthorization).register(saved.capture(), eq(true));
 		assertEquals(result.id(), saved.getValue().getId());
 		assertTrue(saved.getValue().getIsActive());
 		assertEquals(propertyId, saved.getValue().getProperty().getId());
+		assertEquals("Torre 1 - 101", saved.getValue().getProperty().getLocation());
+		assertEquals(authorizatorId, saved.getValue().getAuthorizator().getId());
+		assertEquals("Ana Ruiz", saved.getValue().getAuthorizator().getFullName());
+		assertEquals(familyReasonId, saved.getValue().getVisitReason().getId());
+		assertEquals("Visita familiar", saved.getValue().getVisitReason().getName());
+		assertSame(newVisitor, saved.getValue().getVisitor());
+		assertEquals(NOW, saved.getValue().getRegisterDate());
 		verify(documentStorage, never()).store(any(), any());
 		verify(notifier).notifyVisitor(saved.getValue());
 	}

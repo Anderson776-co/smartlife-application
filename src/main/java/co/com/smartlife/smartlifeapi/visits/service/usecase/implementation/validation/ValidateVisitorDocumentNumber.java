@@ -6,12 +6,6 @@ import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.rules
 import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.rules.TextIsPresent;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.rules.TextLengthIsValid;
 
-/**
- * El numero de documento es obligatorio. Primero se pregunta si se ingreso ({@code VISITOR_DOCUMENT_REQUIRED}) y
- * despues si su formato y su largo son correctos ({@code VISITOR_DOCUMENT_INVALID}); el formato y el largo salen de
- * los parametros {@code DOCUMENT_NUMBER_*} del {@link ParameterCatalog}.
- * Dato: el numero de documento; si no llega, se trata como no ingresado.
- */
 public final class ValidateVisitorDocumentNumber implements Validator {
 
 	static final String FIELD = "VISITOR_DOCUMENT";

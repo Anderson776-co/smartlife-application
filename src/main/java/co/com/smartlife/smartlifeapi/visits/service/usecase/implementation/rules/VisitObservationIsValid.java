@@ -4,10 +4,7 @@ import co.com.smartlife.smartlifeapi.crosscutting.helper.TextHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.parameters.ParameterCatalog;
 import co.com.smartlife.smartlifeapi.crosscutting.rules.Rule;
 
-/**
- * La observacion es opcional y no puede superar el largo maximo del parametro {@code OBSERVATION_MAX_LENGTH} del
- * {@link ParameterCatalog}, que no debe ser mayor al de la columna {@code observation}. Dato: la observacion.
- */
+/** La observacion es opcional y cabe en la columna {@code observation} (500). Dato: la observacion. */
 public final class VisitObservationIsValid implements Rule {
 
 	private static final Rule instance = new VisitObservationIsValid();
