@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.visits.infrastructure.output.externalservices.telemetry.micrometer.adapter;
+package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.telemetry;
 
 import java.time.Duration;
 

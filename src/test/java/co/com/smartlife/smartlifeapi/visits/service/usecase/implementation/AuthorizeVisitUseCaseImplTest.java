@@ -19,7 +19,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Optional;
 import java.util.Set;
@@ -30,6 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 import org.mockito.ArgumentCaptor;
 
+import co.com.smartlife.smartlifeapi.crosscutting.parameters.ParameterCatalog;
 import co.com.smartlife.smartlifeapi.crosscutting.parameters.ParameterCatalogTestSupport;
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.AttachedDocumentDomain;
@@ -38,8 +38,6 @@ import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthoriza
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationDomain;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitorDomain;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.TelemetryOutputPort;
-import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.VisitParametersOutputPort;
-import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.VisitParametersDTO;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.AuthorizatorRepository;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.PropertyVisitRepository;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.VisitAuthorizationRepository;
@@ -87,6 +85,7 @@ class AuthorizeVisitUseCaseImplTest {
 	@BeforeEach
 	void setUp() {
 		ParameterCatalogTestSupport.load();
+		ParameterCatalog.QR_BASE_URL = QR_BASE_URL;
 		authorizatorRepository = mock(AuthorizatorRepository.class);
 		propertyVisitRepository = mock(PropertyVisitRepository.class);
 		visitReasonRepository = mock(VisitReasonRepository.class);
@@ -97,14 +96,10 @@ class AuthorizeVisitUseCaseImplTest {
 		registerAuthorization = mock(RegisterVisitAuthorization.class);
 		notifier = mock(VisitAuthorizationNotifier.class);
 		telemetry = mock(TelemetryOutputPort.class);
-		final VisitParametersOutputPort parameters = mock(VisitParametersOutputPort.class);
-		when(parameters.get()).thenReturn(new VisitParametersDTO(Duration.ofHours(24), Duration.ofDays(30),
-				Duration.ofMinutes(10), 5L * 1024 * 1024, Set.of("application/pdf", "image/jpeg", "image/png"),
-				QR_BASE_URL, ZoneId.of("UTC")));
 
 		useCase = new AuthorizeVisitUseCaseImpl(authorizatorRepository, propertyVisitRepository,
 				visitReasonRepository, visitAuthorizationRepository, verifyAccess, resolveVisitor, documentStorage,
-				registerAuthorization, notifier, parameters, telemetry, Clock.fixed(NOW, ZoneOffset.UTC),
+				registerAuthorization, notifier, telemetry, Clock.fixed(NOW, ZoneOffset.UTC),
 				Mappers.getMapper(VisitAuthorizationMapperUseCase.class));
 
 		authorizator = new AuthorizatorDomain(authorizatorId, urbanizationId, Set.of("OWNER"));

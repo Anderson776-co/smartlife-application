@@ -7,8 +7,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.Duration;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +26,7 @@ class ParameterCatalogConfigurationTest {
 
 	private static final String FORMAT = "smartlife.visits.validation.format.";
 	private static final String LENGTH = "smartlife.visits.validation.length.";
+	private static final String VISITS = "smartlife.visits.";
 
 	private final Map<String, Object> properties = new HashMap<>();
 	private final StandardEnvironment environment = new StandardEnvironment();
@@ -37,6 +41,13 @@ class ParameterCatalogConfigurationTest {
 		}
 		properties.put(LENGTH + "observation-max", "300");
 		properties.put(FORMAT + "document-signatures", "application/pdf=25504446, image/png=89504E47");
+		properties.put(VISITS + "max-authorization-duration", "12h");
+		properties.put(VISITS + "max-anticipation", "7d");
+		properties.put(VISITS + "start-tolerance", "5m");
+		properties.put(VISITS + "document.max-size", "2MB");
+		properties.put(VISITS + "document.allowed-types", "application/pdf,image/png");
+		properties.put(VISITS + "qr-base-url", "https://app.smartlife.co/visitas/");
+		properties.put(VISITS + "time-zone", "America/Bogota");
 		environment.getPropertySources().addFirst(new MapPropertySource("test", properties));
 		ParameterCatalogTestSupport.unload();
 	}
@@ -129,6 +140,93 @@ class ParameterCatalogConfigurationTest {
 		new ParameterCatalogConfiguration(environment).onParametersRefreshed();
 
 		assertEquals(450, ParameterCatalog.OBSERVATION_MAX_LENGTH);
+	}
+
+	@Test
+	void shouldLoadTheVisitBusinessParameters() {
+		load();
+
+		assertTrue(ParameterCatalog.isLoaded());
+		assertEquals(Duration.ofHours(12), ParameterCatalog.MAX_AUTHORIZATION_DURATION);
+		assertEquals(Duration.ofDays(7), ParameterCatalog.MAX_ANTICIPATION);
+		assertEquals(Duration.ofMinutes(5), ParameterCatalog.START_TOLERANCE);
+		assertEquals(2L * 1024 * 1024, ParameterCatalog.DOCUMENT_MAX_SIZE_IN_BYTES);
+		assertEquals(Set.of("application/pdf", "image/png"), ParameterCatalog.DOCUMENT_ALLOWED_TYPES);
+		assertEquals("https://app.smartlife.co/visitas/", ParameterCatalog.QR_BASE_URL);
+		assertEquals(ZoneId.of("America/Bogota"), ParameterCatalog.TIME_ZONE);
+	}
+
+	@Test
+	void shouldCompareTheAllowedTypesInLowerCase() {
+		properties.put(VISITS + "document.allowed-types", "Application/PDF, IMAGE/png");
+
+		load();
+
+		assertEquals(Set.of("application/pdf", "image/png"), ParameterCatalog.DOCUMENT_ALLOWED_TYPES);
+	}
+
+	@Test
+	void shouldNameEveryVisitParameterWhenNothingIsConfigured() {
+		properties.keySet().removeIf(key -> key.startsWith(VISITS));
+
+		load();
+
+		final IllegalStateException exception = assertThrows(IllegalStateException.class, ParameterCatalog::ensureLoaded);
+		for (final String name : new String[] { "max-authorization-duration", "max-anticipation", "start-tolerance",
+				"document.max-size", "document.allowed-types", "qr-base-url", "time-zone" }) {
+			assertTrue(exception.getMessage().contains(VISITS + name), "no menciona " + name);
+		}
+	}
+
+	@Test
+	void shouldTreatBlankVisitValuesAsMissing() {
+		properties.put(VISITS + "qr-base-url", "   ");
+		properties.put(VISITS + "document.allowed-types", "");
+
+		load();
+
+		final IllegalStateException exception = assertThrows(IllegalStateException.class, ParameterCatalog::ensureLoaded);
+		assertTrue(exception.getMessage().contains(VISITS + "qr-base-url"));
+		assertTrue(exception.getMessage().contains(VISITS + "document.allowed-types"));
+	}
+
+	@Test
+	void shouldRejectVisitValuesThatMakeNoSense() {
+		properties.put(VISITS + "max-authorization-duration", "0s");
+		properties.put(VISITS + "max-anticipation", "-1d");
+		properties.put(VISITS + "start-tolerance", "-5m");
+		properties.put(VISITS + "document.max-size", "0B");
+		properties.put(VISITS + "qr-base-url", "/visitas/autorizaciones/");
+		properties.put(VISITS + "time-zone", "Mars/Olympus");
+
+		load();
+
+		assertFalse(ParameterCatalog.isLoaded());
+		final IllegalStateException exception = assertThrows(IllegalStateException.class, ParameterCatalog::ensureLoaded);
+		for (final String name : new String[] { "max-authorization-duration", "max-anticipation", "start-tolerance",
+				"document.max-size", "qr-base-url", "time-zone" }) {
+			assertTrue(exception.getMessage().contains(VISITS + name), "no menciona " + name);
+		}
+	}
+
+	@Test
+	void shouldNameAVisitValueThatCannotBeRead() {
+		properties.put(VISITS + "max-anticipation", "treinta dias");
+
+		load();
+
+		final IllegalStateException exception = assertThrows(IllegalStateException.class, ParameterCatalog::ensureLoaded);
+		assertTrue(exception.getMessage().contains(VISITS + "max-anticipation (valor invalido)"));
+	}
+
+	@Test
+	void shouldPickUpTheNewVisitValuesWhenARefreshArrivesComplete() {
+		load();
+		properties.put(VISITS + "max-anticipation", "3d");
+
+		new ParameterCatalogConfiguration(environment).onParametersRefreshed();
+
+		assertEquals(Duration.ofDays(3), ParameterCatalog.MAX_ANTICIPATION);
 	}
 
 }

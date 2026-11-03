@@ -6,7 +6,6 @@ import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.parameters.ParameterCatalog;
 import co.com.smartlife.smartlifeapi.crosscutting.rules.Rule;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.AttachedDocumentDomain;
-import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.VisitParametersDTO;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitReasonEntity;
 
 public final class VisitDocumentMeetsReason implements Rule {
@@ -23,13 +22,12 @@ public final class VisitDocumentMeetsReason implements Rule {
 
 	@Override
 	public void execute(final Object... data) {
-		if (data.length < 3) {
+		if (data.length < 2) {
 			throw VisitRuleErrors.incompleteParameters("VISIT_DOCUMENT_MEETS_REASON");
 		}
 
 		final var reason = (VisitReasonEntity) data[0];
 		final var document = ObjectHelper.getDefault((AttachedDocumentDomain) data[1], AttachedDocumentDomain.empty());
-		final var parameters = (VisitParametersDTO) data[2];
 
 		if (!Boolean.TRUE.equals(reason.getRequiresDocument())) {
 			return;
@@ -37,10 +35,10 @@ public final class VisitDocumentMeetsReason implements Rule {
 		if (!document.hasContent()) {
 			throw VisitRuleErrors.business("VISIT_DOCUMENT_REQUIRED");
 		}
-		if (!parameters.documentAllowedTypes().contains(document.contentType()) || !matchesSignature(document)) {
+		if (!ParameterCatalog.DOCUMENT_ALLOWED_TYPES.contains(document.contentType()) || !matchesSignature(document)) {
 			throw VisitRuleErrors.business("VISIT_DOCUMENT_TYPE_NOT_ALLOWED");
 		}
-		if (document.content().length > parameters.documentMaxSizeInBytes()) {
+		if (document.content().length > ParameterCatalog.DOCUMENT_MAX_SIZE_IN_BYTES) {
 			throw VisitRuleErrors.business("VISIT_DOCUMENT_TOO_LARGE");
 		}
 	}

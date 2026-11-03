@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.qr;
+package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.qr;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -10,8 +10,6 @@ import java.util.Base64;
 import org.junit.jupiter.api.Test;
 
 import com.google.zxing.WriterException;
-
-import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.qr.ZxingQrGeneratorAdapter;
 
 class ZxingQrGeneratorAdapterTest {
 
