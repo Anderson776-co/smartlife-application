@@ -26,7 +26,6 @@ public class DwellingController {
 		this.changeDwellingOwnerInputPort = changeDwellingOwnerInputPort;
 	}
 
-	/** Solo el administrador cambia estos datos. Al terminar se publica un evento que actualiza las vistas. */
 	@PreAuthorize("hasRole('ADMIN')")
 	@PatchMapping("/{dwellingId}/owner")
 	public ResponseEntity<Response<Void>> changeOwner(

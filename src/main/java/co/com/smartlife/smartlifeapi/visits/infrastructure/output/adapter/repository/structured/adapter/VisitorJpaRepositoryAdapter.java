@@ -49,7 +49,6 @@ public class VisitorJpaRepositoryAdapter implements VisitorRepository{
 
 	@Override
 	public void update(UUID id, VisitorEntity entity) {
-		//pendiente
 	}
 
 	@Override

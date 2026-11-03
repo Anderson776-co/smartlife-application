@@ -161,7 +161,7 @@ public class AuthorizeVisitUseCaseImpl implements AuthorizeVisitUseCase {
 
 	private String storeDocumentWhenRequired(final UUID authorizationId, final VisitReasonEntity reason,
 			final AttachedDocumentDomain document) {
-		return Boolean.TRUE.equals(reason.getRequiresDocument()) ? documentStorage.store(authorizationId, document) : null;
+		return Boolean.TRUE.equals(reason.getRequiresDocument()) ? documentStorage.store(authorizationId, document) : TextHelper.getDefault();
 	}
 
 	private void register(final VisitAuthorizationEntity authorization, final boolean isNewVisitor) {

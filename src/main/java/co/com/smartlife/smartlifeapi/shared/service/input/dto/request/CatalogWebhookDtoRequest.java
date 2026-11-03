@@ -5,10 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.helper.TextHelper;
 
-/**
- * Cuerpo del webhook de Strapi: {@code event} (por ejemplo {@code entry.publish}), {@code model}
- * (nombre del catalogo) y la entrada afectada. Los demas campos del cuerpo se ignoran.
- */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record CatalogWebhookDtoRequest(String event, String model, Entry entry) {
 
@@ -27,7 +23,7 @@ public record CatalogWebhookDtoRequest(String event, String model, Entry entry) 
 		}
 
 		public static Entry empty() {
-			return new Entry(null, null);
+			return new Entry(TextHelper.getDefault(), TextHelper.getDefault());
 		}
 	}
 }

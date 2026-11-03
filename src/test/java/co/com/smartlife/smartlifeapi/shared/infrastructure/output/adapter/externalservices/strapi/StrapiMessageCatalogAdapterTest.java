@@ -48,7 +48,6 @@ class StrapiMessageCatalogAdapterTest {
 
 	@BeforeEach
 	void setUp() {
-		// El proveedor es estatico y lo comparten otros tests: se guarda lo que habia y se deja en blanco
 		previousPort = (MessageCatalogOutputPort) ReflectionTestUtils.getField(MessageCatalogProvider.class,
 				"messageCatalogOutputPort");
 		MessageCatalogProvider.init(null);
@@ -179,7 +178,6 @@ class StrapiMessageCatalogAdapterTest {
 	@Test
 	void findByCodeAndLocaleShouldNotAskTheCatalogAgainWhenItIsDown() {
 		MessageCatalogProvider.init(adapter);
-		// Solo se esperan 2 llamadas: el mensaje y el primer texto reservado. Una tercera hace fallar el test.
 		server.expect(ExpectedCount.times(2), method(HttpMethod.GET)).andRespond(withServerError());
 
 		SmartLifeException exception = assertThrows(SmartLifeException.class,
@@ -246,7 +244,6 @@ class StrapiMessageCatalogAdapterTest {
 			assertThrows(SmartLifeException.class, () -> withTimeouts.findByCodeAndLocale("VISIT_AUTHORIZED", "es"));
 			long elapsedMillis = Duration.ofNanos(System.nanoTime() - start).toMillis();
 
-			// 300 ms del mensaje + 300 ms del primer texto reservado; sin el limite esperaria los 1500 ms por llamada
 			assertTrue(elapsedMillis < 1200, "Tardó " + elapsedMillis + " ms: el tiempo de espera no se aplicó");
 		} finally {
 			slow.stop(0);

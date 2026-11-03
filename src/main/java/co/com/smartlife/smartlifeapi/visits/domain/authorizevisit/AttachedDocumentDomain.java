@@ -35,6 +35,6 @@ public record AttachedDocumentDomain(String fileName, String contentType, byte[]
 	
 	public String toString() {
 		return "AttachedDocumentDomain[fileName=" + fileName + ", contentType=" + contentType + ", contentLength="
-				+ (content == null ? 0 : content.length) + "]";
+				+ content.length + "]";
 	}
 }

@@ -18,8 +18,6 @@ public class ResidentDwellingJpaRepositoryAdapter implements ResidentDwellingRep
 	private final ResidentResidenceJpaRepository repository;
 	private final ResidentResidenceMapper mapper;
 	
-	
-
 	public ResidentDwellingJpaRepositoryAdapter(final ResidentResidenceJpaRepository repository,
 			final ResidentResidenceMapper mapper) {
 		this.repository = repository;
@@ -61,8 +59,6 @@ public class ResidentDwellingJpaRepositoryAdapter implements ResidentDwellingRep
 	}
 	@Override
 	public void delete(UUID id, ResidentResidenceEntity entity) {
-		//Pendiente
 	}
 	
-
 }

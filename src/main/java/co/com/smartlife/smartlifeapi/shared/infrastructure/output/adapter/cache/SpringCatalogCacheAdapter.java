@@ -1,6 +1,7 @@
 package co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.cache;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,10 +12,6 @@ import org.springframework.stereotype.Component;
 import co.com.smartlife.smartlifeapi.shared.domain.catalog.CatalogTypeDomain;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.cache.CatalogCacheOutputPort;
 
-/**
- * Borra de la cache (Redis o la que este configurada) lo que guardan los adaptadores de Strapi con
- * {@code @Cacheable}. La llave debe ser la misma que ellos usan: {@code codigo:idioma}.
- */
 @Component
 public class SpringCatalogCacheAdapter implements CatalogCacheOutputPort {
 
@@ -32,24 +29,17 @@ public class SpringCatalogCacheAdapter implements CatalogCacheOutputPort {
 
 	@Override
 	public void evict(final CatalogTypeDomain catalog, final String code, final String locale) {
-		final Cache cache = cacheOf(catalog);
-		if (cache != null) {
-			cache.evict(code + ":" + locale);
-		}
+		cacheOf(catalog).ifPresent(cache -> cache.evict(code + ":" + locale));
 	}
 
 	@Override
 	public void evictAll(final CatalogTypeDomain catalog) {
-		final Cache cache = cacheOf(catalog);
-		if (cache != null) {
-			cache.clear();
-		}
+		cacheOf(catalog).ifPresent(Cache::clear);
 	}
 
-	private Cache cacheOf(final CatalogTypeDomain catalog) {
-		final String name = CACHE_NAMES.get(catalog);
-		final Cache cache = name == null ? null : cacheManager.getCache(name);
-		if (cache == null) {
+	private Optional<Cache> cacheOf(final CatalogTypeDomain catalog) {
+		final Optional<Cache> cache = Optional.ofNullable(CACHE_NAMES.get(catalog)).map(cacheManager::getCache);
+		if (cache.isEmpty()) {
 			LOGGER.warn("No existe una caché para el catálogo {}: no se borra nada", catalog);
 		}
 		return cache;

@@ -19,11 +19,6 @@ import co.com.smartlife.smartlifeapi.visits.service.usecase.contract.ConsultVisi
 import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.mapper.VisitAuthorizationMapperUseCase;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.specification.AuthorizationSpecifications;
 
-/**
- * Consulta las autorizaciones de un autorizador y las entrega con el mismo dominio con el que se autoriza. Los
- * filtros se arman con el patron Specification (ver {@link AuthorizationSpecifications}). Las referencias de una
- * autorizacion (propiedad, motivo, visitante y autorizador) siempre existen, como en el caso de uso de autorizar.
- */
 @Service
 public class ConsultVisitAuthorizationsUseCaseImpl implements ConsultVisitAuthorizationsUseCase {
 

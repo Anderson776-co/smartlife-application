@@ -12,14 +12,6 @@ import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.Prope
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.VisitResidentRepository;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.contract.VerifyVisitAuthorizationAccessUseCase;
 
-/**
- * Politica de acceso para autorizar una visita (el RBAC lo resuelve Spring Security):
- * <ul>
- * <li>ABAC: el autorizador esta activo y pertenece a la urbanizacion de su sesion.</li>
- * <li>ReBAC: el autorizador tiene relacion con la propiedad, como propietario
- * (rol OWNER) o como residente (rol RESIDENT).</li>
- * </ul>
- */
 @Service
 public class VerifyVisitAuthorizationAccessUseCaseImpl implements VerifyVisitAuthorizationAccessUseCase {
 

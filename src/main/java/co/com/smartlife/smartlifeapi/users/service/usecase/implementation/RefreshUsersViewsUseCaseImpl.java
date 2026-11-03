@@ -8,10 +8,6 @@ import co.com.smartlife.smartlifeapi.shared.service.output.port.views.Materializ
 import co.com.smartlife.smartlifeapi.users.domain.UsersViewRefreshDomain;
 import co.com.smartlife.smartlifeapi.users.service.usecase.contract.RefreshUsersViewsUseCase;
 
-/**
- * Actualiza las vistas del modulo que dependen del modulo donde cambio la informacion. Si una vista no se
- * puede actualizar se deja el error en el log y se sigue con las demas: el cambio original ya esta guardado.
- */
 @Service
 public class RefreshUsersViewsUseCaseImpl implements RefreshUsersViewsUseCase {
 

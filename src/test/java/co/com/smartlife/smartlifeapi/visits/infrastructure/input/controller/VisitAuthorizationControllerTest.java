@@ -20,10 +20,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import co.com.smartlife.smartlifeapi.crosscutting.helper.UUIDHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.session.CurrentUser;
 import co.com.smartlife.smartlifeapi.shared.infrastructure.input.controller.dto.Response;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationStatus;
+import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.AttachedDocumentDtoRequest;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.AuthorizeVisitDtoRequest;
+import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.VisitorDtoRequest;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.GetVisitAuthorizationDtoRequest;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.ListVisitAuthorizationsDtoRequest;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.response.VisitAuthorizationDtoResponse;
@@ -41,6 +44,12 @@ class VisitAuthorizationControllerTest {
 	private static final Instant TO = Instant.parse("2026-11-04T10:00:00Z");
 	private static final CurrentUser USER = new CurrentUser(USER_ID, "maria@example.com", Set.of("RESIDENT"),
 			UUID.randomUUID());
+
+	private static final VisitAuthorizationStatus NO_STATUS = VisitAuthorizationStatus.UNSPECIFIED;
+	private static final Instant NO_LOWER_LIMIT = Instant.EPOCH;
+	private static final Instant NO_UPPER_LIMIT = Instant.MAX;
+	private static final UUID NO_PROPERTY = UUIDHelper.getUUIDHelper().getDefault();
+	private static final MockMultipartFile NO_DOCUMENT = new MockMultipartFile("document", new byte[0]);
 
 	private AuthorizeVisitInputPort authorizePort;
 	private ListVisitAuthorizationsInputPort listPort;
@@ -62,7 +71,8 @@ class VisitAuthorizationControllerTest {
 	}
 
 	private static AuthorizeVisitDtoRequest authorizeRequest() {
-		return new AuthorizeVisitDtoRequest(PROPERTY_ID, PROPERTY_ID, FROM, TO, "", null, null, null);
+		return new AuthorizeVisitDtoRequest(PROPERTY_ID, PROPERTY_ID, FROM, TO, "", VisitorDtoRequest.empty(),
+					AttachedDocumentDtoRequest.empty(), USER);
 	}
 
 	@Test
@@ -70,11 +80,10 @@ class VisitAuthorizationControllerTest {
 		final VisitAuthorizationSummaryDtoResponse summary = summary();
 		final VisitAuthorizationPageDtoResponse page = new VisitAuthorizationPageDtoResponse(List.of(summary), 0, 10, 1,
 				1);
-		when(listPort.execute(new ListVisitAuthorizationsDtoRequest(null, null, null, null, USER, 0, 10)))
+		when(listPort.execute(new ListVisitAuthorizationsDtoRequest(NO_STATUS, NO_LOWER_LIMIT, NO_UPPER_LIMIT, NO_PROPERTY, USER, 0, 10)))
 				.thenReturn(page);
 
-		final ResponseEntity<Response<VisitAuthorizationPageDtoResponse>> response = controller.list(null, null,
-				null, null, 0, 10, USER);
+		final ResponseEntity<Response<VisitAuthorizationPageDtoResponse>> response = controller.list(NO_STATUS, NO_LOWER_LIMIT, NO_UPPER_LIMIT, NO_PROPERTY, 0, 10, USER);
 
 		assertEquals(200, response.getStatusCode().value());
 		assertTrue(response.getBody().isResponseSucceded());
@@ -130,7 +139,7 @@ class VisitAuthorizationControllerTest {
 				.thenReturn(new VisitAuthorizationDtoResponse(authorizationId, "qr", true));
 
 		final ResponseEntity<Response<VisitAuthorizationDtoResponse>> response = controller.autorize(
-				authorizeRequest(), null, USER, UriComponentsBuilder.fromUriString("https://smartlife.sarl"));
+				authorizeRequest(), NO_DOCUMENT, USER, UriComponentsBuilder.fromUriString("https://smartlife.sarl"));
 
 		assertEquals(201, response.getStatusCode().value());
 		assertEquals(URI.create("https://smartlife.sarl/api/v1/visits/authorizations/" + authorizationId),
@@ -159,7 +168,7 @@ class VisitAuthorizationControllerTest {
 		when(authorizePort.execute(org.mockito.ArgumentMatchers.any()))
 				.thenReturn(new VisitAuthorizationDtoResponse(UUID.randomUUID(), "qr", true));
 
-		controller.autorize(authorizeRequest(), null, USER, UriComponentsBuilder.fromUriString("https://x"));
+		controller.autorize(authorizeRequest(), NO_DOCUMENT, USER, UriComponentsBuilder.fromUriString("https://x"));
 
 		final ArgumentCaptor<AuthorizeVisitDtoRequest> captor = ArgumentCaptor.forClass(AuthorizeVisitDtoRequest.class);
 		verify(authorizePort).execute(captor.capture());

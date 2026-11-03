@@ -26,7 +26,6 @@ public class ResidentResidenceController {
 		this.changeResidentResidenceStatusInputPort = changeResidentResidenceStatusInputPort;
 	}
 
-	/** Solo el administrador cambia estos datos. Al terminar se publica un evento que actualiza las vistas. */
 	@PreAuthorize("hasRole('ADMIN')")
 	@PatchMapping("/{residentResidenceId}/status")
 	public ResponseEntity<Response<Void>> changeStatus(

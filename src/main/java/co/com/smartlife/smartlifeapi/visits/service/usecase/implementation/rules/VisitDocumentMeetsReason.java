@@ -2,20 +2,17 @@ package co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.rule
 
 import java.util.Arrays;
 
+import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.parameters.ParameterCatalog;
 import co.com.smartlife.smartlifeapi.crosscutting.rules.Rule;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.AttachedDocumentDomain;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.VisitParametersDTO;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitReasonEntity;
 
-/**
- * Si el motivo exige documento (por ejemplo servicio tecnico), el documento es obligatorio, de un tipo
- * permitido, dentro del tamano maximo y su contenido debe corresponder al tipo declarado.
- * Datos: {@link VisitReasonEntity}, {@link AttachedDocumentDomain} y {@link VisitParametersDTO}.
- */
 public final class VisitDocumentMeetsReason implements Rule {
 
 	private static final Rule instance = new VisitDocumentMeetsReason();
+	private static final byte[] NO_SIGNATURE = new byte[0];
 
 	private VisitDocumentMeetsReason() {
 	}
@@ -31,13 +28,13 @@ public final class VisitDocumentMeetsReason implements Rule {
 		}
 
 		final var reason = (VisitReasonEntity) data[0];
-		final var document = (AttachedDocumentDomain) data[1];
+		final var document = ObjectHelper.getDefault((AttachedDocumentDomain) data[1], AttachedDocumentDomain.empty());
 		final var parameters = (VisitParametersDTO) data[2];
 
 		if (!Boolean.TRUE.equals(reason.getRequiresDocument())) {
 			return;
 		}
-		if (document == null || !document.hasContent()) {
+		if (!document.hasContent()) {
 			throw VisitRuleErrors.business("VISIT_DOCUMENT_REQUIRED");
 		}
 		if (!parameters.documentAllowedTypes().contains(document.contentType()) || !matchesSignature(document)) {
@@ -48,10 +45,10 @@ public final class VisitDocumentMeetsReason implements Rule {
 		}
 	}
 
-	/** El tipo viene del cliente; se contrasta con los primeros bytes. Un tipo sin firma conocida se acepta. */
 	private static boolean matchesSignature(final AttachedDocumentDomain document) {
-		final byte[] signature = ParameterCatalog.DOCUMENT_SIGNATURES.get(document.contentType());
-		if (signature == null) {
+		final byte[] signature = ObjectHelper.getDefault(ParameterCatalog.DOCUMENT_SIGNATURES.get(document.contentType()),
+				NO_SIGNATURE);
+		if (signature.length == 0) {
 			throw new IllegalStateException("El tipo de documento permitido '" + document.contentType()
 					+ "' no tiene firma en smartlife.visits.validation.format.document-signatures");
 		}

@@ -5,6 +5,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -15,6 +16,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
 
+import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.parameters.ParameterCatalog;
 import jakarta.annotation.PostConstruct;
 
@@ -40,36 +42,36 @@ public class ParameterCatalogConfiguration {
 	public void loadParameters() {
 		final List<String> missing = new ArrayList<>();
 
-		final String documentNumberPattern = pattern(FORMAT + "document-number", missing);
-		final Integer documentNumberMin = number(LENGTH + "document-number-min", missing);
-		final Integer documentNumberMax = number(LENGTH + "document-number-max", missing);
+		final Optional<String> documentNumberPattern = pattern(FORMAT + "document-number", missing);
+		final Optional<Integer> documentNumberMin = number(LENGTH + "document-number-min", missing);
+		final Optional<Integer> documentNumberMax = number(LENGTH + "document-number-max", missing);
 
-		final String firstNamePattern = pattern(FORMAT + "first-name", missing);
-		final Integer firstNameMin = number(LENGTH + "first-name-min", missing);
-		final Integer firstNameMax = number(LENGTH + "first-name-max", missing);
+		final Optional<String> firstNamePattern = pattern(FORMAT + "first-name", missing);
+		final Optional<Integer> firstNameMin = number(LENGTH + "first-name-min", missing);
+		final Optional<Integer> firstNameMax = number(LENGTH + "first-name-max", missing);
 
-		final String middleNamePattern = pattern(FORMAT + "middle-name", missing);
-		final Integer middleNameMin = number(LENGTH + "middle-name-min", missing);
-		final Integer middleNameMax = number(LENGTH + "middle-name-max", missing);
+		final Optional<String> middleNamePattern = pattern(FORMAT + "middle-name", missing);
+		final Optional<Integer> middleNameMin = number(LENGTH + "middle-name-min", missing);
+		final Optional<Integer> middleNameMax = number(LENGTH + "middle-name-max", missing);
 
-		final String lastNamePattern = pattern(FORMAT + "last-name", missing);
-		final Integer lastNameMin = number(LENGTH + "last-name-min", missing);
-		final Integer lastNameMax = number(LENGTH + "last-name-max", missing);
+		final Optional<String> lastNamePattern = pattern(FORMAT + "last-name", missing);
+		final Optional<Integer> lastNameMin = number(LENGTH + "last-name-min", missing);
+		final Optional<Integer> lastNameMax = number(LENGTH + "last-name-max", missing);
 
-		final String secondLastNamePattern = pattern(FORMAT + "second-last-name", missing);
-		final Integer secondLastNameMin = number(LENGTH + "second-last-name-min", missing);
-		final Integer secondLastNameMax = number(LENGTH + "second-last-name-max", missing);
+		final Optional<String> secondLastNamePattern = pattern(FORMAT + "second-last-name", missing);
+		final Optional<Integer> secondLastNameMin = number(LENGTH + "second-last-name-min", missing);
+		final Optional<Integer> secondLastNameMax = number(LENGTH + "second-last-name-max", missing);
 
-		final String emailPattern = pattern(FORMAT + "email", missing);
-		final Integer emailMin = number(LENGTH + "email-min", missing);
-		final Integer emailMax = number(LENGTH + "email-max", missing);
+		final Optional<String> emailPattern = pattern(FORMAT + "email", missing);
+		final Optional<Integer> emailMin = number(LENGTH + "email-min", missing);
+		final Optional<Integer> emailMax = number(LENGTH + "email-max", missing);
 
-		final String vehiclePlatePattern = pattern(FORMAT + "vehicle-plate", missing);
-		final Integer vehiclePlateMin = number(LENGTH + "vehicle-plate-min", missing);
-		final Integer vehiclePlateMax = number(LENGTH + "vehicle-plate-max", missing);
+		final Optional<String> vehiclePlatePattern = pattern(FORMAT + "vehicle-plate", missing);
+		final Optional<Integer> vehiclePlateMin = number(LENGTH + "vehicle-plate-min", missing);
+		final Optional<Integer> vehiclePlateMax = number(LENGTH + "vehicle-plate-max", missing);
 
-		final Integer observationMax = number(LENGTH + "observation-max", missing);
-		final Map<String, byte[]> documentSignatures = signatures(FORMAT + "document-signatures", missing);
+		final Optional<Integer> observationMax = number(LENGTH + "observation-max", missing);
+		final Optional<Map<String, byte[]>> documentSignatures = signatures(FORMAT + "document-signatures", missing);
 
 		range(LENGTH + "document-number", documentNumberMin, documentNumberMax, missing);
 		range(LENGTH + "first-name", firstNameMin, firstNameMax, missing);
@@ -78,7 +80,7 @@ public class ParameterCatalogConfiguration {
 		range(LENGTH + "second-last-name", secondLastNameMin, secondLastNameMax, missing);
 		range(LENGTH + "email", emailMin, emailMax, missing);
 		range(LENGTH + "vehicle-plate", vehiclePlateMin, vehiclePlateMax, missing);
-		if (observationMax != null && observationMax < 1) {
+		if (observationMax.isPresent() && observationMax.get() < 1) {
 			missing.add(LENGTH + "observation-max (debe ser al menos 1)");
 		}
 
@@ -90,98 +92,101 @@ public class ParameterCatalogConfiguration {
 			return;
 		}
 
-		ParameterCatalog.DOCUMENT_NUMBER_PATTERN = documentNumberPattern;
-		ParameterCatalog.DOCUMENT_NUMBER_MIN_LENGTH = documentNumberMin;
-		ParameterCatalog.DOCUMENT_NUMBER_MAX_LENGTH = documentNumberMax;
+		ParameterCatalog.DOCUMENT_NUMBER_PATTERN = documentNumberPattern.orElseThrow();
+		ParameterCatalog.DOCUMENT_NUMBER_MIN_LENGTH = documentNumberMin.orElseThrow();
+		ParameterCatalog.DOCUMENT_NUMBER_MAX_LENGTH = documentNumberMax.orElseThrow();
 
-		ParameterCatalog.FIRST_NAME_PATTERN = firstNamePattern;
-		ParameterCatalog.FIRST_NAME_MIN_LENGTH = firstNameMin;
-		ParameterCatalog.FIRST_NAME_MAX_LENGTH = firstNameMax;
+		ParameterCatalog.FIRST_NAME_PATTERN = firstNamePattern.orElseThrow();
+		ParameterCatalog.FIRST_NAME_MIN_LENGTH = firstNameMin.orElseThrow();
+		ParameterCatalog.FIRST_NAME_MAX_LENGTH = firstNameMax.orElseThrow();
 
-		ParameterCatalog.MIDDLE_NAME_PATTERN = middleNamePattern;
-		ParameterCatalog.MIDDLE_NAME_MIN_LENGTH = middleNameMin;
-		ParameterCatalog.MIDDLE_NAME_MAX_LENGTH = middleNameMax;
+		ParameterCatalog.MIDDLE_NAME_PATTERN = middleNamePattern.orElseThrow();
+		ParameterCatalog.MIDDLE_NAME_MIN_LENGTH = middleNameMin.orElseThrow();
+		ParameterCatalog.MIDDLE_NAME_MAX_LENGTH = middleNameMax.orElseThrow();
 
-		ParameterCatalog.LAST_NAME_PATTERN = lastNamePattern;
-		ParameterCatalog.LAST_NAME_MIN_LENGTH = lastNameMin;
-		ParameterCatalog.LAST_NAME_MAX_LENGTH = lastNameMax;
+		ParameterCatalog.LAST_NAME_PATTERN = lastNamePattern.orElseThrow();
+		ParameterCatalog.LAST_NAME_MIN_LENGTH = lastNameMin.orElseThrow();
+		ParameterCatalog.LAST_NAME_MAX_LENGTH = lastNameMax.orElseThrow();
 
-		ParameterCatalog.SECOND_LAST_NAME_PATTERN = secondLastNamePattern;
-		ParameterCatalog.SECOND_LAST_NAME_MIN_LENGTH = secondLastNameMin;
-		ParameterCatalog.SECOND_LAST_NAME_MAX_LENGTH = secondLastNameMax;
+		ParameterCatalog.SECOND_LAST_NAME_PATTERN = secondLastNamePattern.orElseThrow();
+		ParameterCatalog.SECOND_LAST_NAME_MIN_LENGTH = secondLastNameMin.orElseThrow();
+		ParameterCatalog.SECOND_LAST_NAME_MAX_LENGTH = secondLastNameMax.orElseThrow();
 
-		ParameterCatalog.EMAIL_PATTERN = emailPattern;
-		ParameterCatalog.EMAIL_MIN_LENGTH = emailMin;
-		ParameterCatalog.EMAIL_MAX_LENGTH = emailMax;
+		ParameterCatalog.EMAIL_PATTERN = emailPattern.orElseThrow();
+		ParameterCatalog.EMAIL_MIN_LENGTH = emailMin.orElseThrow();
+		ParameterCatalog.EMAIL_MAX_LENGTH = emailMax.orElseThrow();
 
-		ParameterCatalog.VEHICLE_PLATE_PATTERN = vehiclePlatePattern;
-		ParameterCatalog.VEHICLE_PLATE_MIN_LENGTH = vehiclePlateMin;
-		ParameterCatalog.VEHICLE_PLATE_MAX_LENGTH = vehiclePlateMax;
+		ParameterCatalog.VEHICLE_PLATE_PATTERN = vehiclePlatePattern.orElseThrow();
+		ParameterCatalog.VEHICLE_PLATE_MIN_LENGTH = vehiclePlateMin.orElseThrow();
+		ParameterCatalog.VEHICLE_PLATE_MAX_LENGTH = vehiclePlateMax.orElseThrow();
 
-		ParameterCatalog.OBSERVATION_MAX_LENGTH = observationMax;
-		ParameterCatalog.DOCUMENT_SIGNATURES = documentSignatures;
+		ParameterCatalog.OBSERVATION_MAX_LENGTH = observationMax.orElseThrow();
+		ParameterCatalog.DOCUMENT_SIGNATURES = documentSignatures.orElseThrow();
 
 		ParameterCatalog.markLoaded(List.of());
 		LOGGER.info("Parametros de validacion cargados desde el servidor de configuracion");
 	}
 
-	private String pattern(final String key, final List<String> missing) {
+	private Optional<String> pattern(final String key, final List<String> missing) {
 		final String value = environment.getProperty(key);
-		if (value == null || value.isBlank()) {
+		if (ObjectHelper.isNull(value) || value.isBlank()) {
 			missing.add(key);
-			return null;
+			return Optional.empty();
 		}
 		try {
 			Pattern.compile(value);
-			return value;
+			return Optional.of(value);
 		} catch (final PatternSyntaxException exception) {
 			missing.add(key + " (expresion regular invalida)");
-			return null;
+			return Optional.empty();
 		}
 	}
 
-	private Integer number(final String key, final List<String> missing) {
+	private Optional<Integer> number(final String key, final List<String> missing) {
 		final String value = environment.getProperty(key);
-		if (value == null || value.isBlank()) {
+		if (ObjectHelper.isNull(value) || value.isBlank()) {
 			missing.add(key);
-			return null;
+			return Optional.empty();
 		}
 		try {
-			return Integer.valueOf(value.trim());
+			return Optional.of(Integer.valueOf(value.trim()));
 		} catch (final NumberFormatException exception) {
 			missing.add(key + " (no es un numero entero)");
-			return null;
+			return Optional.empty();
 		}
 	}
 
-	private static void range(final String keyPrefix, final Integer min, final Integer max, final List<String> missing) {
-		if (min == null || max == null) {
+	private static void range(final String keyPrefix, final Optional<Integer> min, final Optional<Integer> max,
+			final List<String> missing) {
+		if (min.isEmpty() || max.isEmpty()) {
 			return;
 		}
-		if (min < 0) {
+		final int minimum = min.get();
+		final int maximum = max.get();
+		if (minimum < 0) {
 			missing.add(keyPrefix + "-min (no puede ser negativo)");
 		}
-		if (max < 1 || max < min) {
+		if (maximum < 1 || maximum < minimum) {
 			missing.add(keyPrefix + "-max (debe ser al menos 1 y no menor que el minimo)");
 		}
 	}
 
-	private Map<String, byte[]> signatures(final String key, final List<String> missing) {
+	private Optional<Map<String, byte[]>> signatures(final String key, final List<String> missing) {
 		final String value = environment.getProperty(key);
-		if (value == null || value.isBlank()) {
+		if (ObjectHelper.isNull(value) || value.isBlank()) {
 			missing.add(key);
-			return null;
+			return Optional.empty();
 		}
 		final Map<String, byte[]> signatures = new LinkedHashMap<>();
 		for (final String entry : value.split(",")) {
 			final String[] parts = entry.trim().split("=", 2);
 			if (parts.length != 2 || parts[0].isBlank() || !parts[1].trim().matches("(?i)([0-9a-f]{2})+")) {
 				missing.add(key + " (entrada invalida: '" + entry.trim() + "')");
-				return null;
+				return Optional.empty();
 			}
 			signatures.put(parts[0].trim().toLowerCase(Locale.ROOT), hexToBytes(parts[1].trim()));
 		}
-		return Map.copyOf(signatures);
+		return Optional.of(Map.copyOf(signatures));
 	}
 
 	private static byte[] hexToBytes(final String hex) {

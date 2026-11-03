@@ -48,7 +48,6 @@ public class ApartmentJpaRepositoryAdapter implements ApartmentRepository{
 
 	@Override
 	public void update(UUID id, ApartmentEntity entity) {
-		//Pendiente
 	}
 
 }

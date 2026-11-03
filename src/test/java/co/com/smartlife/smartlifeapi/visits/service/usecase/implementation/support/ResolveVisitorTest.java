@@ -43,7 +43,6 @@ class ResolveVisitorTest {
 		resolveVisitor = new ResolveVisitor(repository, Mappers.getMapper(VisitorMapperUseCase.class));
 	}
 
-	/** El catálogo es estático: se deja como "sin configurar" (devuelve el código) para no afectar otras pruebas. */
 	@AfterEach
 	void resetMessageCatalog() {
 		MessageCatalogProvider.init((code, locale) -> {

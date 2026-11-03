@@ -7,7 +7,6 @@ import co.com.smartlife.smartlifeapi.users.event.UserUpdatedEvent;
 import co.com.smartlife.smartlifeapi.dwellings.event.DwellingUpdatedEvent;
 import co.com.smartlife.smartlifeapi.residents.service.input.dto.request.RefreshResidentsViewsDtoRequest;
 
-/** Evento de otro modulo hacia la peticion que entiende este modulo. */
 @Mapper(componentModel = "spring")
 public interface ResidentsEventMapperInput {
 

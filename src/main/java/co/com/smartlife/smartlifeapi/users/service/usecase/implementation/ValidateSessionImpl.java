@@ -45,7 +45,7 @@ public class ValidateSessionImpl implements ValidateSessionUseCase{
 		validateUserIsActive.validate(user.getIsActive());
 		
 		final Set<String> roles = userRoleRepository.findByUserId(user.getId()).stream()
-	            .map(userRole -> userRole.getRole().getName())   // ADMIN, OWNER, RESIDENT
+	            .map(userRole -> userRole.getRole().getName())
 	            .collect(Collectors.toUnmodifiableSet());
 		
 		return new CurrentUser(user.getId(), user.getEmail(), roles, urbanizationIdOf(user));

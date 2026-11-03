@@ -17,11 +17,6 @@ import co.com.smartlife.smartlifeapi.dwellings.service.output.port.repository.Us
 import co.com.smartlife.smartlifeapi.dwellings.service.usecase.implementation.mapper.DwellingEventMapperUseCase;
 import co.com.smartlife.smartlifeapi.dwellings.service.usecase.implementation.mapper.DwellingMapperUseCase;
 
-/**
- * Trabaja solo con objetos de dominio: lo que lee del repositorio lo pasa a dominio con un mapper, y para guardar
- * o publicar vuelve a pasar por un mapper (dominio a entidad, dominio a evento). El evento se publica dentro de la
- * transaccion y los listeners lo reciben cuando esta se confirma, es decir, cuando el cambio ya esta guardado.
- */
 @Service
 public class ChangeDwellingOwnerUseCaseImpl implements ChangeDwellingOwnerUseCase {
 

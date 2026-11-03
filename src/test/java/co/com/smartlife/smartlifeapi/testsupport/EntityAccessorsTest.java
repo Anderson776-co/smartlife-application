@@ -34,7 +34,6 @@ class EntityAccessorsTest {
 			try {
 				return type.getMethod(prefix + property);
 			} catch (NoSuchMethodException exception) {
-				// se prueba con el siguiente prefijo
 			}
 		}
 		return null;

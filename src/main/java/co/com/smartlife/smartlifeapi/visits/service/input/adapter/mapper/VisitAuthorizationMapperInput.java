@@ -3,6 +3,8 @@ package co.com.smartlife.smartlifeapi.visits.service.input.adapter.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationStatus;
+import co.com.smartlife.smartlifeapi.crosscutting.helper.TextHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.session.CurrentUser;
 import co.com.smartlife.smartlifeapi.shared.mapper.DtoMapper;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.AttachedDocumentDomain;
@@ -14,7 +16,7 @@ import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.AuthorizeV
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.VisitorDtoRequest;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.response.VisitAuthorizationDtoResponse;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", imports = { TextHelper.class, VisitAuthorizationStatus.class })
 public interface VisitAuthorizationMapperInput extends DtoMapper<AuthorizeVisitDtoRequest, VisitAuthorizationDtoResponse, VisitAuthorizationDomain>{
 	
 	@Override
@@ -23,9 +25,9 @@ public interface VisitAuthorizationMapperInput extends DtoMapper<AuthorizeVisitD
     @Mapping(target = "qrCode", ignore = true)         
     @Mapping(target = "fileReference", ignore = true)
     @Mapping(target = "notificationSent", ignore = true)
-    @Mapping(target = "propertyLocation", ignore = true)
-    @Mapping(target = "visitReasonName", ignore = true)
-    @Mapping(target = "status", ignore = true)
+    @Mapping(target = "propertyLocation", expression = "java(TextHelper.getDefault())")
+    @Mapping(target = "visitReasonName", expression = "java(TextHelper.getDefault())")
+    @Mapping(target = "status", expression = "java(VisitAuthorizationStatus.UNSPECIFIED)")
     VisitAuthorizationDomain toDomain(AuthorizeVisitDtoRequest request);
 
 	@Override

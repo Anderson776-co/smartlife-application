@@ -12,10 +12,6 @@ import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.AttachedDocumentDomain;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.FileStorageOutputPort;
 
-/**
- * Guarda en R2 el documento de soporte de una autorizacion. La clave se arma con el id de la autorizacion
- * y una extension propia del tipo validado: el nombre del archivo del cliente nunca llega al almacenamiento.
- */
 @Component
 public class VisitDocumentStorage {
 
@@ -31,7 +27,6 @@ public class VisitDocumentStorage {
 		this.fileStorage = fileStorage;
 	}
 
-	/** @return la referencia (clave en R2) que se guarda en la autorizacion. */
 	public String store(final UUID authorizationId, final AttachedDocumentDomain document) {
 		final String key = KEY_FORMAT.formatted(authorizationId,
 				EXTENSIONS.getOrDefault(document.contentType(), DEFAULT_EXTENSION));
@@ -45,7 +40,6 @@ public class VisitDocumentStorage {
 		}
 	}
 
-	/** Compensacion cuando falla el guardado en base de datos: no debe dejar huerfano el archivo ni ocultar el error original. */
 	public void discard(final String key) {
 		try {
 			fileStorage.delete(key);

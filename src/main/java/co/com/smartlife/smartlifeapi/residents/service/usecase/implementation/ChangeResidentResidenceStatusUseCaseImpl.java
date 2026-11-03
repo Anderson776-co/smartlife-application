@@ -3,6 +3,7 @@ package co.com.smartlife.smartlifeapi.residents.service.usecase.implementation;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.events.DomainEventPublisherOutputPort;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogProvider;
@@ -13,11 +14,6 @@ import co.com.smartlife.smartlifeapi.residents.service.output.port.repository.Re
 import co.com.smartlife.smartlifeapi.residents.service.usecase.implementation.mapper.ResidentResidenceEventMapperUseCase;
 import co.com.smartlife.smartlifeapi.residents.service.usecase.implementation.mapper.ResidentResidenceMapperUseCase;
 
-/**
- * Trabaja solo con objetos de dominio: lo que lee del repositorio lo pasa a dominio con un mapper, y para guardar
- * o publicar vuelve a pasar por un mapper (dominio a entidad, dominio a evento). El evento se publica dentro de la
- * transaccion y los listeners lo reciben cuando esta se confirma, es decir, cuando el cambio ya esta guardado.
- */
 @Service
 public class ChangeResidentResidenceStatusUseCaseImpl implements ChangeResidentResidenceStatusUseCase {
 
@@ -41,7 +37,7 @@ public class ChangeResidentResidenceStatusUseCaseImpl implements ChangeResidentR
 	@Override
 	@Transactional
 	public void execute(final ResidentResidenceStatusChangeDomain input) {
-		if (input.active() == null) {
+		if (ObjectHelper.isNull(input.active())) {
 			throw error("RESIDENT_RESIDENCE_STATUS_REQUIRED");
 		}
 		final ResidentResidenceDomain current = residentDwellingRepository.findById(input.residentResidenceId())

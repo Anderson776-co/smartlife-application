@@ -3,6 +3,7 @@ package co.com.smartlife.smartlifeapi.users.service.usecase.implementation;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.events.DomainEventPublisherOutputPort;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogProvider;
@@ -13,11 +14,6 @@ import co.com.smartlife.smartlifeapi.users.service.output.port.repository.UserRe
 import co.com.smartlife.smartlifeapi.users.service.usecase.implementation.mapper.UserEventMapperUseCase;
 import co.com.smartlife.smartlifeapi.users.service.usecase.implementation.mapper.UserMapperUseCase;
 
-/**
- * Trabaja solo con objetos de dominio: lo que lee del repositorio lo pasa a dominio con un mapper, y para guardar
- * o publicar vuelve a pasar por un mapper (dominio a entidad, dominio a evento). El evento se publica dentro de la
- * transaccion y los listeners lo reciben cuando esta se confirma, es decir, cuando el cambio ya esta guardado.
- */
 @Service
 public class ChangeUserStatusUseCaseImpl implements ChangeUserStatusUseCase {
 
@@ -40,7 +36,7 @@ public class ChangeUserStatusUseCaseImpl implements ChangeUserStatusUseCase {
 	@Override
 	@Transactional
 	public void execute(final UserStatusChangeDomain input) {
-		if (input.active() == null) {
+		if (ObjectHelper.isNull(input.active())) {
 			throw error("USER_STATUS_REQUIRED");
 		}
 		final UserDomain current = userRepository.findById(input.userId()).map(userMapper::toDomain)

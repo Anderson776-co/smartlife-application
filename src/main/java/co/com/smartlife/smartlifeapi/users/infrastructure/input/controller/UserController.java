@@ -26,7 +26,6 @@ public class UserController {
 		this.changeUserStatusInputPort = changeUserStatusInputPort;
 	}
 
-	/** Solo el administrador cambia estos datos. Al terminar se publica un evento que actualiza las vistas. */
 	@PreAuthorize("hasRole('ADMIN')")
 	@PatchMapping("/{userId}/status")
 	public ResponseEntity<Response<Void>> changeStatus(

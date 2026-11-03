@@ -4,7 +4,6 @@ import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import co.com.smartlife.smartlifeapi.crosscutting.helper.TextHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.helper.UUIDHelper;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -15,7 +14,6 @@ public record ChangeDwellingOwnerDtoRequest(@JsonIgnore @Schema(hidden = true) U
 		ownerId = UUIDHelper.getUUIDHelper().getDefault(ownerId);
 	}
 
-	/** El identificador sale de la direccion, no del cuerpo de la peticion. */
 	public ChangeDwellingOwnerDtoRequest withDwellingId(final UUID dwellingId) {
 		return new ChangeDwellingOwnerDtoRequest(dwellingId, ownerId);
 	}

@@ -5,10 +5,6 @@ import java.time.Instant;
 import co.com.smartlife.smartlifeapi.crosscutting.specification.Specification;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitAuthorizationEntity;
 
-/**
- * La autorizacion se cruza con el rango [from, to]. Dos rangos se cruzan cuando cada uno empieza antes de que el otro
- * termine. Un rango sin limite es de {@link Instant#EPOCH} a {@link Instant#MAX}: cruza con todas.
- */
 public final class AuthorizationOverlapsRangeSpecification extends Specification<VisitAuthorizationEntity> {
 
 	private final Instant from;

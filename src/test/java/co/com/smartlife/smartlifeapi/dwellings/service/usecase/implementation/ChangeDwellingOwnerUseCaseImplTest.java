@@ -57,7 +57,6 @@ class ChangeDwellingOwnerUseCaseImplTest {
 				owner(OLD_OWNER, true, URBANIZATION), new UrbanizationDwellingEntity(URBANIZATION, "Conjunto"))));
 	}
 
-	/** El catalogo es estatico: se deja como "sin configurar" para no afectar otras pruebas. */
 	@AfterEach
 	void resetMessageCatalog() {
 		MessageCatalogProvider.init((code, locale) -> {

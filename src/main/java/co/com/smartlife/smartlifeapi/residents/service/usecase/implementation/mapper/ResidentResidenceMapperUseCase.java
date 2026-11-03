@@ -9,7 +9,6 @@ import co.com.smartlife.smartlifeapi.residents.service.output.port.repository.en
 import co.com.smartlife.smartlifeapi.residents.domain.UserResidentDomain;
 import co.com.smartlife.smartlifeapi.residents.service.output.port.repository.entity.UserResidentEntity;
 
-/** Dominio hacia entidad (para el repositorio) y entidad hacia dominio (lo que el repositorio devuelve). */
 @Mapper(componentModel = "spring")
 public interface ResidentResidenceMapperUseCase extends DomainMapper<ResidentResidenceDomain, ResidentResidenceEntity> {
 
@@ -21,7 +20,6 @@ public interface ResidentResidenceMapperUseCase extends DomainMapper<ResidentRes
 	@Mapping(target = "isActive", source = "active")
 	ResidentResidenceEntity toEntity(ResidentResidenceDomain domain);
 
-	/** Lo mismo para el usuario residente que viene anidado: isActive en la entidad, active en el dominio. */
 	@Mapping(target = "active", source = "isActive")
 	UserResidentDomain toUserResidentDomain(UserResidentEntity entity);
 

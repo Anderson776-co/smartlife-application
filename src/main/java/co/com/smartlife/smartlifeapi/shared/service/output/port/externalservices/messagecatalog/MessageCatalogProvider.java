@@ -28,7 +28,7 @@ public class MessageCatalogProvider {
             return messageCatalogOutputPort.findByCodeAndLocale(code, locale).content();
         } catch (final RuntimeException exception) {
             LOGGER.warn("No se pudo resolver el mensaje {} ({}): {}", code, locale, exception.getMessage());
-            return code;   // nunca deja una excepción sin mensaje
+            return code;
         }
     }
 

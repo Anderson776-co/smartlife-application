@@ -15,7 +15,7 @@ import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entit
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitReasonEntity;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitorEntity;
 
-@Mapper(componentModel = "spring", imports = AttachedDocumentDomain.class)
+@Mapper(componentModel = "spring", imports = { AttachedDocumentDomain.class, VisitAuthorizationStatus.class })
 public interface VisitAuthorizationMapperUseCase extends DomainMapper<VisitAuthorizationDomain, VisitAuthorizationEntity> {
 
 	@Mapping(target = "id", source = "authorization.id")
@@ -34,6 +34,9 @@ public interface VisitAuthorizationMapperUseCase extends DomainMapper<VisitAutho
 	@Mapping(target = "attachedDocument", expression = "java(AttachedDocumentDomain.empty())")
 	@Mapping(target = "authorizator", source = "authorizator")
 	@Mapping(target = "notificationSent", source = "notificationSent")
+	@Mapping(target = "propertyLocation", source = "authorization.property.location", defaultValue = "")
+	@Mapping(target = "visitReasonName", source = "authorization.visitReason.name", defaultValue = "")
+	@Mapping(target = "status", expression = "java(VisitAuthorizationStatus.UNSPECIFIED)")
 	VisitAuthorizationDomain toDomain(VisitAuthorizationEntity authorization, AuthorizatorDomain authorizator,
 			boolean notificationSent);
 
@@ -47,6 +50,9 @@ public interface VisitAuthorizationMapperUseCase extends DomainMapper<VisitAutho
 	@Mapping(target = "visitReasonName", source = "authorization.visitReason.name")
 	@Mapping(target = "status", source = "status")
 	VisitAuthorizationDomain toDomain(VisitAuthorizationEntity authorization, VisitAuthorizationStatus status);
+
+	@Mapping(target = "roles", expression = "java(java.util.Set.of())")
+	AuthorizatorDomain toAuthorizatorDomain(AuthorizatorEntity authorizator);
 
 	@Mapping(target = "vehiclePlate", source = "vehiclePlate", defaultValue = "")
 	VisitorDomain toVisitorDomain(VisitorEntity visitor);

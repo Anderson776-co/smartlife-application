@@ -4,7 +4,6 @@ import co.com.smartlife.smartlifeapi.crosscutting.helper.TextHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.parameters.ParameterCatalog;
 import co.com.smartlife.smartlifeapi.crosscutting.rules.Rule;
 
-/** La observacion es opcional y cabe en la columna {@code observation} (500). Dato: la observacion. */
 public final class VisitObservationIsValid implements Rule {
 
 	private static final Rule instance = new VisitObservationIsValid();

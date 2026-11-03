@@ -17,10 +17,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * Construye objetos de prueba con todos sus campos llenos, usando reflexión.
- * Cada campo recibe un valor distinto, para que un cruce de campos se note.
- */
 public final class TestObjects {
 
 	private static final int FULL_DEPTH = 4;
@@ -37,12 +33,10 @@ public final class TestObjects {
 		return new TestObjects(FULL_DEPTH).create(type, 0);
 	}
 
-	/** Igual que build, pero deja en null los campos que son otras entidades. */
 	public static <T> T buildWithoutRelations(final Class<T> type) {
 		return new TestObjects(1).create(type, 0);
 	}
 
-	/** Las relaciones existen, pero las relaciones de esas relaciones quedan en null. */
 	public static <T> T buildWithShallowRelations(final Class<T> type) {
 		return new TestObjects(2).create(type, 0);
 	}

@@ -49,7 +49,6 @@ public class HouseJpaRepositoryAdapter implements HouseRepository{
 
 	@Override
 	public void update(UUID id, HouseEntity entity) {
-		// Pendiente
 		
 	}
 

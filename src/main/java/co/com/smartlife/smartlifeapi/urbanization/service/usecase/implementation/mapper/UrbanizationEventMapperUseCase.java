@@ -6,7 +6,6 @@ import org.mapstruct.Mapping;
 import co.com.smartlife.smartlifeapi.urbanization.domain.UrbanizationDomain;
 import co.com.smartlife.smartlifeapi.urbanization.event.UrbanizationUpdatedEvent;
 
-/** Dominio hacia el evento que se publica para los otros modulos. */
 @Mapper(componentModel = "spring")
 public interface UrbanizationEventMapperUseCase {
 

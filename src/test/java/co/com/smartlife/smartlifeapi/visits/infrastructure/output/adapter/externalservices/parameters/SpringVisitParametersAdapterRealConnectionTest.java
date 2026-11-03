@@ -10,12 +10,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.VisitParametersDTO;
 
-/**
- * Prueba manual contra un servidor de parametros REAL. Solo corre si se pasa la propiedad configServerUrl
- * (por ejemplo, -DconfigServerUrl=http://localhost:8888); en el CI se omite. Las propiedades de prueba no
- * traen los parametros de visitas, y el adaptador no tiene valores por defecto: si esta prueba pasa, es
- * porque el servidor entrego los siete parametros.
- */
 @EnabledIfSystemProperty(named = "configServerUrl", matches = ".+")
 @SpringBootTest(classes = SpringVisitParametersAdapter.class, properties = {
 		"spring.application.name=smartlife-api", "spring.cloud.config.enabled=true",

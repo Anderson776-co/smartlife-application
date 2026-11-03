@@ -26,7 +26,6 @@ public class UrbanizationController {
 		this.renameUrbanizationInputPort = renameUrbanizationInputPort;
 	}
 
-	/** Solo el administrador cambia estos datos. Al terminar se publica un evento que actualiza las vistas. */
 	@PreAuthorize("hasRole('ADMIN')")
 	@PatchMapping("/{urbanizationId}")
 	public ResponseEntity<Response<Void>> rename(

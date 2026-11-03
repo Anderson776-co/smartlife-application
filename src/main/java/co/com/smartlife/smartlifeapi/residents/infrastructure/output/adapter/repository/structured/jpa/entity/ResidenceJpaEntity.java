@@ -19,7 +19,7 @@ public class ResidenceJpaEntity {
 	private final UUID id;
 	
 	@Column(name = "location")
-	private final String location; // Location: Ubicacion -> Es un dato calculado que proviene del contexto de viviendas.
+	private final String location;
 	
 	@Column(name = "id_owner")
 	private final UUID ownerId;

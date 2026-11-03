@@ -31,20 +31,6 @@ class VisitAuthorizationDomainTest {
 	}
 
 	@Test
-	void theDisplayDataNeverEndsUpNull() {
-		final VisitAuthorizationDomain base = withoutDisplayData();
-
-		final VisitAuthorizationDomain domain = new VisitAuthorizationDomain(base.id(), base.authorizationStartDate(),
-				base.authorizationEndDate(), base.registerDate(), base.observation(), base.qrCode(),
-				base.fileReference(), base.attachedDocument(), base.propertyId(), base.visitReasonId(),
-				base.authorizator(), base.visitor(), base.notificationSent(), null, null, null);
-
-		assertEquals("", domain.propertyLocation());
-		assertEquals("", domain.visitReasonName());
-		assertEquals(VisitAuthorizationStatus.UNSPECIFIED, domain.status());
-	}
-
-	@Test
 	void theDisplayDataThatIsInformedIsKept() {
 		final VisitAuthorizationDomain base = withoutDisplayData();
 

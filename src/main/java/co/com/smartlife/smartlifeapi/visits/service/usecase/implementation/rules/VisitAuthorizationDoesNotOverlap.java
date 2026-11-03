@@ -6,10 +6,6 @@ import java.util.UUID;
 import co.com.smartlife.smartlifeapi.crosscutting.rules.Rule;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.VisitAuthorizationRepository;
 
-/**
- * El visitante no puede tener ya una autorizacion activa en la misma propiedad que se cruce con el rango.
- * Datos: id del visitante, id de la propiedad, inicio, fin y {@link VisitAuthorizationRepository}.
- */
 public final class VisitAuthorizationDoesNotOverlap implements Rule {
 
 	private static final Rule instance = new VisitAuthorizationDoesNotOverlap();

@@ -12,7 +12,6 @@ import co.com.smartlife.smartlifeapi.shared.domain.parameters.ParametersChangeEv
 import co.com.smartlife.smartlifeapi.shared.service.output.port.parameters.ParametersRefreshOutputPort;
 import co.com.smartlife.smartlifeapi.shared.service.usecase.contract.RefreshParametersUseCase;
 
-/** Recarga los parametros cuando se hace push a la rama vigilada del repositorio de parametros. */
 @Service
 public class RefreshParametersUseCaseImpl implements RefreshParametersUseCase {
 

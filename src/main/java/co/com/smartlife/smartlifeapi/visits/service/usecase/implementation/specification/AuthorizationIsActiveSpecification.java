@@ -4,7 +4,6 @@ import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.specification.Specification;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitAuthorizationEntity;
 
-/** La autorizacion esta marcada como activa. */
 public final class AuthorizationIsActiveSpecification extends Specification<VisitAuthorizationEntity> {
 
 	@Override

@@ -11,11 +11,6 @@ import co.com.smartlife.smartlifeapi.crosscutting.helper.TextHelper;
 import co.com.smartlife.smartlifeapi.shared.service.input.port.MessageResolverInputPort;
 import jakarta.servlet.http.HttpServletResponse;
 
-/**
- * Escribe las respuestas de seguridad que se arman antes de llegar a los controladores: 401 cuando no hay sesion y
- * 403 cuando no hay permiso. Los mensajes salen del catalogo (Strapi), no del codigo, y la respuesta va en UTF-8
- * para que las tildes no se pierdan.
- */
 @Component
 public class SecurityErrorResponseWriter {
 
@@ -29,12 +24,10 @@ public class SecurityErrorResponseWriter {
 		this.messages = messages;
 	}
 
-	/** 401: falta la sesion. */
 	public void unauthorized(final HttpServletResponse response) throws IOException {
 		write(response, HttpStatus.UNAUTHORIZED, SESSION_REQUIRED_CODE);
 	}
 
-	/** 403: hay sesion pero no permiso. */
 	public void forbidden(final HttpServletResponse response) throws IOException {
 		write(response, HttpStatus.FORBIDDEN, ACCESS_DENIED_CODE);
 	}
@@ -47,10 +40,6 @@ public class SecurityErrorResponseWriter {
 		response.getWriter().write(body(message(code)));
 	}
 
-	/**
-	 * El mensaje especifico del catalogo; si no esta, el mensaje general del propio catalogo; si tampoco, el texto
-	 * vacio por defecto. Nunca es nulo.
-	 */
 	private String message(final String code) {
 		final String specific = messages.resolve(code, TextHelper.getDefault());
 		return TextHelper.isEmptyWithTrim(specific) ? messages.resolve(GENERAL_ERROR_CODE, TextHelper.getDefault())
@@ -62,7 +51,6 @@ public class SecurityErrorResponseWriter {
 		return "{\"messages\":" + list + ",\"data\":[],\"responseSucceded\":false}";
 	}
 
-	/** Escapa lo que JSON no admite dentro de un texto, para que la respuesta sea siempre JSON valido. */
 	static String escape(final String text) {
 		final StringBuilder out = new StringBuilder(text.length() + 8);
 		for (int i = 0; i < text.length(); i++) {

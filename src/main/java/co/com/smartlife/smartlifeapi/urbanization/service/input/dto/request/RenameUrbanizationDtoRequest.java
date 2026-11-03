@@ -15,7 +15,6 @@ public record RenameUrbanizationDtoRequest(@JsonIgnore @Schema(hidden = true) UU
 		name = TextHelper.getDefaultWithTrim(name);
 	}
 
-	/** El identificador sale de la direccion, no del cuerpo de la peticion. */
 	public RenameUrbanizationDtoRequest withUrbanizationId(final UUID urbanizationId) {
 		return new RenameUrbanizationDtoRequest(urbanizationId, name);
 	}

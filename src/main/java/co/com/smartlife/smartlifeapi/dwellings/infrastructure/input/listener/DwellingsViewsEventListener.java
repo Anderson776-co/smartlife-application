@@ -10,11 +10,6 @@ import co.com.smartlife.smartlifeapi.urbanization.event.UrbanizationUpdatedEvent
 import co.com.smartlife.smartlifeapi.dwellings.infrastructure.input.listener.mapper.DwellingsEventMapperInput;
 import co.com.smartlife.smartlifeapi.dwellings.service.input.port.RefreshDwellingsViewsInputPort;
 
-/**
- * Escucha los eventos de los otros modulos y actualiza las vistas materializadas de este modulo.
- * Se ejecuta cuando el modulo que publico el evento ya confirmo su transaccion (AFTER_COMMIT) y en una transaccion
- * nueva: es lo mismo que hace @ApplicationModuleListener de Spring Modulith, sin la parte asincrona.
- */
 @Component
 public class DwellingsViewsEventListener {
 
@@ -26,14 +21,12 @@ public class DwellingsViewsEventListener {
 		this.mapper = mapper;
 	}
 
-	/** Cambio informacion en el modulo users. */
 	@TransactionalEventListener
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void on(final UserUpdatedEvent event) {
 		refreshViews.execute(mapper.fromUsers(event));
 	}
 
-	/** Cambio informacion en el modulo urbanization. */
 	@TransactionalEventListener
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void on(final UrbanizationUpdatedEvent event) {

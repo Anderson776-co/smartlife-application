@@ -7,10 +7,6 @@ import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.Visit
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.VisitorRepository;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitAuthorizationEntity;
 
-/**
- * Persiste el visitante (si es nuevo) y la autorizacion en una sola transaccion. Es un componente aparte
- * para que la transaccion cubra solo la escritura y no las llamadas a R2, Strapi o Resend.
- */
 @Component
 public class RegisterVisitAuthorization {
 

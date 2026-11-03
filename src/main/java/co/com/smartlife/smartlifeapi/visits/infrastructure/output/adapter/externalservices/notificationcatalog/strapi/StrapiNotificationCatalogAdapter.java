@@ -9,6 +9,7 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
+import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.notificationcatalog.strapi.dto.StrapiNotificationCatalogData;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.notificationcatalog.strapi.dto.StrapiNotificationCatalogResponse;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.NotificationCatalogOutputPort;
@@ -57,7 +58,7 @@ public class StrapiNotificationCatalogAdapter implements NotificationCatalogOutp
 				.retrieve()
 				.body(StrapiNotificationCatalogResponse.class);
 
-		if (response == null || response.data() == null || response.data().isEmpty()) {
+		if (ObjectHelper.isNull(response) || ObjectHelper.isNull(response.data()) || response.data().isEmpty()) {
 			throw new IllegalStateException(
 					"No se encontró la notificación " + code + " (" + locale + ") en el catálogo de Strapi");
 		}

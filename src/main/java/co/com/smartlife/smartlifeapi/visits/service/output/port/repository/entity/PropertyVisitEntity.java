@@ -5,10 +5,8 @@ import java.util.UUID;
 public class PropertyVisitEntity {
 	
 	private final UUID id;
-	private final String location; // Location: Ubicacion -> Es un dato calculado que proviene del contexto de viviendas.
+	private final String location;
 	private final UUID ownerId;
-	
-	
 	
 	public PropertyVisitEntity(final UUID id, final String location, final UUID ownerId) {
 		this.id = id;

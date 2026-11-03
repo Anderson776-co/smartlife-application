@@ -8,7 +8,6 @@ import co.com.smartlife.smartlifeapi.shared.domain.catalog.CatalogInvalidationDo
 import co.com.smartlife.smartlifeapi.shared.domain.catalog.CatalogTypeDomain;
 import co.com.smartlife.smartlifeapi.shared.service.input.dto.request.CatalogWebhookDtoRequest;
 
-/** DTO del webhook de Strapi a dominio. */
 @Mapper(componentModel = "spring")
 public interface CatalogWebhookMapperInput {
 

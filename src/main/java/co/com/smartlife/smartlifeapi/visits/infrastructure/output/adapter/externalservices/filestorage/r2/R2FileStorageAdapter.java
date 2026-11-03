@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.FileStorageOutputPort;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
@@ -70,7 +71,7 @@ public class R2FileStorageAdapter implements FileStorageOutputPort {
 	}
 
 	private synchronized S3Client client() {
-		if (s3Client == null) {
+		if (ObjectHelper.isNull(s3Client)) {
 			if (endpoint.isBlank() || accessKey.isBlank() || secretKey.isBlank()) {
 				throw new IllegalStateException(
 						"R2 no está configurado (r2.endpoint, r2.access-key y r2.secret-key)");

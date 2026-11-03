@@ -5,7 +5,6 @@ import java.util.UUID;
 import co.com.smartlife.smartlifeapi.crosscutting.specification.Specification;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitAuthorizationEntity;
 
-/** La autorizacion es para la propiedad indicada. */
 public final class AuthorizationOfPropertySpecification extends Specification<VisitAuthorizationEntity> {
 
 	private final UUID propertyId;

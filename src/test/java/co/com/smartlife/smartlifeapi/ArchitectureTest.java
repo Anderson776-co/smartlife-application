@@ -14,7 +14,7 @@ class ArchitectureTest {
 	@ArchTest
     static final ArchRule DependencyRule =
             layeredArchitecture().consideringOnlyDependenciesInLayers()
-                    .withOptionalLayers(true)   // many folders are still empty
+                    .withOptionalLayers(true)
                     .layer("Domain").definedBy("..domain..")
                     .layer("Services").definedBy("..service..")
                     .layer("Infrastructure").definedBy("..infrastructure..")

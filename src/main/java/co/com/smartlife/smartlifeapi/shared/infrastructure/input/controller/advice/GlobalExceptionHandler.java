@@ -55,38 +55,30 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(body);
     }
 
-    /** El archivo supera el tope de Spring (spring.servlet.multipart.max-file-size), antes de llegar a las reglas. */
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<Response<Object>> handleUploadTooLarge(final MaxUploadSizeExceededException exception) {
         LOGGER.warn("[REQUEST] Carga por encima del límite: {}", exception.getMessage());
         return failed(HttpStatus.valueOf(PAYLOAD_TOO_LARGE_STATUS), PAYLOAD_TOO_LARGE_CODE, PAYLOAD_TOO_LARGE_DEFAULT);
     }
 
-    /** El cuerpo de la petición no se pudo leer (JSON mal formado, tipos incorrectos, etc.). */
     @ExceptionHandler({ HttpMessageNotReadableException.class, TypeMismatchException.class })
     public ResponseEntity<Response<Object>> handleUnreadable(final Exception exception) {
         LOGGER.warn("[REQUEST] Cuerpo ilegible: {}", exception.getMessage());
         return failed(HttpStatus.BAD_REQUEST, REQUEST_INVALID_CODE, REQUEST_INVALID_DEFAULT);
     }
 
-    /** 403: p. ej. @PreAuthorize sin el rol. Sin este manejador, el manejador general lo convertiría en 500. */
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Response<Object>> handleAccessDenied(final AccessDeniedException exception) {
         LOGGER.warn("[AUTHORIZATION] {}", exception.getMessage());
         return failed(HttpStatus.FORBIDDEN, ACCESS_DENIED_CODE, ACCESS_DENIED_DEFAULT);
     }
 
-    /** 401: falta la sesión. */
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<Response<Object>> handleAuthentication(final AuthenticationException exception) {
         LOGGER.warn("[AUTHENTICATION] {}", exception.getMessage());
         return failed(HttpStatus.UNAUTHORIZED, SESSION_REQUIRED_CODE, SESSION_REQUIRED_DEFAULT);
     }
 
-    /**
-     * Red de seguridad: ninguna excepción sale sin el formato de respuesta de la API.
-     * Los errores del cliente que Spring ya clasifica (404, 405, 415...) conservan su 4XX; el resto es un 500.
-     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Response<Object>> handleUnexpected(final Exception exception) {
         if (exception instanceof ErrorResponse errorResponse && errorResponse.getStatusCode().is4xxClientError()) {
@@ -97,7 +89,6 @@ public class GlobalExceptionHandler {
         return failed(HttpStatus.INTERNAL_SERVER_ERROR, UNEXPECTED_ERROR_CODE, UNEXPECTED_ERROR_DEFAULT);
     }
 
-    /** Mensaje del catálogo; si no se puede resolver, el texto de respaldo (nunca el código crudo). */
     private ResponseEntity<Response<Object>> failed(final HttpStatusCode status, final String code,
             final String fallback) {
         final Response<Object> body = Response.createFailedResponse();

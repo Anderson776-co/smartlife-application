@@ -19,8 +19,6 @@ public class VisitAuthorizationJpaRepositoryAdapter implements VisitAuthorizatio
 	private final VisitAuthorizationJpaRepository repository;
 	private final VisitAuthorizationMapper mapper;
 	
-	
-
 	public VisitAuthorizationJpaRepositoryAdapter(final VisitAuthorizationJpaRepository repository,
 			final VisitAuthorizationMapper mapper) {
 		this.repository = repository;
@@ -52,7 +50,6 @@ public class VisitAuthorizationJpaRepositoryAdapter implements VisitAuthorizatio
 
 	@Override
 	public void update(UUID id, VisitAuthorizationEntity entity) {
-		//pendiente
 	}
 
 	@Override

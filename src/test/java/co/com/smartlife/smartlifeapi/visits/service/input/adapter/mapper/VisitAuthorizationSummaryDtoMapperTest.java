@@ -75,7 +75,7 @@ class VisitAuthorizationSummaryDtoMapperTest {
 	@Test
 	void theFullNameShouldSkipTheNamesThatAreEmpty() {
 		final VisitAuthorizationSummaryDtoResponse dto = VisitAuthorizationSummaryDtoMapper
-				.toDto(authorization(START, visitor("", null), ""));
+				.toDto(authorization(START, visitor("", ""), ""));
 
 		assertEquals("Luis Torres", dto.visitorFullName());
 		assertFalse(dto.documentAttached());

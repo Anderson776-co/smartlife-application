@@ -15,12 +15,9 @@ UpdateRepository<UUID, VisitAuthorizationEntity>{
 	
 	Optional<VisitAuthorizationEntity> findActiveAuthorizationByVisitorId(UUID visitorId, Instant referencedDate);
 
-	/** Hay una autorizacion activa del visitante en la propiedad que se cruza con el rango dado. */
 	boolean existsOverlappingAuthorization(UUID visitorId, UUID propertyId, Instant startDate, Instant endDate);
 
-	/** Autorizaciones creadas por un autorizador, de la mas reciente a la mas antigua. */
 	List<VisitAuthorizationEntity> findByAuthorizatorId(UUID authorizatorId);
 
-	/** Una autorizacion, solo si fue creada por ese autorizador. */
 	Optional<VisitAuthorizationEntity> findByIdAndAuthorizatorId(UUID id, UUID authorizatorId);
 }

@@ -13,10 +13,6 @@ import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.reposi
 
 public interface VisitAuthorizationJpaRepository extends JpaRepository<VisitAuthorizationJpaEntity, UUID>{
 
-	/**
-	 * Autorizacion activa del visitante: marcada como activa y que todavia no ha
-	 * vencido en la fecha de referencia. Si hubiera mas de una, Spring lanza un error.
-	 */
 	@Query("""
 			SELECT v FROM VisitAuthorizationJpaEntity v
 			WHERE v.visitor.id = :visitorId
@@ -26,7 +22,6 @@ public interface VisitAuthorizationJpaRepository extends JpaRepository<VisitAuth
 	Optional<VisitAuthorizationJpaEntity> findActiveAuthorizationByVisitorId(
 			@Param("visitorId") UUID visitorId, @Param("referenceDate") Instant referenceDate);
 
-	/** Dos rangos se cruzan cuando cada uno empieza antes de que el otro termine. */
 	@Query("""
 			SELECT COUNT(v) > 0 FROM VisitAuthorizationJpaEntity v
 			WHERE v.visitor.id = :visitorId
@@ -38,9 +33,7 @@ public interface VisitAuthorizationJpaRepository extends JpaRepository<VisitAuth
 	boolean existsOverlappingAuthorization(@Param("visitorId") UUID visitorId, @Param("propertyId") UUID propertyId,
 			@Param("startDate") Instant startDate, @Param("endDate") Instant endDate);
 
-	/** Las autorizaciones de un autorizador, de la mas reciente a la mas antigua. */
 	List<VisitAuthorizationJpaEntity> findByAuthorizatorIdOrderByAuthorizationStartDateDesc(UUID authorizatorId);
 
-	/** Una autorizacion, solo si es de ese autorizador. */
 	Optional<VisitAuthorizationJpaEntity> findByIdAndAuthorizatorId(UUID id, UUID authorizatorId);
 }

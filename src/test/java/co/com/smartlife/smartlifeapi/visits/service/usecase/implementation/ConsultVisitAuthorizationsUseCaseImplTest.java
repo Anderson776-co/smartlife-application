@@ -58,7 +58,6 @@ class ConsultVisitAuthorizationsUseCaseImplTest {
 				Mappers.getMapper(VisitAuthorizationMapperUseCase.class));
 	}
 
-	/** El catalogo es estatico: se deja como "sin configurar" para no afectar otras pruebas. */
 	@AfterEach
 	void resetMessageCatalog() {
 		MessageCatalogProvider.init((code, locale) -> {

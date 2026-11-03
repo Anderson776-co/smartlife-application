@@ -6,7 +6,6 @@ import org.mapstruct.Mapping;
 import co.com.smartlife.smartlifeapi.residents.domain.ResidentResidenceDomain;
 import co.com.smartlife.smartlifeapi.residents.event.ResidentResidenceUpdatedEvent;
 
-/** Dominio hacia el evento que se publica para los otros modulos. */
 @Mapper(componentModel = "spring")
 public interface ResidentResidenceEventMapperUseCase {
 

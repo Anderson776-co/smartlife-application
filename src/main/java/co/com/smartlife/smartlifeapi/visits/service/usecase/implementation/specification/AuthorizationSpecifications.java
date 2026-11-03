@@ -8,18 +8,11 @@ import co.com.smartlife.smartlifeapi.crosscutting.specification.Specification;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationStatus;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitAuthorizationEntity;
 
-/**
- * Arma los filtros de la consulta de autorizaciones combinando Specification con and, or y not.
- * Los estados se componen a partir de tres condiciones simples: activa, ya empezo y ya termino.
- * Ningun filtro llega nulo: el valor por defecto de cada uno es el "sin filtro" y se traduce en una Specification
- * que acepta todo.
- */
 public final class AuthorizationSpecifications {
 
 	private AuthorizationSpecifications() {
 	}
 
-	/** Estado de la autorizacion segun la fecha de referencia. Sin especificar acepta todas. */
 	public static Specification<VisitAuthorizationEntity> withStatus(final VisitAuthorizationStatus status,
 			final Instant now) {
 		final Specification<VisitAuthorizationEntity> active = new AuthorizationIsActiveSpecification();
@@ -34,13 +27,11 @@ public final class AuthorizationSpecifications {
 		};
 	}
 
-	/** La propiedad indicada. La propiedad por defecto quiere decir sin filtro y acepta todas. */
 	public static Specification<VisitAuthorizationEntity> ofProperty(final UUID propertyId) {
 		return UUIDHelper.getUUIDHelper().isDefaultUUID(propertyId) ? new AuthorizationAcceptAllSpecification()
 				: new AuthorizationOfPropertySpecification(propertyId);
 	}
 
-	/** Combina con "y" los cuatro filtros; los que traen su valor por defecto no descartan nada. */
 	public static Specification<VisitAuthorizationEntity> matching(final VisitAuthorizationStatus status,
 			final Instant from, final Instant to, final UUID propertyId, final Instant now) {
 		return withStatus(status, now).and(new AuthorizationOverlapsRangeSpecification(from, to))

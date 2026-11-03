@@ -30,10 +30,6 @@ import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.reposi
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.mapper.VisitResidentMapper;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.mapper.VisitorMapper;
 
-/**
- * Lista de todos los mappers del proyecto. Las entidades (de dominio y JPA) se
- * obtienen de los tipos genericos de cada mapper, asi que no hay que listarlas.
- */
 public final class MapperCatalog {
 
 	private static final List<Class<?>> MAPPERS = List.of(
@@ -54,10 +50,6 @@ public final class MapperCatalog {
 		return MAPPERS;
 	}
 
-	/**
-	 * Crea el mapper y le entrega los otros mappers que usa por dentro (en la
-	 * aplicacion los inyecta Spring; aqui se asignan a mano).
-	 */
 	public static Object instanceOf(final Class<?> mapperType) {
 		Object mapper = Mappers.getMapper(mapperType);
 		for (Field field : mapper.getClass().getDeclaredFields()) {

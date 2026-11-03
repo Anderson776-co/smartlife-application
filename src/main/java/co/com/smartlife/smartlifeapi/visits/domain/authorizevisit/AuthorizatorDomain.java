@@ -10,7 +10,7 @@ public record AuthorizatorDomain(UUID id, UUID urbanizationId,
 	private static final String RESIDENT_ROLE = "RESIDENT";
 
 	public AuthorizatorDomain {
-		roles = roles == null ? Set.of() : Set.copyOf(roles);
+		roles = Set.copyOf(roles);
 	}
 
 	public boolean isOwner() {

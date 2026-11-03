@@ -14,18 +14,12 @@ import co.com.smartlife.smartlifeapi.urbanization.service.output.port.repository
 import co.com.smartlife.smartlifeapi.urbanization.service.usecase.implementation.mapper.UrbanizationEventMapperUseCase;
 import co.com.smartlife.smartlifeapi.urbanization.service.usecase.implementation.mapper.UrbanizationMapperUseCase;
 
-/**
- * Trabaja solo con objetos de dominio: lo que lee del repositorio lo pasa a dominio con un mapper, y para guardar
- * o publicar vuelve a pasar por un mapper (dominio a entidad, dominio a evento). El evento se publica dentro de la
- * transaccion y los listeners lo reciben cuando esta se confirma, es decir, cuando el cambio ya esta guardado.
- */
 @Service
 public class RenameUrbanizationUseCaseImpl implements RenameUrbanizationUseCase {
 
 	private static final String USER_PREFIX = "USER_MESSAGE_";
 	private static final String TECHNICAL_PREFIX = "TECHNICAL_MESSAGE_";
 
-	/** Largo maximo de la columna urbanizations.urbanization.name. */
 	private static final int MAX_NAME_LENGTH = 150;
 
 	private final UrbanizationRepository urbanizationRepository;

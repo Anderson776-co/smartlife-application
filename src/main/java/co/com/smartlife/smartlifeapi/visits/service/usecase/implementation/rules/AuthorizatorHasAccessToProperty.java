@@ -7,11 +7,6 @@ import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.AuthorizatorDo
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationAccessDomain;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.contract.VerifyVisitAuthorizationAccessUseCase;
 
-/**
- * Reutiliza la politica de control de acceso (ABAC + ReBAC) tambien dentro del caso de uso, para que
- * la regla se cumpla aunque el caso de uso se invoque desde otra entrada distinta al controlador.
- * Datos: {@link AuthorizatorDomain}, id de la propiedad ({@link UUID}) y {@link VerifyVisitAuthorizationAccessUseCase}.
- */
 public final class AuthorizatorHasAccessToProperty implements Rule {
 
 	private static final Rule instance = new AuthorizatorHasAccessToProperty();

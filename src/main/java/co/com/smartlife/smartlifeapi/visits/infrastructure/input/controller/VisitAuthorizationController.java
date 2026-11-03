@@ -105,7 +105,7 @@ public class VisitAuthorizationController {
 	
 	private static AttachedDocumentDtoRequest toAttachedDocument(final MultipartFile document) throws IOException {
 		if (ObjectHelper.isNull(document) || document.isEmpty()) {
-			return null;
+			return AttachedDocumentDtoRequest.empty();
 		}
 		return new AttachedDocumentDtoRequest(document.getOriginalFilename(), document.getContentType(), document.getBytes());
 	}

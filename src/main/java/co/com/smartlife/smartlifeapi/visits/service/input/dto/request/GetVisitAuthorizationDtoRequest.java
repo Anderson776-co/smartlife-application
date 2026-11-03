@@ -7,7 +7,6 @@ import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.helper.UUIDHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.session.CurrentUser;
 
-/** Consulta de una autorizacion de quien tiene la sesion. */
 public record GetVisitAuthorizationDtoRequest(UUID authorizationId, CurrentUser currentUser) {
 
 	private static final CurrentUser ANONYMOUS = new CurrentUser(UUIDHelper.getUUIDHelper().getDefault(), "",

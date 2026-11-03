@@ -3,6 +3,7 @@ package co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.rule
 import java.time.Duration;
 import java.time.Instant;
 
+import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.rules.Rule;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.VisitParametersDTO;
 
@@ -46,7 +47,7 @@ public final class VisitDatesAreValid implements Rule {
 	}
 
 	private static boolean isMissing(final Instant date) {
-		return date == null || Instant.EPOCH.equals(date);
+		return Instant.EPOCH.equals(ObjectHelper.getDefault(date, Instant.EPOCH));
 	}
 
 }
