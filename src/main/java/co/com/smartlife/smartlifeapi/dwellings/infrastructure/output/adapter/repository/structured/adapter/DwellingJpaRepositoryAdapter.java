@@ -18,8 +18,6 @@ public class DwellingJpaRepositoryAdapter implements DwellingRepository{
 	private final DwellingJpaRepository repository;
 	private final DwellingMapper mapper;
 	
-	
-
 	public DwellingJpaRepositoryAdapter(final DwellingJpaRepository repository, final DwellingMapper mapper) {
 		this.repository = repository;
 		this.mapper = mapper;
@@ -50,13 +48,7 @@ public class DwellingJpaRepositoryAdapter implements DwellingRepository{
 
 	@Override
 	public void update(UUID id, DwellingEntity entity) {
-		// Pendiente
-		
+		repository.save(mapper.toJpaEntity(entity));
 	}
-
-	
-
-	
-	
 
 }

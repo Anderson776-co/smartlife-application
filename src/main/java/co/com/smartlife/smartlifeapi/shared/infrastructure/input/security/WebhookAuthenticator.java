@@ -11,15 +11,8 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
 
-/**
- * Autentica los webhooks entrantes, que no traen sesion. Si un secreto no esta configurado, rechaza cualquier
- * petición (falla cerrado). Las comparaciones son de tiempo constante.
- * <ul>
- * <li>Strapi: el secreto llega tal cual en la cabecera {@code X-Webhook-Secret}.</li>
- * <li>GitHub: firma HMAC-SHA256 del cuerpo exacto en {@code X-Hub-Signature-256} ({@code sha256=<hex>}).</li>
- * </ul>
- */
 @Component
 public class WebhookAuthenticator {
 
@@ -36,14 +29,14 @@ public class WebhookAuthenticator {
 	}
 
 	public boolean isValidStrapiSecret(final String received) {
-		if (strapiSecret.isBlank() || received == null) {
+		if (strapiSecret.isBlank() || ObjectHelper.isNull(received)) {
 			return false;
 		}
 		return MessageDigest.isEqual(sha256(strapiSecret), sha256(received));
 	}
 
 	public boolean isValidGitHubSignature(final byte[] body, final String signature) {
-		if (configSecret.isBlank() || signature == null || !signature.startsWith(GITHUB_PREFIX)) {
+		if (configSecret.isBlank() || ObjectHelper.isNull(signature) || !signature.startsWith(GITHUB_PREFIX)) {
 			return false;
 		}
 		final String expected = HexFormat.of().formatHex(hmac(configSecret, body));

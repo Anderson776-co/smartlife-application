@@ -17,6 +17,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 
+import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.notificationgateway.resend.dto.ResendAttachment;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.notificationgateway.resend.dto.ResendEmailRequest;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.notificationgateway.resend.dto.ResendEmailResponse;
@@ -49,7 +50,6 @@ public class ResendNotificationGatewayAdapter implements NotificationGatewayOutp
 				emailsPath, maxAttempts, retryDelay);
 	}
 
-	/** Sin reintentos: un solo intento. */
 	public ResendNotificationGatewayAdapter(final RestClient.Builder builder, final String baseUrl,
 			final String apiKey, final String from, final String emailsPath) {
 		this(builder, baseUrl, apiKey, from, emailsPath, 1, Duration.ZERO);
@@ -70,11 +70,6 @@ public class ResendNotificationGatewayAdapter implements NotificationGatewayOutp
 		}).build();
 	}
 
-	/**
-	 * Envia el correo. Si Resend no responde a tiempo, falla con un 5XX o limita las peticiones (429), se reintenta
-	 * hasta {@code resend.max-attempts} veces. Todos los intentos llevan la misma clave de idempotencia, asi que si el
-	 * primero si llego a enviarse, Resend no lo duplica. Un rechazo del cliente (4XX distinto de 429) no se reintenta.
-	 */
 	@Override
 	public String sendEmail(final EmailNotificationDTO email) {
 		if (apiKey.isBlank()) {
@@ -111,14 +106,13 @@ public class ResendNotificationGatewayAdapter implements NotificationGatewayOutp
 				.retrieve()
 				.body(ResendEmailResponse.class);
 
-		if (response == null || response.id() == null || response.id().isBlank()) {
+		if (ObjectHelper.isNull(response) || ObjectHelper.isNull(response.id()) || response.id().isBlank()) {
 			throw new IllegalStateException("Resend no devolvió el identificador del correo enviado");
 		}
 
 		return response.id();
 	}
 
-	/** Fallos que pueden ser pasajeros: sin conexion o tiempo agotado, error del servidor (5XX) o limite de peticiones (429). */
 	private static boolean isTransient(final RuntimeException exception) {
 		return exception instanceof ResourceAccessException || exception instanceof HttpServerErrorException
 				|| (exception instanceof HttpClientErrorException client

@@ -1,0 +1,60 @@
+<nav class="paginador" aria-label="Paginación">
+  <p class="resumen" aria-live="polite">
+    Mostrando <strong>{{ desde() }}–{{ hasta() }}</strong> de <strong>{{ totalElementos() }}</strong>
+  </p>
+
+  <div class="botones">
+    <button
+      type="button"
+      class="flecha"
+      [disabled]="deshabilitado() || pagina() === 0"
+      (click)="ir(pagina() - 1)"
+      aria-label="Página anterior"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg>
+      <span>Anterior</span>
+    </button>
+
+    <ul class="numeros">
+      @for (p of paginas(); track $index) {
+        @if (p === null) {
+          <li class="puntos" aria-hidden="true">…</li>
+        } @else {
+          <li>
+            <button
+              type="button"
+              class="numero"
+              [class.numero--activo]="p === pagina()"
+              [attr.aria-current]="p === pagina() ? 'page' : null"
+              [attr.aria-label]="'Ir a la página ' + (p + 1)"
+              [disabled]="deshabilitado()"
+              (click)="ir(p)"
+            >
+              {{ p + 1 }}
+            </button>
+          </li>
+        }
+      }
+    </ul>
+
+    <button
+      type="button"
+      class="flecha"
+      [disabled]="deshabilitado() || pagina() >= totalPaginas() - 1"
+      (click)="ir(pagina() + 1)"
+      aria-label="Página siguiente"
+    >
+      <span>Siguiente</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+    </button>
+  </div>
+
+  <label class="tamano">
+    <span>Por página</span>
+    <select [value]="tamano()" [disabled]="deshabilitado()" (change)="elegirTamano($event)">
+      @for (o of opcionesTamano(); track o) {
+        <option [value]="o" [selected]="o === tamano()">{{ o }}</option>
+      }
+    </select>
+  </label>
+</nav>

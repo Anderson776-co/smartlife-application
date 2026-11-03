@@ -1,12 +1,10 @@
 package co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.rules;
 
 import co.com.smartlife.smartlifeapi.crosscutting.helper.TextHelper;
+import co.com.smartlife.smartlifeapi.crosscutting.parameters.ParameterCatalog;
 import co.com.smartlife.smartlifeapi.crosscutting.rules.Rule;
 
-/** La observacion es opcional y cabe en la columna {@code observation} (500). Dato: la observacion. */
 public final class VisitObservationIsValid implements Rule {
-
-	public static final int MAX_LENGTH = 500;
 
 	private static final Rule instance = new VisitObservationIsValid();
 
@@ -23,7 +21,7 @@ public final class VisitObservationIsValid implements Rule {
 			throw VisitRuleErrors.incompleteParameters("VISIT_OBSERVATION_IS_VALID");
 		}
 
-		if (TextHelper.getDefaultWithTrim((String) data[0]).length() > MAX_LENGTH) {
+		if (TextHelper.getDefaultWithTrim((String) data[0]).length() > ParameterCatalog.OBSERVATION_MAX_LENGTH) {
 			throw VisitRuleErrors.business("VISIT_OBSERVATION_TOO_LONG");
 		}
 	}

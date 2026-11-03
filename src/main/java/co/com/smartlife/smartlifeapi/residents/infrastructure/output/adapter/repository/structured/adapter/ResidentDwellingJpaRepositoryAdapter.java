@@ -18,8 +18,6 @@ public class ResidentDwellingJpaRepositoryAdapter implements ResidentDwellingRep
 	private final ResidentResidenceJpaRepository repository;
 	private final ResidentResidenceMapper mapper;
 	
-	
-
 	public ResidentDwellingJpaRepositoryAdapter(final ResidentResidenceJpaRepository repository,
 			final ResidentResidenceMapper mapper) {
 		this.repository = repository;
@@ -51,9 +49,17 @@ public class ResidentDwellingJpaRepositoryAdapter implements ResidentDwellingRep
 	}
 
 	@Override
+	public void update(UUID id, ResidentResidenceEntity entity) {
+		ResidentResidenceJpaEntity entityJpa = repository.findById(id)
+				.orElseThrow(() -> new IllegalStateException("Relacion residente-residencia no encontrada: " + id));
+
+		entityJpa.setIsActive(entity.getIsActive());
+
+		repository.save(entityJpa);
+	}
+	@Override
 	public void delete(UUID id, ResidentResidenceEntity entity) {
-		//Pendiente
+		repository.deleteById(id);
 	}
 	
-
 }

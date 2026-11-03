@@ -2,8 +2,8 @@ package co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.supp
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -19,13 +19,16 @@ import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 
+import co.com.smartlife.smartlifeapi.crosscutting.parameters.ParameterCatalogTestSupport;
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogProvider;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.dto.MessageCatalogDTO;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitorDomain;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.VisitorRepository;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitorEntity;
+import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.mapper.VisitorMapperUseCase;
 
 class ResolveVisitorTest {
 
@@ -34,12 +37,12 @@ class ResolveVisitorTest {
 
 	@BeforeEach
 	void setUp() {
+		ParameterCatalogTestSupport.load();
 		repository = mock(VisitorRepository.class);
 		when(repository.findByDocumentNumber(anyString())).thenReturn(Optional.empty());
-		resolveVisitor = new ResolveVisitor(repository);
+		resolveVisitor = new ResolveVisitor(repository, Mappers.getMapper(VisitorMapperUseCase.class));
 	}
 
-	/** El catálogo es estático: se deja como "sin configurar" (devuelve el código) para no afectar otras pruebas. */
 	@AfterEach
 	void resetMessageCatalog() {
 		MessageCatalogProvider.init((code, locale) -> {
@@ -58,12 +61,6 @@ class ResolveVisitorTest {
 
 	private void assertRejected(final VisitorDomain data) {
 		assertThrows(SmartLifeException.class, () -> resolveVisitor.resolve(data));
-	}
-
-	@Test
-	void shouldRejectMissingData() {
-		assertRejected(null);
-		verify(repository, never()).findByDocumentNumber(anyString());
 	}
 
 	@Test
@@ -87,9 +84,9 @@ class ResolveVisitorTest {
 	}
 
 	@Test
-	void shouldBuildANewVisitorWithNormalizedData() {
+	void shouldBuildANewVisitorFromTheGivenData() {
 		final VisitorResolution resolution = resolveVisitor
-				.resolve(visitor(" 2001 ", " Luis ", " Andres ", " Torres ", " Gomez ", "  LUIS@Example.COM ", " abc-123 "));
+				.resolve(visitor("2001", "Luis", "Andres", "Torres", "Gomez", "luis@example.com", "ABC-123"));
 
 		assertTrue(resolution.isNew());
 		final VisitorEntity entity = resolution.entity();
@@ -104,11 +101,21 @@ class ResolveVisitorTest {
 	}
 
 	@Test
-	void shouldLeaveThePlateEmptyWhenNoneIsGiven() {
+	void shouldGiveEveryNewVisitorItsOwnId() {
+		final VisitorEntity first = resolveVisitor.resolve(validVisitor()).entity();
+		final VisitorEntity second = resolveVisitor.resolve(validVisitor()).entity();
+
+		assertNotNull(first.getId());
+		assertNotNull(second.getId());
+		assertNotEquals(first.getId(), second.getId());
+	}
+
+	@Test
+	void shouldKeepThePlateAsGivenWhenNoneIsEntered() {
 		final VisitorResolution resolution = resolveVisitor.resolve(validVisitor());
 
 		assertTrue(resolution.isNew());
-		assertNull(resolution.entity().getVehiclePlate());
+		assertEquals(validVisitor().vehiclePlate(), resolution.entity().getVehiclePlate());
 	}
 
 	@Test
@@ -161,12 +168,28 @@ class ResolveVisitorTest {
 
 		assertCatalogRejection("VISITOR_DOCUMENT_REQUIRED", visitor("   ", "Luis", "", "Torres", "", "luis@example.com", ""));
 		assertCatalogRejection("VISITOR_DOCUMENT_INVALID", visitor("ab", "Luis", "", "Torres", "", "luis@example.com", ""));
+		assertCatalogRejection("VISITOR_FIRST_NAME_REQUIRED", visitor("2001", "   ", "", "Torres", "", "luis@example.com", ""));
 		assertCatalogRejection("VISITOR_FIRST_NAME_INVALID", visitor("2001", "Luis1", "", "Torres", "", "luis@example.com", ""));
-		assertCatalogRejection("VISITOR_LAST_NAME_INVALID", visitor("2001", "Luis", "", "", "", "luis@example.com", ""));
+		assertCatalogRejection("VISITOR_LAST_NAME_REQUIRED", visitor("2001", "Luis", "", "", "", "luis@example.com", ""));
+		assertCatalogRejection("VISITOR_LAST_NAME_INVALID", visitor("2001", "Luis", "", "Tor3es", "", "luis@example.com", ""));
 		assertCatalogRejection("VISITOR_MIDDLE_NAME_INVALID", visitor("2001", "Luis", "Ma3", "Torres", "", "luis@example.com", ""));
 		assertCatalogRejection("VISITOR_SECOND_LAST_NAME_INVALID", visitor("2001", "Luis", "", "Torres", "Gom3z", "luis@example.com", ""));
+		assertCatalogRejection("VISITOR_EMAIL_REQUIRED", visitor("2001", "Luis", "", "Torres", "", "   ", ""));
 		assertCatalogRejection("VISITOR_EMAIL_INVALID", visitor("2001", "Luis", "", "Torres", "", "no-es-un-correo", ""));
 		assertCatalogRejection("VISITOR_PLATE_INVALID", visitor("2001", "Luis", "", "Torres", "", "luis@example.com", "ab"));
+	}
+
+	@Test
+	void aRequiredFieldShouldGetADifferentMessageThanAnInvalidOne() {
+		MessageCatalogProvider.init((code, locale) -> new MessageCatalogDTO(code, "", "texto:" + code, locale));
+
+		final SmartLifeException empty = assertThrows(SmartLifeException.class,
+				() -> resolveVisitor.resolve(visitor("2001", "", "", "Torres", "", "luis@example.com", "")));
+		final SmartLifeException malformed = assertThrows(SmartLifeException.class,
+				() -> resolveVisitor.resolve(visitor("2001", "Luis1", "", "Torres", "", "luis@example.com", "")));
+
+		assertNotEquals(empty.getUserMessage(), malformed.getUserMessage());
+		assertNotEquals(empty.getTechnicalMessage(), malformed.getTechnicalMessage());
 	}
 
 	private void assertCatalogRejection(final String code, final VisitorDomain data) {

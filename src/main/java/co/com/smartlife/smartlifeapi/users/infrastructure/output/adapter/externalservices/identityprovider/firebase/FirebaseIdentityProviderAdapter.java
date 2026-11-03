@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogProvider;
 import co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.externalservices.identityprovider.VerifiedToken;
@@ -92,7 +93,7 @@ public class FirebaseIdentityProviderAdapter implements IdentityProviderOutputPo
 	
 	private void requireRecentLogin(final Long authTime) {
 		final long now = Instant.now(clock).getEpochSecond();
-		if (authTime == null || authTime > now || now - authTime > RECENT_LOGIN_SECONDS) {
+		if (ObjectHelper.isNull(authTime) || authTime > now || now - authTime > RECENT_LOGIN_SECONDS) {
 			throw SmartLifeException.createAuthentication(
 					MessageCatalogProvider.getContent(SESSION_RECENT_LOGIN_REQUIRED),
 					"auth_time=" + authTime + ", now=" + now + ": el login no es reciente (máx. "
@@ -101,7 +102,7 @@ public class FirebaseIdentityProviderAdapter implements IdentityProviderOutputPo
 	}
 	
 	private static void requireValidDuration(final Duration expiration) {
-		if (expiration == null || expiration.compareTo(MIN_SESSION) < 0 || expiration.compareTo(MAX_SESSION) > 0) {
+		if (ObjectHelper.isNull(expiration) || expiration.compareTo(MIN_SESSION) < 0 || expiration.compareTo(MAX_SESSION) > 0) {
 			throw SmartLifeException.create(new IllegalArgumentException(),
 					MessageCatalogProvider.getContent(SESSION_DURATION_INVALID),
 					"smartlife.session.duration=" + expiration + " está fuera del rango de 5 minutos a 14 días");
@@ -119,7 +120,7 @@ public class FirebaseIdentityProviderAdapter implements IdentityProviderOutputPo
 	}
 	
 	private static void requireText(final String value, final String messageCode, final String technicalMessage) {
-		if (value == null || value.isBlank()) {
+		if (ObjectHelper.isNull(value) || value.isBlank()) {
 			throw SmartLifeException.createAuthentication(
 					MessageCatalogProvider.getContent(messageCode), technicalMessage);
 		}

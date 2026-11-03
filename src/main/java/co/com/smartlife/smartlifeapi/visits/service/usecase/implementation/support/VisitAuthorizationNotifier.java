@@ -34,10 +34,10 @@ public class VisitAuthorizationNotifier {
 	private static final String QR_CONTENT_TYPE = "image/png";
 	private static final String DATE_PATTERN = "dd/MM/yyyy hh:mm a";
 
-	private final NotificationCatalogOutputPort notificationCatalog;   // Strapi + @Cacheable (Redis)
-	private final NotificationGatewayOutputPort notificationGateway;   // Resend
-	private final QrGeneratorOutputPort qrGenerator;                   // ZXing
-	private final VisitParametersOutputPort parameters;                // Spring Cloud Config
+	private final NotificationCatalogOutputPort notificationCatalog;
+	private final NotificationGatewayOutputPort notificationGateway;
+	private final QrGeneratorOutputPort qrGenerator;
+	private final VisitParametersOutputPort parameters;
 
 	public VisitAuthorizationNotifier(final NotificationCatalogOutputPort notificationCatalog,
 			final NotificationGatewayOutputPort notificationGateway, final QrGeneratorOutputPort qrGenerator,
@@ -48,7 +48,6 @@ public class VisitAuthorizationNotifier {
 		this.parameters = parameters;
 	}
 
-	/** Nunca lanza excepción: la autorización ya quedó guardada. */
 	public boolean notifyVisitor(final VisitAuthorizationEntity authorization) {
 		try {
 			final String locale = LocalHelper.getCurrentLocal();
@@ -100,7 +99,7 @@ public class VisitAuthorizationNotifier {
 		return result;
 	}
 
-	private static String escape(final String value) {   // evita inyectar HTML con el nombre del visitante
+	private static String escape(final String value) {
 		return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 				.replace("\"", "&quot;").replace("'", "&#39;");
 	}

@@ -11,7 +11,7 @@ public class TextHelper {
 	}
 
 	public static String getDefault(final String value) {
-		return value == null ? EMPTY : value;
+		return ObjectHelper.getDefault(value, EMPTY);
 	}
 
 	public static String getDefaultWithTrim(final String value) {
@@ -19,7 +19,7 @@ public class TextHelper {
 	}
 	
 	public static boolean isEmpty(final String value) {
-		return value == null || value.isEmpty();
+		return ObjectHelper.isNull(value) || value.isEmpty();
 	}
 	
 	public static boolean isEmptyWithTrim(final String value) {

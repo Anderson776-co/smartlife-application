@@ -28,6 +28,7 @@ export class VisitaAutorizada {
 
   readonly otra = output<void>();
   readonly volver = output<void>();
+  readonly verMisAutorizaciones = output<void>();
 
   protected readonly confeti = CONFETI;
   protected readonly copiado = signal(false);

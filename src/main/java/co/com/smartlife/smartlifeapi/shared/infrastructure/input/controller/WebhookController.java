@@ -22,15 +22,6 @@ import co.com.smartlife.smartlifeapi.shared.service.input.port.InvalidateCatalog
 import co.com.smartlife.smartlifeapi.shared.service.input.port.RefreshParametersInputPort;
 import tools.jackson.databind.json.JsonMapper;
 
-/**
- * Webhooks entrantes que mantienen al dia lo que el backend guarda en memoria:
- * <ul>
- * <li>{@code /strapi}: cambios en los catalogos de mensajes y notificaciones.</li>
- * <li>{@code /config}: push al repositorio de parametros (GitHub).</li>
- * </ul>
- * No usan sesion: se autentican con un secreto compartido (ver {@link WebhookAuthenticator}). Primero se
- * autentica y despues se lee el cuerpo.
- */
 @RestController
 @RequestMapping(WebhookController.PATH)
 public class WebhookController {
@@ -97,7 +88,6 @@ public class WebhookController {
 		}
 	}
 
-	/** Del cuerpo del evento {@code push} de GitHub solo interesa la referencia ({@code refs/heads/main}). */
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	record GitHubPayload(String ref) {
 	}

@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ClockConfig {
 
-	/** Reloj del sistema en UTC; los casos de uso lo reciben para poder probar las reglas de fechas. */
 	@Bean
 	public Clock clock() {
 		return Clock.systemUTC();

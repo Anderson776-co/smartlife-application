@@ -8,14 +8,6 @@ import java.lang.annotation.Target;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 
-/**
- * Control de acceso del caso de uso "autorizar visita".
- * <ul>
- * <li>RBAC: solo los roles OWNER y RESIDENT.</li>
- * <li>ABAC + ReBAC: delegado a {@link VisitAuthorizationAccessEvaluator}.</li>
- * </ul>
- * El metodo anotado debe recibir un parametro llamado {@code request} que exponga {@code propertyId()}.
- */
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

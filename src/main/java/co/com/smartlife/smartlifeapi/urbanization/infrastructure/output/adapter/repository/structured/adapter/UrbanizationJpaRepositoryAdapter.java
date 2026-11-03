@@ -48,4 +48,14 @@ public class UrbanizationJpaRepositoryAdapter implements UrbanizationRepository{
 	public List<UrbanizationEntity> findByFilter(UrbanizationEntity entity) {
 		return List.of();
 	}
+
+	@Override
+	public void update(UUID id, UrbanizationEntity entity) {
+		UrbanizationJpaEntity entityJpa = repository.findById(id)
+				.orElseThrow(() -> new IllegalStateException("Urbanizacion no encontrada: " + id));
+
+		entityJpa.setName(entity.getName());
+
+		repository.save(entityJpa);
+	}
 }

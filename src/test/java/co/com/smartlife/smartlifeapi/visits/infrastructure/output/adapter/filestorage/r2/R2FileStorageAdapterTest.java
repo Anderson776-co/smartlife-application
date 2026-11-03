@@ -38,7 +38,6 @@ class R2FileStorageAdapterTest {
 
 		@Override
 		public void close() {
-			// No se requiere liberar recursos porque este cliente simulado no mantiene conexiones.
 		}
 
 		@Override

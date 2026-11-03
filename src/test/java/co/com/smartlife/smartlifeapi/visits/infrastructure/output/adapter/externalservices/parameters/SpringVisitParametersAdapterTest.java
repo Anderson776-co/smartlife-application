@@ -107,6 +107,46 @@ class SpringVisitParametersAdapterTest {
 		assertTrue(failure.getMessage().contains(PREFIX + "document.allowed-types"));
 	}
 
+	@Test
+	void shouldRejectValuesThatMakeNoSense() {
+		final Map<String, Object> properties = allParameters();
+		properties.put(PREFIX + "max-authorization-duration", "0s");
+		properties.put(PREFIX + "max-anticipation", "-1d");
+		properties.put(PREFIX + "start-tolerance", "-5m");
+		properties.put(PREFIX + "document.max-size", "0B");
+		properties.put(PREFIX + "qr-base-url", "/visitas/autorizaciones/");
+		properties.put(PREFIX + "time-zone", "Mars/Olympus");
+
+		final IllegalStateException failure = assertThrows(IllegalStateException.class,
+				() -> new SpringVisitParametersAdapter(environmentWith(properties)).get());
+
+		for (final String name : new String[] { "max-authorization-duration", "max-anticipation", "start-tolerance",
+				"document.max-size", "qr-base-url", "time-zone" }) {
+			assertTrue(failure.getMessage().contains(PREFIX + name), "no menciona " + name);
+		}
+	}
+
+	@Test
+	void shouldNameAValueThatCannotBeRead() {
+		final Map<String, Object> properties = allParameters();
+		properties.put(PREFIX + "max-anticipation", "treinta dias");
+
+		final IllegalStateException failure = assertThrows(IllegalStateException.class,
+				() -> new SpringVisitParametersAdapter(environmentWith(properties)).get());
+
+		assertTrue(failure.getMessage().contains(PREFIX + "max-anticipation (valor invalido)"));
+	}
+
+	@Test
+	void shouldCompareTheAllowedTypesInLowerCase() {
+		final Map<String, Object> properties = allParameters();
+		properties.put(PREFIX + "document.allowed-types", "Application/PDF, IMAGE/png");
+
+		final VisitParametersDTO parameters = new SpringVisitParametersAdapter(environmentWith(properties)).get();
+
+		assertEquals(Set.of("application/pdf", "image/png"), parameters.documentAllowedTypes());
+	}
+
 	private static Map<String, Object> allParameters() {
 		final Map<String, Object> properties = new HashMap<>();
 		properties.put(PREFIX + "max-authorization-duration", "24h");

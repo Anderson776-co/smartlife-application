@@ -13,6 +13,7 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
+import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
 import co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.strapi.dto.StrapiMessageCatalogData;
 import co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.strapi.dto.StrapiMessageCatalogResponse;
@@ -20,7 +21,6 @@ import co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.extern
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogOutputPort;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogProvider;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.dto.MessageCatalogDTO;
-
 
 @Component
 public class StrapiMessageCatalogAdapter implements MessageCatalogOutputPort {
@@ -79,7 +79,7 @@ public class StrapiMessageCatalogAdapter implements MessageCatalogOutputPort {
 		if (baseUrl.isBlank()) {
 			LOGGER.warn("La URL de Strapi no está configurada (strapi.url): no se puede consultar el mensaje {} ({})",
 					code, locale);
-			throw unavailable(null, code, locale);
+			throw unavailable(new IllegalStateException("strapi.url no esta configurada"), code, locale);
 		}
 
 		try {
@@ -88,7 +88,6 @@ public class StrapiMessageCatalogAdapter implements MessageCatalogOutputPort {
 		} catch (final SmartLifeException exception) {
 			throw exception;
 		} catch (final RuntimeException exception) {
-			// Sin conexion, tiempo agotado, 4XX/5XX, respuesta que no es JSON, cuerpo ilegible, etc.
 			LOGGER.warn("Falló la consulta a Strapi del mensaje {} ({}): {}", code, locale, exception.getMessage());
 			throw unavailable(exception, code, locale);
 		}
@@ -116,7 +115,6 @@ public class StrapiMessageCatalogAdapter implements MessageCatalogOutputPort {
 		return SmartLifeException.create(userMessage, describe(technicalTemplate, code, locale));
 	}
 
-	
 	private static SmartLifeException unavailable(final Throwable cause, final String code, final String locale) {
 		final Optional<String> userMessage = catalogText(USER_ERROR_TRYING_TO_MAKE_AN_OPERATION, locale, code);
 		final Optional<String> technicalTemplate = userMessage.isPresent()
@@ -132,7 +130,7 @@ public class StrapiMessageCatalogAdapter implements MessageCatalogOutputPort {
 			return Optional.empty();
 		}
 		final String content = MessageCatalogProvider.getContent(reservedCode, locale);
-		return content == null || content.isBlank() || content.equals(reservedCode)
+		return ObjectHelper.isNull(content) || content.isBlank() || content.equals(reservedCode)
 				? Optional.empty()
 				: Optional.of(content);
 	}

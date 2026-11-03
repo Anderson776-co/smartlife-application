@@ -3,14 +3,10 @@ package co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.rule
 import java.time.Duration;
 import java.time.Instant;
 
+import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.rules.Rule;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.VisitParametersDTO;
 
-/**
- * Rango de la autorizacion: ambas fechas informadas, fin posterior al inicio, sin empezar en el pasado
- * (con una tolerancia), sin anticiparse mas de lo permitido y sin superar la duracion maxima.
- * Datos: inicio, fin, ahora (todos {@link Instant}) y {@link VisitParametersDTO}.
- */
 public final class VisitDatesAreValid implements Rule {
 
 	private static final Rule instance = new VisitDatesAreValid();
@@ -50,9 +46,8 @@ public final class VisitDatesAreValid implements Rule {
 		}
 	}
 
-	/** El DTO de entrada usa {@link Instant#EPOCH} cuando la fecha no viene en la solicitud. */
 	private static boolean isMissing(final Instant date) {
-		return date == null || Instant.EPOCH.equals(date);
+		return Instant.EPOCH.equals(ObjectHelper.getDefault(date, Instant.EPOCH));
 	}
 
 }

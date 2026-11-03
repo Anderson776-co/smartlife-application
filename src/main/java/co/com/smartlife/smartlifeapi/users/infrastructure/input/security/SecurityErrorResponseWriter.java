@@ -1,0 +1,77 @@
+package co.com.smartlife.smartlifeapi.users.infrastructure.input.security;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
+
+import co.com.smartlife.smartlifeapi.crosscutting.helper.TextHelper;
+import co.com.smartlife.smartlifeapi.shared.service.input.port.MessageResolverInputPort;
+import jakarta.servlet.http.HttpServletResponse;
+
+@Component
+public class SecurityErrorResponseWriter {
+
+	static final String SESSION_REQUIRED_CODE = "USER_MESSAGE_SESSION_REQUIRED";
+	static final String ACCESS_DENIED_CODE = "USER_MESSAGE_ACCESS_DENIED";
+	static final String GENERAL_ERROR_CODE = "USER_ERROR_TRYING_TO_MAKE_AN_OPERATION";
+
+	private final MessageResolverInputPort messages;
+
+	public SecurityErrorResponseWriter(final MessageResolverInputPort messages) {
+		this.messages = messages;
+	}
+
+	public void unauthorized(final HttpServletResponse response) throws IOException {
+		write(response, HttpStatus.UNAUTHORIZED, SESSION_REQUIRED_CODE);
+	}
+
+	public void forbidden(final HttpServletResponse response) throws IOException {
+		write(response, HttpStatus.FORBIDDEN, ACCESS_DENIED_CODE);
+	}
+
+	private void write(final HttpServletResponse response, final HttpStatus status, final String code)
+			throws IOException {
+		response.setStatus(status.value());
+		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+		response.setCharacterEncoding(StandardCharsets.UTF_8.name());
+		response.getWriter().write(body(message(code)));
+	}
+
+	private String message(final String code) {
+		final String specific = messages.resolve(code, TextHelper.getDefault());
+		return TextHelper.isEmptyWithTrim(specific) ? messages.resolve(GENERAL_ERROR_CODE, TextHelper.getDefault())
+				: specific;
+	}
+
+	static String body(final String message) {
+		final String text = TextHelper.getDefault(message);
+		final String list = TextHelper.isEmptyWithTrim(text) ? "[]" : "[\"" + escape(text) + "\"]";
+		return "{\"messages\":" + list + ",\"data\":[],\"responseSucceded\":false}";
+	}
+
+	static String escape(final String text) {
+		final String value = TextHelper.getDefault(text);
+		final StringBuilder out = new StringBuilder(value.length() + 8);
+		for (int i = 0; i < value.length(); i++) {
+			final char c = value.charAt(i);
+			switch (c) {
+				case '"' -> out.append("\\\"");
+				case '\\' -> out.append("\\\\");
+				case '\n' -> out.append("\\n");
+				case '\r' -> out.append("\\r");
+				case '\t' -> out.append("\\t");
+				default -> {
+					if (c < 0x20) {
+						out.append(String.format("\\u%04x", (int) c));
+					} else {
+						out.append(c);
+					}
+				}
+			}
+		}
+		return out.toString();
+	}
+}

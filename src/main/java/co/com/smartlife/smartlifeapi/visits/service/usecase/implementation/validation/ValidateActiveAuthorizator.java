@@ -17,6 +17,9 @@ public final class ValidateActiveAuthorizator implements Validator{
 	
 	@Override
 	public void validate(Object... data) {
+		if (data.length > 0) {
+			IsUUIDPresentRule.executeRule(data[0]);
+		}
 		UserAuthorizatorIsActive.executeRule(data);	
 	}
 	

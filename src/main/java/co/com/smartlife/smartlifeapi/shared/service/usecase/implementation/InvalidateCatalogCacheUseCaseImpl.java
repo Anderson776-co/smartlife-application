@@ -8,10 +8,6 @@ import co.com.smartlife.smartlifeapi.shared.domain.catalog.CatalogInvalidationDo
 import co.com.smartlife.smartlifeapi.shared.service.output.port.cache.CatalogCacheOutputPort;
 import co.com.smartlife.smartlifeapi.shared.service.usecase.contract.InvalidateCatalogCacheUseCase;
 
-/**
- * Limpia la cache de un catalogo cuando Strapi publica, despublica o borra una entrada.
- * Si el evento no identifica la entrada, vacia el catalogo completo (es lo seguro).
- */
 @Service
 public class InvalidateCatalogCacheUseCaseImpl implements InvalidateCatalogCacheUseCase {
 

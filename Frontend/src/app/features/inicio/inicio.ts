@@ -27,6 +27,10 @@ export class Inicio {
     return primera ? primera.charAt(0).toUpperCase() + primera.slice(1) : '';
   });
 
+  protected irMisAutorizaciones(): Promise<boolean> {
+    return this.router.navigate(['/visitas/mis-autorizaciones']);
+  }
+
   protected irAutorizarVisita(): Promise<boolean> {
     return this.router.navigate(['/visitas/autorizar']);
   }

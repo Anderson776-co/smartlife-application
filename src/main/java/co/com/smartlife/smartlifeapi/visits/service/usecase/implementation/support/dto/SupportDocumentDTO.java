@@ -2,13 +2,19 @@ package co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.supp
 
 import java.util.Arrays;
 import java.util.Objects;
+import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
 
 public record SupportDocumentDTO(String fileName, String contentType, byte[] content) {
+
+	private static final byte[] EMPTY_CONTENT = new byte[0];
+
+	public SupportDocumentDTO {
+		content = ObjectHelper.getDefault(content, EMPTY_CONTENT);
+	}
 	public boolean hasContent() {
 		return content.length > 0;
 	}
 
-	/** Un record con un arreglo debe comparar su contenido y no su referencia. */
 	@Override
 	public boolean equals(final Object other) {
 		if (this == other) {
@@ -26,10 +32,9 @@ public record SupportDocumentDTO(String fileName, String contentType, byte[] con
 		return 31 * Objects.hash(fileName, contentType) + Arrays.hashCode(content);
 	}
 
-	/** No se imprime el contenido del archivo, solo su tamano. */
 	@Override
 	public String toString() {
 		return "SupportDocumentDTO[fileName=" + fileName + ", contentType=" + contentType + ", contentLength="
-				+ (content == null ? 0 : content.length) + "]";
+				+ content.length + "]";
 	}
 }

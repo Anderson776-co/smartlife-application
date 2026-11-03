@@ -36,9 +36,9 @@ public class SessionCookieManager {
 
 	    private ResponseCookie.ResponseCookieBuilder base(final String value) {
 	        return ResponseCookie.from(cookieName, value)
-	                .httpOnly(true)        // JS no puede leerla (protege contra XSS)
-	                .secure(true)          // solo HTTPS
-	                .sameSite("Strict")    // no viaja en requests iniciados por otros sitios
+	                .httpOnly(true)
+	                .secure(true)
+	                .sameSite("Strict")
 	                .path("/");
 	    }
 

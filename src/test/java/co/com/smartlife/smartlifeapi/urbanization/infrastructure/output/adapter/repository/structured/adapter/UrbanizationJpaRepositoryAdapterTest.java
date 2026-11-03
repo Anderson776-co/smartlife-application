@@ -1,6 +1,8 @@
 package co.com.smartlife.smartlifeapi.urbanization.infrastructure.output.adapter.repository.structured.adapter;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -77,5 +79,25 @@ class UrbanizationJpaRepositoryAdapterTest {
 	@Test
 	void findByFilterShouldReturnAnEmptyListForNow() {
 		assertTrue(adapter.findByFilter(mock(UrbanizationEntity.class)).isEmpty());
+	}
+
+	@Test
+	void updateShouldChangeTheNameOfTheStoredUrbanizationAndSaveIt() {
+		UUID id = UUID.randomUUID();
+		UrbanizationJpaEntity jpaEntity = new UrbanizationJpaEntity(id, "Viejo");
+		when(repository.findById(id)).thenReturn(Optional.of(jpaEntity));
+
+		adapter.update(id, new UrbanizationEntity(id, "Nuevo"));
+
+		assertEquals("Nuevo", jpaEntity.getName());
+		verify(repository).save(jpaEntity);
+	}
+
+	@Test
+	void updateShouldFailWhenTheUrbanizationDoesNotExist() {
+		UUID id = UUID.randomUUID();
+		when(repository.findById(id)).thenReturn(Optional.empty());
+
+		assertThrows(IllegalStateException.class, () -> adapter.update(id, new UrbanizationEntity(id, "Nuevo")));
 	}
 }

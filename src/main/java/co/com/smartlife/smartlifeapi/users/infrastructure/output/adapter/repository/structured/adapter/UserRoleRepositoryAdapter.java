@@ -43,7 +43,7 @@ public class UserRoleRepositoryAdapter implements UserRoleRepository{
 	}
 	@Override
 	public void delete(UUID id, UserRoleEntity entity) {
-		//Pendiente
+		repository.deleteById(id);
 	}
 	@Override
 	public List<UserRoleEntity> findByUserId(UUID userId) {

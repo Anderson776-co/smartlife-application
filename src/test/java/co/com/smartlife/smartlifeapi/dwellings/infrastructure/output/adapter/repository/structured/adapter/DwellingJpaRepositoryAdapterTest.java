@@ -1,6 +1,5 @@
 package co.com.smartlife.smartlifeapi.dwellings.infrastructure.output.adapter.repository.structured.adapter;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -81,7 +80,13 @@ class DwellingJpaRepositoryAdapterTest {
 	}
 
 	@Test
-	void updateShouldNotFailForNow() {
-		assertDoesNotThrow(() -> adapter.update(UUID.randomUUID(), mock(DwellingEntity.class)));
+	void updateShouldMapTheEntityAndSaveItSoTheOwnerChanges() {
+		DwellingEntity entity = mock(DwellingEntity.class);
+		DwellingJpaEntity jpaEntity = mock(DwellingJpaEntity.class);
+		when(mapper.toJpaEntity(entity)).thenReturn(jpaEntity);
+
+		adapter.update(UUID.randomUUID(), entity);
+
+		verify(repository).save(jpaEntity);
 	}
 }

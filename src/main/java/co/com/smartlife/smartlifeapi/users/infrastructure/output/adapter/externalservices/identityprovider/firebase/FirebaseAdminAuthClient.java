@@ -13,6 +13,9 @@ import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.auth.SessionCookieOptions;
 
+import java.time.Instant;
+import co.com.smartlife.smartlifeapi.crosscutting.helper.TextHelper;
+import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
 import co.com.smartlife.smartlifeapi.users.infrastructure.output.adapter.externalservices.identityprovider.VerifiedToken;
 
 public class FirebaseAdminAuthClient implements FirebaseAuthClient{
@@ -25,8 +28,8 @@ public class FirebaseAdminAuthClient implements FirebaseAuthClient{
 	private FirebaseAuth auth;
 	
 	FirebaseAdminAuthClient(final String projectId, final String credentialsBase64) {
-		this.projectId = projectId == null ? "" : projectId;
-		this.credentialsBase64 = credentialsBase64 == null ? "" : credentialsBase64;
+		this.projectId = TextHelper.getDefault(projectId);
+		this.credentialsBase64 = TextHelper.getDefault(credentialsBase64);
 	}
 	
 	@Override
@@ -69,11 +72,11 @@ public class FirebaseAdminAuthClient implements FirebaseAuthClient{
 	private static VerifiedToken toVerified(final FirebaseToken token) {
 		final Object authTime = token.getClaims().get(AUTH_TIME);
 		return new VerifiedToken(token.getUid(), token.getEmail(), token.isEmailVerified(),
-				authTime instanceof Number number ? number.longValue() : null);
+				authTime instanceof Number number ? number.longValue() : Instant.EPOCH.getEpochSecond());
 	}
 	
 	private synchronized FirebaseAuth auth() {
-		if (auth == null) {
+		if (ObjectHelper.isNull(auth)) {
 			if (projectId.isBlank()) {
 				throw new IllegalStateException("Firebase no está configurado (firebase.project-id)");
 			}

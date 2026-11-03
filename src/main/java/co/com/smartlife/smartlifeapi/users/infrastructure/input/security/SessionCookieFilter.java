@@ -11,6 +11,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import co.com.smartlife.smartlifeapi.crosscutting.helper.TextHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
 import co.com.smartlife.smartlifeapi.crosscutting.session.CurrentUser;
 import co.com.smartlife.smartlifeapi.crosscutting.session.CurrentUserHolder;
@@ -26,8 +27,6 @@ public final class SessionCookieFilter extends OncePerRequestFilter{
     private final ValidateSessionInputPort validateSession;
     private final SessionCookieManager cookies;
     
-    
-
 	public SessionCookieFilter(final ValidateSessionInputPort validateSession, final SessionCookieManager cookies) {
 		this.validateSession = validateSession;
 		this.cookies = cookies;
@@ -46,16 +45,14 @@ public final class SessionCookieFilter extends OncePerRequestFilter{
             final var authorities = user.roles().stream()
                     .map(role -> new SimpleGrantedAuthority("ROLE_" + role)).toList();
             final SecurityContext context = SecurityContextHolder.createEmptyContext();
-            context.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(user, null, authorities));
+            context.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(user, TextHelper.getDefault(), authorities));
             SecurityContextHolder.setContext(context);
-            CurrentUserHolder.set(user);          // ← así lo comparte con los otros módulos
+            CurrentUserHolder.set(user);
         } catch (SmartLifeException exception) {
             LOGGER.debug("Sesión rechazada: {}", exception.getTechnicalMessage());
             SecurityContextHolder.clearContext();
             response.addHeader(HttpHeaders.SET_COOKIE, cookies.clear().toString());
-            // sin autenticación, Spring Security responderá 401 en las rutas protegidas
         } catch (RuntimeException exception) {
-            // Fallo inesperado (p. ej. Firebase caído): no se cierra la sesión del usuario, solo queda sin autenticar
             LOGGER.error("No se pudo validar la sesión: {}", exception.getMessage(), exception);
             SecurityContextHolder.clearContext();
         }

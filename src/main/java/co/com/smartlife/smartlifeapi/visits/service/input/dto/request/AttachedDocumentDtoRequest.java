@@ -25,7 +25,6 @@ public record AttachedDocumentDtoRequest(String fileName, String contentType, by
 			return content.length > 0;
 		}
 
-		/** Un record con un arreglo debe comparar su contenido y no su referencia. */
 		@Override
 		public boolean equals(final Object other) {
 			if (this == other) {
@@ -43,7 +42,6 @@ public record AttachedDocumentDtoRequest(String fileName, String contentType, by
 			return 31 * Objects.hash(fileName, contentType) + Arrays.hashCode(content);
 		}
 
-		/** No se imprime el contenido del archivo, solo su tamaño. */
 		@Override
 		public String toString() {
 			return "AttachedDocumentDtoRequest[fileName=" + fileName + ", contentType=" + contentType
