@@ -50,8 +50,8 @@ public class DwellingJpaRepositoryAdapter implements DwellingRepository{
 
 	@Override
 	public void update(UUID id, DwellingEntity entity) {
-		// Pendiente
-		
+		// El id ya existe: save() hace merge y deja la vivienda con el propietario nuevo
+		repository.save(mapper.toJpaEntity(entity));
 	}
 
 	

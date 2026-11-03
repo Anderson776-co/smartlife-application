@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -83,5 +85,27 @@ class ResidentDwellingJpaRepositoryAdapterTest {
 	@Test
 	void deleteShouldNotFailForNow() {
 		assertDoesNotThrow(() -> adapter.delete(UUID.randomUUID(), mock(ResidentResidenceEntity.class)));
+	}
+
+	@Test
+	void updateShouldCopyTheStatusToTheStoredRelationAndSaveIt() {
+		UUID id = UUID.randomUUID();
+		ResidentResidenceJpaEntity jpaEntity = mock(ResidentResidenceJpaEntity.class);
+		ResidentResidenceEntity entity = mock(ResidentResidenceEntity.class);
+		when(entity.getIsActive()).thenReturn(false);
+		when(repository.findById(id)).thenReturn(Optional.of(jpaEntity));
+
+		adapter.update(id, entity);
+
+		verify(jpaEntity).setIsActive(false);
+		verify(repository).save(jpaEntity);
+	}
+
+	@Test
+	void updateShouldFailWhenTheRelationDoesNotExist() {
+		UUID id = UUID.randomUUID();
+		when(repository.findById(id)).thenReturn(Optional.empty());
+
+		assertThrows(IllegalStateException.class, () -> adapter.update(id, mock(ResidentResidenceEntity.class)));
 	}
 }

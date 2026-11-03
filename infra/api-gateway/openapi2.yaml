@@ -158,6 +158,126 @@ paths:
       responses:
         "200":
           description: Respuesta de la aplicacion
+  /api/v1/users/{userId}/status:
+    patch:
+      summary: Activa o desactiva un usuario (solo administrador)
+      operationId: changeUserStatus
+      consumes:
+        - application/json
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          type: string
+          description: Identificador del usuario
+      responses:
+        "200":
+          description: Estado cambiado; se actualizan las vistas de los otros modulos
+        "400":
+          description: Dato invalido o no existe
+        "403":
+          description: Solo el administrador puede hacerlo
+    options:
+      summary: Verificacion previa de CORS
+      operationId: changeUserStatusOptions
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Respuesta de la aplicacion
+  /api/v1/urbanizations/{urbanizationId}:
+    patch:
+      summary: Cambia el nombre de una urbanizacion (solo administrador)
+      operationId: renameUrbanization
+      consumes:
+        - application/json
+      parameters:
+        - name: urbanizationId
+          in: path
+          required: true
+          type: string
+          description: Identificador de la urbanizacion
+      responses:
+        "200":
+          description: Nombre cambiado; se actualizan las vistas de los otros modulos
+        "400":
+          description: Dato invalido o no existe
+        "403":
+          description: Solo el administrador puede hacerlo
+    options:
+      summary: Verificacion previa de CORS
+      operationId: renameUrbanizationOptions
+      parameters:
+        - name: urbanizationId
+          in: path
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Respuesta de la aplicacion
+  /api/v1/dwellings/{dwellingId}/owner:
+    patch:
+      summary: Cambia el propietario de una vivienda (solo administrador)
+      operationId: changeDwellingOwner
+      consumes:
+        - application/json
+      parameters:
+        - name: dwellingId
+          in: path
+          required: true
+          type: string
+          description: Identificador de la vivienda
+      responses:
+        "200":
+          description: Propietario cambiado; se actualizan las vistas de los otros modulos
+        "400":
+          description: Dato invalido o no existe
+        "403":
+          description: Solo el administrador puede hacerlo
+    options:
+      summary: Verificacion previa de CORS
+      operationId: changeDwellingOwnerOptions
+      parameters:
+        - name: dwellingId
+          in: path
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Respuesta de la aplicacion
+  /api/v1/residents/residences/{residentResidenceId}/status:
+    patch:
+      summary: Activa o desactiva la relacion de un residente con una residencia (solo administrador)
+      operationId: changeResidentResidenceStatus
+      consumes:
+        - application/json
+      parameters:
+        - name: residentResidenceId
+          in: path
+          required: true
+          type: string
+          description: Identificador de la relacion residente-residencia
+      responses:
+        "200":
+          description: Estado cambiado; se actualizan las vistas de los otros modulos
+        "400":
+          description: Dato invalido o no existe
+        "403":
+          description: Solo el administrador puede hacerlo
+    options:
+      summary: Verificacion previa de CORS
+      operationId: changeResidentResidenceStatusOptions
+      parameters:
+        - name: residentResidenceId
+          in: path
+          required: true
+          type: string
+      responses:
+        "200":
+          description: Respuesta de la aplicacion
   /api/v1/internal/webhooks/strapi:
     post:
       summary: Webhook de Strapi para invalidar la cache del catalogo

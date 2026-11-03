@@ -51,6 +51,15 @@ public class ResidentDwellingJpaRepositoryAdapter implements ResidentDwellingRep
 	}
 
 	@Override
+	public void update(UUID id, ResidentResidenceEntity entity) {
+		ResidentResidenceJpaEntity entityJpa = repository.findById(id)
+				.orElseThrow(() -> new IllegalStateException("Relacion residente-residencia no encontrada: " + id));
+
+		entityJpa.setIsActive(entity.getIsActive());
+
+		repository.save(entityJpa);
+	}
+	@Override
 	public void delete(UUID id, ResidentResidenceEntity entity) {
 		//Pendiente
 	}

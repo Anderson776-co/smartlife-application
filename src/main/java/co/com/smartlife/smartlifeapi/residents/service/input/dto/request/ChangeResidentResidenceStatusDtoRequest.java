@@ -1,0 +1,22 @@
+package co.com.smartlife.smartlifeapi.residents.service.input.dto.request;
+
+import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import co.com.smartlife.smartlifeapi.crosscutting.helper.TextHelper;
+import co.com.smartlife.smartlifeapi.crosscutting.helper.UUIDHelper;
+import io.swagger.v3.oas.annotations.media.Schema;
+
+public record ChangeResidentResidenceStatusDtoRequest(@JsonIgnore @Schema(hidden = true) UUID residentResidenceId, Boolean active) {
+
+	public ChangeResidentResidenceStatusDtoRequest {
+		residentResidenceId = UUIDHelper.getUUIDHelper().getDefault(residentResidenceId);
+	}
+
+	/** El identificador sale de la direccion, no del cuerpo de la peticion. */
+	public ChangeResidentResidenceStatusDtoRequest withResidentResidenceId(final UUID residentResidenceId) {
+		return new ChangeResidentResidenceStatusDtoRequest(residentResidenceId, active);
+	}
+
+}

@@ -81,7 +81,13 @@ class DwellingJpaRepositoryAdapterTest {
 	}
 
 	@Test
-	void updateShouldNotFailForNow() {
-		assertDoesNotThrow(() -> adapter.update(UUID.randomUUID(), mock(DwellingEntity.class)));
+	void updateShouldMapTheEntityAndSaveItSoTheOwnerChanges() {
+		DwellingEntity entity = mock(DwellingEntity.class);
+		DwellingJpaEntity jpaEntity = mock(DwellingJpaEntity.class);
+		when(mapper.toJpaEntity(entity)).thenReturn(jpaEntity);
+
+		adapter.update(UUID.randomUUID(), entity);
+
+		verify(repository).save(jpaEntity);
 	}
 }
