@@ -1,7 +1,10 @@
 package co.com.smartlife.smartlifeapi.crosscutting.parameters;
 
+import java.time.Duration;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public final class ParameterCatalogTestSupport {
 
@@ -41,6 +44,14 @@ public final class ParameterCatalogTestSupport {
 		ParameterCatalog.VEHICLE_PLATE_MAX_LENGTH = 20;
 
 		ParameterCatalog.OBSERVATION_MAX_LENGTH = 500;
+
+		ParameterCatalog.MAX_AUTHORIZATION_DURATION = Duration.ofHours(24);
+		ParameterCatalog.MAX_ANTICIPATION = Duration.ofDays(30);
+		ParameterCatalog.START_TOLERANCE = Duration.ofMinutes(10);
+		ParameterCatalog.DOCUMENT_MAX_SIZE_IN_BYTES = 5L * 1024 * 1024;
+		ParameterCatalog.DOCUMENT_ALLOWED_TYPES = Set.of("application/pdf", "image/jpeg", "image/png");
+		ParameterCatalog.QR_BASE_URL = "http://localhost:5173/visitas/autorizaciones/";
+		ParameterCatalog.TIME_ZONE = ZoneId.of("UTC");
 		ParameterCatalog.DOCUMENT_SIGNATURES.set(Map.of(
 				"application/pdf", new byte[] { '%', 'P', 'D', 'F' },
 				"image/jpeg", new byte[] { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF },

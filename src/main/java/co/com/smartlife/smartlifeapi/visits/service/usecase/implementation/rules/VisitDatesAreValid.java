@@ -4,8 +4,8 @@ import java.time.Duration;
 import java.time.Instant;
 
 import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
+import co.com.smartlife.smartlifeapi.crosscutting.parameters.ParameterCatalog;
 import co.com.smartlife.smartlifeapi.crosscutting.rules.Rule;
-import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.VisitParametersDTO;
 
 public final class VisitDatesAreValid implements Rule {
 
@@ -20,14 +20,13 @@ public final class VisitDatesAreValid implements Rule {
 
 	@Override
 	public void execute(final Object... data) {
-		if (data.length < 4) {
+		if (data.length < 3) {
 			throw VisitRuleErrors.incompleteParameters("VISIT_DATES_ARE_VALID");
 		}
 
 		final var start = (Instant) data[0];
 		final var end = (Instant) data[1];
 		final var now = (Instant) data[2];
-		final var parameters = (VisitParametersDTO) data[3];
 
 		if (isMissing(start) || isMissing(end)) {
 			throw VisitRuleErrors.business("VISIT_DATES_REQUIRED");
@@ -35,13 +34,13 @@ public final class VisitDatesAreValid implements Rule {
 		if (!end.isAfter(start)) {
 			throw VisitRuleErrors.business("VISIT_DATES_INVALID_RANGE");
 		}
-		if (start.isBefore(now.minus(parameters.startTolerance())) || !end.isAfter(now)) {
+		if (start.isBefore(now.minus(ParameterCatalog.START_TOLERANCE)) || !end.isAfter(now)) {
 			throw VisitRuleErrors.business("VISIT_DATES_IN_THE_PAST");
 		}
-		if (start.isAfter(now.plus(parameters.maxAnticipation()))) {
+		if (start.isAfter(now.plus(ParameterCatalog.MAX_ANTICIPATION))) {
 			throw VisitRuleErrors.business("VISIT_START_TOO_FAR_IN_THE_FUTURE");
 		}
-		if (Duration.between(start, end).compareTo(parameters.maxAuthorizationDuration()) > 0) {
+		if (Duration.between(start, end).compareTo(ParameterCatalog.MAX_AUTHORIZATION_DURATION) > 0) {
 			throw VisitRuleErrors.business("VISIT_DURATION_EXCEEDED");
 		}
 	}

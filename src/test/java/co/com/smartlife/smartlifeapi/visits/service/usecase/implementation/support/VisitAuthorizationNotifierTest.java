@@ -11,24 +11,20 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneId;
-import java.util.Set;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import co.com.smartlife.smartlifeapi.crosscutting.parameters.ParameterCatalogTestSupport;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.NotificationCatalogOutputPort;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.NotificationGatewayOutputPort;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.QrGeneratorOutputPort;
-import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.VisitParametersOutputPort;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.EmailAttachmentDTO;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.EmailNotificationDTO;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.NotificationCatalogDTO;
-import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.VisitParametersDTO;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.AuthorizatorEntity;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.PropertyVisitEntity;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitAuthorizationEntity;
@@ -52,11 +48,8 @@ class VisitAuthorizationNotifierTest {
 		catalog = mock(NotificationCatalogOutputPort.class);
 		gateway = mock(NotificationGatewayOutputPort.class);
 		qrGenerator = mock(QrGeneratorOutputPort.class);
-		final VisitParametersOutputPort parameters = mock(VisitParametersOutputPort.class);
-		when(parameters.get()).thenReturn(new VisitParametersDTO(Duration.ofHours(24), Duration.ofDays(30),
-				Duration.ofMinutes(10), 5L * 1024 * 1024, Set.of("application/pdf"), "http://localhost/",
-				ZoneId.of("UTC")));
-		notifier = new VisitAuthorizationNotifier(catalog, gateway, qrGenerator, parameters);
+		ParameterCatalogTestSupport.load();
+		notifier = new VisitAuthorizationNotifier(catalog, gateway, qrGenerator);
 
 		when(catalog.findByCodeAndLocale(eq(CODE), anyString())).thenReturn(new NotificationCatalogDTO(CODE,
 				"Visita para {{visitorName}}",

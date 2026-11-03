@@ -5,20 +5,21 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.Duration;
 import java.time.Instant;
-import java.time.ZoneOffset;
-import java.util.Set;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
-import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.VisitParametersDTO;
+import co.com.smartlife.smartlifeapi.crosscutting.parameters.ParameterCatalogTestSupport;
 
 class VisitDatesAreValidTest {
 
 	private static final Instant NOW = Instant.parse("2026-10-29T15:00:00Z");
-	private static final VisitParametersDTO PARAMETERS = new VisitParametersDTO(Duration.ofHours(24),
-			Duration.ofDays(30), Duration.ofMinutes(10), 1024, Set.of("application/pdf"), "http://qr/",
-			ZoneOffset.UTC);
+
+	@BeforeEach
+	void loadParameters() {
+		ParameterCatalogTestSupport.load();
+	}
 
 	@Test
 	void shouldAcceptARangeInsideTheLimits() {
@@ -86,7 +87,7 @@ class VisitDatesAreValidTest {
 	}
 
 	private static void run(final Instant start, final Instant end) {
-		VisitDatesAreValid.executeRule(start, end, NOW, PARAMETERS);
+		VisitDatesAreValid.executeRule(start, end, NOW);
 	}
 
 }

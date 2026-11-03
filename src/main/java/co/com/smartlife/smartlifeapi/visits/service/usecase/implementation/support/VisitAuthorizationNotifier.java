@@ -13,11 +13,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import co.com.smartlife.smartlifeapi.crosscutting.helper.LocalHelper;
+import co.com.smartlife.smartlifeapi.crosscutting.parameters.ParameterCatalog;
 import co.com.smartlife.smartlifeapi.crosscutting.helper.TextHelper;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.NotificationCatalogOutputPort;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.NotificationGatewayOutputPort;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.QrGeneratorOutputPort;
-import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.VisitParametersOutputPort;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.EmailAttachmentDTO;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.EmailNotificationDTO;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.NotificationCatalogDTO;
@@ -37,15 +37,12 @@ public class VisitAuthorizationNotifier {
 	private final NotificationCatalogOutputPort notificationCatalog;
 	private final NotificationGatewayOutputPort notificationGateway;
 	private final QrGeneratorOutputPort qrGenerator;
-	private final VisitParametersOutputPort parameters;
 
 	public VisitAuthorizationNotifier(final NotificationCatalogOutputPort notificationCatalog,
-			final NotificationGatewayOutputPort notificationGateway, final QrGeneratorOutputPort qrGenerator,
-			final VisitParametersOutputPort parameters) {
+			final NotificationGatewayOutputPort notificationGateway, final QrGeneratorOutputPort qrGenerator) {
 		this.notificationCatalog = notificationCatalog;
 		this.notificationGateway = notificationGateway;
 		this.qrGenerator = qrGenerator;
-		this.parameters = parameters;
 	}
 
 	public boolean notifyVisitor(final VisitAuthorizationEntity authorization) {
@@ -70,7 +67,7 @@ public class VisitAuthorizationNotifier {
 	}
 
 	private Map<String, String> placeholders(final VisitAuthorizationEntity authorization, final Locale locale) {
-		final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN, locale).withZone(parameters.get().timeZone());
+		final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN, locale).withZone(ParameterCatalog.TIME_ZONE);
 		final VisitorEntity visitor = authorization.getVisitor();
 		final Map<String, String> values = new HashMap<>();
 		values.put("visitorName", join(visitor.getFirstName(), visitor.getMiddleName(),
