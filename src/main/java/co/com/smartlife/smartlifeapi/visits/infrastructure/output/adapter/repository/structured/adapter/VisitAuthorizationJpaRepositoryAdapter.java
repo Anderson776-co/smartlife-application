@@ -50,6 +50,8 @@ public class VisitAuthorizationJpaRepositoryAdapter implements VisitAuthorizatio
 
 	@Override
 	public void update(UUID id, VisitAuthorizationEntity entity) {
+		VisitAuthorizationJpaEntity entityJpa = mapper.toJpaEntity(entity);
+		repository.save(entityJpa);
 	}
 
 	@Override

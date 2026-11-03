@@ -2,12 +2,13 @@ package co.com.smartlife.smartlifeapi.crosscutting.parameters;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 public final class ParameterCatalog {
 
 	private static final String NOT_LOADED = "los parametros de validacion aun no se han cargado";
 
-	private static volatile List<String> missingParameters = List.of(NOT_LOADED);
+	private static final AtomicReference<List<String>> MISSING_PARAMETERS = new AtomicReference<>(List.of(NOT_LOADED));
 
 	private ParameterCatalog() {
 	}
@@ -42,18 +43,18 @@ public final class ParameterCatalog {
 
 	public static volatile Integer OBSERVATION_MAX_LENGTH;
 
-	public static volatile Map<String, byte[]> DOCUMENT_SIGNATURES;
+	public static final AtomicReference<Map<String, byte[]>> DOCUMENT_SIGNATURES = new AtomicReference<>(Map.of());
 
 	public static void markLoaded(final List<String> missing) {
-		missingParameters = List.copyOf(missing);
+		MISSING_PARAMETERS.set(List.copyOf(missing));
 	}
 
 	public static boolean isLoaded() {
-		return missingParameters.isEmpty();
+		return MISSING_PARAMETERS.get().isEmpty();
 	}
 
 	public static void ensureLoaded() {
-		final List<String> missing = missingParameters;
+		final List<String> missing = MISSING_PARAMETERS.get();
 		if (!missing.isEmpty()) {
 			throw new IllegalStateException(
 					"Faltan parametros de validacion en el servidor de configuracion: " + missing);

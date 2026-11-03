@@ -41,10 +41,10 @@ public final class ParameterCatalogTestSupport {
 		ParameterCatalog.VEHICLE_PLATE_MAX_LENGTH = 20;
 
 		ParameterCatalog.OBSERVATION_MAX_LENGTH = 500;
-		ParameterCatalog.DOCUMENT_SIGNATURES = Map.of(
+		ParameterCatalog.DOCUMENT_SIGNATURES.set(Map.of(
 				"application/pdf", new byte[] { '%', 'P', 'D', 'F' },
 				"image/jpeg", new byte[] { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF },
-				"image/png", new byte[] { (byte) 0x89, 'P', 'N', 'G' });
+				"image/png", new byte[] { (byte) 0x89, 'P', 'N', 'G' }));
 
 		ParameterCatalog.markLoaded(List.of());
 	}

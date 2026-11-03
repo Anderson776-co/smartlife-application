@@ -40,38 +40,42 @@ public class ParameterCatalogConfiguration {
 
 	@PostConstruct
 	public void loadParameters() {
+		load(environment);
+	}
+
+	private static void load(final Environment environment) {
 		final List<String> missing = new ArrayList<>();
 
-		final Optional<String> documentNumberPattern = pattern(FORMAT + "document-number", missing);
-		final Optional<Integer> documentNumberMin = number(LENGTH + "document-number-min", missing);
-		final Optional<Integer> documentNumberMax = number(LENGTH + "document-number-max", missing);
+		final Optional<String> documentNumberPattern = pattern(environment, FORMAT + "document-number", missing);
+		final Optional<Integer> documentNumberMin = number(environment, LENGTH + "document-number-min", missing);
+		final Optional<Integer> documentNumberMax = number(environment, LENGTH + "document-number-max", missing);
 
-		final Optional<String> firstNamePattern = pattern(FORMAT + "first-name", missing);
-		final Optional<Integer> firstNameMin = number(LENGTH + "first-name-min", missing);
-		final Optional<Integer> firstNameMax = number(LENGTH + "first-name-max", missing);
+		final Optional<String> firstNamePattern = pattern(environment, FORMAT + "first-name", missing);
+		final Optional<Integer> firstNameMin = number(environment, LENGTH + "first-name-min", missing);
+		final Optional<Integer> firstNameMax = number(environment, LENGTH + "first-name-max", missing);
 
-		final Optional<String> middleNamePattern = pattern(FORMAT + "middle-name", missing);
-		final Optional<Integer> middleNameMin = number(LENGTH + "middle-name-min", missing);
-		final Optional<Integer> middleNameMax = number(LENGTH + "middle-name-max", missing);
+		final Optional<String> middleNamePattern = pattern(environment, FORMAT + "middle-name", missing);
+		final Optional<Integer> middleNameMin = number(environment, LENGTH + "middle-name-min", missing);
+		final Optional<Integer> middleNameMax = number(environment, LENGTH + "middle-name-max", missing);
 
-		final Optional<String> lastNamePattern = pattern(FORMAT + "last-name", missing);
-		final Optional<Integer> lastNameMin = number(LENGTH + "last-name-min", missing);
-		final Optional<Integer> lastNameMax = number(LENGTH + "last-name-max", missing);
+		final Optional<String> lastNamePattern = pattern(environment, FORMAT + "last-name", missing);
+		final Optional<Integer> lastNameMin = number(environment, LENGTH + "last-name-min", missing);
+		final Optional<Integer> lastNameMax = number(environment, LENGTH + "last-name-max", missing);
 
-		final Optional<String> secondLastNamePattern = pattern(FORMAT + "second-last-name", missing);
-		final Optional<Integer> secondLastNameMin = number(LENGTH + "second-last-name-min", missing);
-		final Optional<Integer> secondLastNameMax = number(LENGTH + "second-last-name-max", missing);
+		final Optional<String> secondLastNamePattern = pattern(environment, FORMAT + "second-last-name", missing);
+		final Optional<Integer> secondLastNameMin = number(environment, LENGTH + "second-last-name-min", missing);
+		final Optional<Integer> secondLastNameMax = number(environment, LENGTH + "second-last-name-max", missing);
 
-		final Optional<String> emailPattern = pattern(FORMAT + "email", missing);
-		final Optional<Integer> emailMin = number(LENGTH + "email-min", missing);
-		final Optional<Integer> emailMax = number(LENGTH + "email-max", missing);
+		final Optional<String> emailPattern = pattern(environment, FORMAT + "email", missing);
+		final Optional<Integer> emailMin = number(environment, LENGTH + "email-min", missing);
+		final Optional<Integer> emailMax = number(environment, LENGTH + "email-max", missing);
 
-		final Optional<String> vehiclePlatePattern = pattern(FORMAT + "vehicle-plate", missing);
-		final Optional<Integer> vehiclePlateMin = number(LENGTH + "vehicle-plate-min", missing);
-		final Optional<Integer> vehiclePlateMax = number(LENGTH + "vehicle-plate-max", missing);
+		final Optional<String> vehiclePlatePattern = pattern(environment, FORMAT + "vehicle-plate", missing);
+		final Optional<Integer> vehiclePlateMin = number(environment, LENGTH + "vehicle-plate-min", missing);
+		final Optional<Integer> vehiclePlateMax = number(environment, LENGTH + "vehicle-plate-max", missing);
 
-		final Optional<Integer> observationMax = number(LENGTH + "observation-max", missing);
-		final Optional<Map<String, byte[]>> documentSignatures = signatures(FORMAT + "document-signatures", missing);
+		final Optional<Integer> observationMax = number(environment, LENGTH + "observation-max", missing);
+		final Optional<Map<String, byte[]>> documentSignatures = signatures(environment, FORMAT + "document-signatures", missing);
 
 		range(LENGTH + "document-number", documentNumberMin, documentNumberMax, missing);
 		range(LENGTH + "first-name", firstNameMin, firstNameMax, missing);
@@ -121,13 +125,14 @@ public class ParameterCatalogConfiguration {
 		ParameterCatalog.VEHICLE_PLATE_MAX_LENGTH = vehiclePlateMax.orElseThrow();
 
 		ParameterCatalog.OBSERVATION_MAX_LENGTH = observationMax.orElseThrow();
-		ParameterCatalog.DOCUMENT_SIGNATURES = documentSignatures.orElseThrow();
+		ParameterCatalog.DOCUMENT_SIGNATURES.set(documentSignatures.orElseThrow());
 
 		ParameterCatalog.markLoaded(List.of());
 		LOGGER.info("Parametros de validacion cargados desde el servidor de configuracion");
 	}
 
-	private Optional<String> pattern(final String key, final List<String> missing) {
+	private static Optional<String> pattern(final Environment environment, final String key,
+			final List<String> missing) {
 		final String value = environment.getProperty(key);
 		if (ObjectHelper.isNull(value) || value.isBlank()) {
 			missing.add(key);
@@ -142,7 +147,8 @@ public class ParameterCatalogConfiguration {
 		}
 	}
 
-	private Optional<Integer> number(final String key, final List<String> missing) {
+	private static Optional<Integer> number(final Environment environment, final String key,
+			final List<String> missing) {
 		final String value = environment.getProperty(key);
 		if (ObjectHelper.isNull(value) || value.isBlank()) {
 			missing.add(key);
@@ -171,7 +177,8 @@ public class ParameterCatalogConfiguration {
 		}
 	}
 
-	private Optional<Map<String, byte[]>> signatures(final String key, final List<String> missing) {
+	private static Optional<Map<String, byte[]>> signatures(final Environment environment, final String key,
+			final List<String> missing) {
 		final String value = environment.getProperty(key);
 		if (ObjectHelper.isNull(value) || value.isBlank()) {
 			missing.add(key);

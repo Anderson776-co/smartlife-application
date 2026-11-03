@@ -47,14 +47,16 @@ public class SecurityErrorResponseWriter {
 	}
 
 	static String body(final String message) {
-		final String list = TextHelper.isEmptyWithTrim(message) ? "[]" : "[\"" + escape(message) + "\"]";
+		final String text = TextHelper.getDefault(message);
+		final String list = TextHelper.isEmptyWithTrim(text) ? "[]" : "[\"" + escape(text) + "\"]";
 		return "{\"messages\":" + list + ",\"data\":[],\"responseSucceded\":false}";
 	}
 
 	static String escape(final String text) {
-		final StringBuilder out = new StringBuilder(text.length() + 8);
-		for (int i = 0; i < text.length(); i++) {
-			final char c = text.charAt(i);
+		final String value = TextHelper.getDefault(text);
+		final StringBuilder out = new StringBuilder(value.length() + 8);
+		for (int i = 0; i < value.length(); i++) {
+			final char c = value.charAt(i);
 			switch (c) {
 				case '"' -> out.append("\\\"");
 				case '\\' -> out.append("\\\\");

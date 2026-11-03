@@ -59,6 +59,7 @@ public class ResidentDwellingJpaRepositoryAdapter implements ResidentDwellingRep
 	}
 	@Override
 	public void delete(UUID id, ResidentResidenceEntity entity) {
+		repository.deleteById(id);
 	}
 	
 }

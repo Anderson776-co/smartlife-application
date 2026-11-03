@@ -49,7 +49,8 @@ public class HouseJpaRepositoryAdapter implements HouseRepository{
 
 	@Override
 	public void update(UUID id, HouseEntity entity) {
-		
+		HouseJpaEntity entityJpa = mapper.toJpaEntity(entity);
+		repository.save(entityJpa);
 	}
 
 }

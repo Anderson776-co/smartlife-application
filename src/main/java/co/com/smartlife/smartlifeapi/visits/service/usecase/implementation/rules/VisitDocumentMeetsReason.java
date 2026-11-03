@@ -46,7 +46,7 @@ public final class VisitDocumentMeetsReason implements Rule {
 	}
 
 	private static boolean matchesSignature(final AttachedDocumentDomain document) {
-		final byte[] signature = ObjectHelper.getDefault(ParameterCatalog.DOCUMENT_SIGNATURES.get(document.contentType()),
+		final byte[] signature = ObjectHelper.getDefault(ParameterCatalog.DOCUMENT_SIGNATURES.get().get(document.contentType()),
 				NO_SIGNATURE);
 		if (signature.length == 0) {
 			throw new IllegalStateException("El tipo de documento permitido '" + document.contentType()

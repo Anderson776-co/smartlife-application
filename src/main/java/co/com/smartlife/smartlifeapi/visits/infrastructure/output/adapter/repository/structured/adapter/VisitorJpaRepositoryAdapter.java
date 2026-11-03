@@ -49,6 +49,8 @@ public class VisitorJpaRepositoryAdapter implements VisitorRepository{
 
 	@Override
 	public void update(UUID id, VisitorEntity entity) {
+		VisitorJpaEntity entityJpa = mapper.toJpaEntity(entity);
+		repository.save(entityJpa);
 	}
 
 	@Override

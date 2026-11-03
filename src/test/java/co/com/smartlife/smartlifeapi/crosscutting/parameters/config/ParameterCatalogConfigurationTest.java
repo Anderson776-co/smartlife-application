@@ -60,8 +60,8 @@ class ParameterCatalogConfigurationTest {
 		assertEquals(2, ParameterCatalog.FIRST_NAME_MIN_LENGTH);
 		assertEquals(40, ParameterCatalog.VEHICLE_PLATE_MAX_LENGTH);
 		assertEquals(300, ParameterCatalog.OBSERVATION_MAX_LENGTH);
-		assertArrayEquals(new byte[] { '%', 'P', 'D', 'F' }, ParameterCatalog.DOCUMENT_SIGNATURES.get("application/pdf"));
-		assertArrayEquals(new byte[] { (byte) 0x89, 'P', 'N', 'G' }, ParameterCatalog.DOCUMENT_SIGNATURES.get("image/png"));
+		assertArrayEquals(new byte[] { '%', 'P', 'D', 'F' }, ParameterCatalog.DOCUMENT_SIGNATURES.get().get("application/pdf"));
+		assertArrayEquals(new byte[] { (byte) 0x89, 'P', 'N', 'G' }, ParameterCatalog.DOCUMENT_SIGNATURES.get().get("image/png"));
 	}
 
 	@Test
@@ -106,7 +106,7 @@ class ParameterCatalogConfigurationTest {
 		load();
 
 		assertTrue(ParameterCatalog.isLoaded());
-		assertArrayEquals(new byte[] { '%', 'P', 'D', 'F' }, ParameterCatalog.DOCUMENT_SIGNATURES.get("application/pdf"));
+		assertArrayEquals(new byte[] { '%', 'P', 'D', 'F' }, ParameterCatalog.DOCUMENT_SIGNATURES.get().get("application/pdf"));
 	}
 
 	@Test
