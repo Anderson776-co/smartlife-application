@@ -54,6 +54,7 @@ public final class ParameterCatalog {
 	public static volatile String QR_BASE_URL;
 	public static volatile ZoneId TIME_ZONE;
 
+
 	public static final AtomicReference<Map<String, byte[]>> DOCUMENT_SIGNATURES = new AtomicReference<>(Map.of());
 
 	public static void markLoaded(final List<String> missing) {

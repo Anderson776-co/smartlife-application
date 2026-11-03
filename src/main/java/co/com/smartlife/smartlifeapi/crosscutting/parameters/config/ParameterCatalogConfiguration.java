@@ -174,7 +174,7 @@ public class ParameterCatalogConfiguration {
 		try {
 			Pattern.compile(value);
 			return Optional.of(value);
-		} catch (final PatternSyntaxException exception) {
+		} catch (final PatternSyntaxException _) {
 			missing.add(key + " (expresion regular invalida)");
 			return Optional.empty();
 		}
@@ -189,7 +189,7 @@ public class ParameterCatalogConfiguration {
 		}
 		try {
 			return Optional.of(Integer.valueOf(value.trim()));
-		} catch (final NumberFormatException exception) {
+		} catch (final NumberFormatException _) {
 			missing.add(key + " (no es un numero entero)");
 			return Optional.empty();
 		}
@@ -234,7 +234,7 @@ public class ParameterCatalogConfiguration {
 		final BindResult<T> result;
 		try {
 			result = binder.bind(VISITS + name, Bindable.of(type));
-		} catch (final BindException exception) {
+		} catch (final BindException _) {
 			missing.add(VISITS + name + " (valor invalido)");
 			return Optional.empty();
 		}
@@ -289,7 +289,7 @@ public class ParameterCatalogConfiguration {
 			final URI uri = URI.create(value.trim());
 			valid = !ObjectHelper.isNull(uri.getHost())
 					&& ("http".equalsIgnoreCase(uri.getScheme()) || "https".equalsIgnoreCase(uri.getScheme()));
-		} catch (final IllegalArgumentException exception) {
+		} catch (final IllegalArgumentException _) {
 			valid = false;
 		}
 		if (!valid) {
@@ -301,7 +301,7 @@ public class ParameterCatalogConfiguration {
 	private static Optional<ZoneId> zoneOf(final String value, final List<String> missing) {
 		try {
 			return Optional.of(ZoneId.of(value.trim()));
-		} catch (final DateTimeException exception) {
+		} catch (final DateTimeException _) {
 			missing.add(VISITS + "time-zone (zona horaria desconocida: '" + value + "')");
 			return Optional.empty();
 		}

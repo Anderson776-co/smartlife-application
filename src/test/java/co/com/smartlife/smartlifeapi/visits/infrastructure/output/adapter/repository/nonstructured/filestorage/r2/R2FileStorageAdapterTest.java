@@ -9,7 +9,6 @@ import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.Test;
 
-import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.nonstructured.filestorage.r2.R2FileStorageAdapter;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;

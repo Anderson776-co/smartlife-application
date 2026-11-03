@@ -7,7 +7,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 
-import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.externalservices.telemetry.MicrometerTelemetryAdapter;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
 class MicrometerTelemetryAdapterTest {
