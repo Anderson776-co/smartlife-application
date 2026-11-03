@@ -6,6 +6,7 @@ import java.util.UUID;
 /**
  * Una autorizacion de visita. La misma clase sirve para autorizar y para consultar.
  * Al consultar se llenan ademas los datos que se muestran: ubicacion de la propiedad, motivo de la visita y estado.
+ * Esos tres datos nunca son nulos: si no se informan quedan con su valor por defecto.
  */
 public record VisitAuthorizationDomain(
 		UUID id,
@@ -25,13 +26,22 @@ public record VisitAuthorizationDomain(
 		String visitReasonName,
 		VisitAuthorizationStatus status) {
 
-	/** Al autorizar no hace falta la ubicacion, el nombre del motivo ni el estado: quedan sin llenar. */
+	private static final String EMPTY = "";
+
+	public VisitAuthorizationDomain {
+		propertyLocation = propertyLocation == null ? EMPTY : propertyLocation;
+		visitReasonName = visitReasonName == null ? EMPTY : visitReasonName;
+		status = status == null ? VisitAuthorizationStatus.UNSPECIFIED : status;
+	}
+
+	/** Al autorizar no hace falta la ubicacion, el nombre del motivo ni el estado: quedan con su valor por defecto. */
 	public VisitAuthorizationDomain(final UUID id, final Instant authorizationStartDate,
 			final Instant authorizationEndDate, final Instant registerDate, final String observation,
 			final String qrCode, final String fileReference, final AttachedDocumentDomain attachedDocument,
 			final UUID propertyId, final UUID visitReasonId, final AuthorizatorDomain authorizator,
 			final VisitorDomain visitor, final boolean notificationSent) {
 		this(id, authorizationStartDate, authorizationEndDate, registerDate, observation, qrCode, fileReference,
-				attachedDocument, propertyId, visitReasonId, authorizator, visitor, notificationSent, null, null, null);
+				attachedDocument, propertyId, visitReasonId, authorizator, visitor, notificationSent, EMPTY, EMPTY,
+				VisitAuthorizationStatus.UNSPECIFIED);
 	}
 }

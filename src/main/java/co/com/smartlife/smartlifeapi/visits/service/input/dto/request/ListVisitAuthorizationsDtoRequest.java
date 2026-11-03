@@ -10,9 +10,10 @@ import co.com.smartlife.smartlifeapi.crosscutting.session.CurrentUser;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationStatus;
 
 /**
- * Consulta de las autorizaciones de quien tiene la sesion. Los filtros son opcionales (nulo = sin filtro).
- * La persona sale de la sesion, nunca de la direccion: nadie puede pedir las autorizaciones de otro.
- * La pagina empieza en 0; si no se indica, es la primera con el tamano por defecto.
+ * Consulta de las autorizaciones de quien tiene la sesion. Nada es nulo: lo que no se informa queda con su valor por
+ * defecto, que significa "sin filtro": estado sin especificar, desde el inicio de los tiempos, sin fecha limite y
+ * propiedad por defecto. La persona sale de la sesion, nunca de la direccion: nadie puede pedir las autorizaciones
+ * de otro. La pagina empieza en 0; si no se indica, es la primera con el tamano por defecto.
  */
 public record ListVisitAuthorizationsDtoRequest(VisitAuthorizationStatus status, Instant from, Instant to,
 		UUID propertyId, CurrentUser currentUser, int page, int size) {
@@ -30,6 +31,10 @@ public record ListVisitAuthorizationsDtoRequest(VisitAuthorizationStatus status,
 	}
 
 	public ListVisitAuthorizationsDtoRequest {
+		status = ObjectHelper.getDefault(status, VisitAuthorizationStatus.UNSPECIFIED);
+		from = ObjectHelper.getDefault(from, Instant.EPOCH);
+		to = ObjectHelper.getDefault(to, Instant.MAX);
+		propertyId = UUIDHelper.getUUIDHelper().getDefault(propertyId);
 		currentUser = ObjectHelper.getDefault(currentUser, ANONYMOUS);
 	}
 }

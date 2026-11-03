@@ -16,6 +16,6 @@ public final class AuthorizationHasStartedSpecification extends Specification<Vi
 
 	@Override
 	public boolean isSatisfiedBy(final VisitAuthorizationEntity data) {
-		return data != null && !data.getAuthorizationStartDate().isAfter(reference);
+		return !data.getAuthorizationStartDate().isAfter(reference);
 	}
 }

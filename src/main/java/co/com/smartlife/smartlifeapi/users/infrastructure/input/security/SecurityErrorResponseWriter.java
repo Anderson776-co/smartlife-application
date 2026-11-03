@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
+import co.com.smartlife.smartlifeapi.crosscutting.helper.TextHelper;
 import co.com.smartlife.smartlifeapi.shared.service.input.port.MessageResolverInputPort;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -46,17 +47,18 @@ public class SecurityErrorResponseWriter {
 		response.getWriter().write(body(message(code)));
 	}
 
-	/** El mensaje especifico del catalogo; si no esta, el mensaje general del propio catalogo; si tampoco, ninguno. */
+	/**
+	 * El mensaje especifico del catalogo; si no esta, el mensaje general del propio catalogo; si tampoco, el texto
+	 * vacio por defecto. Nunca es nulo.
+	 */
 	private String message(final String code) {
-		final String specific = messages.resolve(code, null);
-		if (specific != null && !specific.isBlank()) {
-			return specific;
-		}
-		return messages.resolve(GENERAL_ERROR_CODE, null);
+		final String specific = messages.resolve(code, TextHelper.getDefault());
+		return TextHelper.isEmptyWithTrim(specific) ? messages.resolve(GENERAL_ERROR_CODE, TextHelper.getDefault())
+				: specific;
 	}
 
 	static String body(final String message) {
-		final String list = message == null || message.isBlank() ? "[]" : "[\"" + escape(message) + "\"]";
+		final String list = TextHelper.isEmptyWithTrim(message) ? "[]" : "[\"" + escape(message) + "\"]";
 		return "{\"messages\":" + list + ",\"data\":[],\"responseSucceded\":false}";
 	}
 

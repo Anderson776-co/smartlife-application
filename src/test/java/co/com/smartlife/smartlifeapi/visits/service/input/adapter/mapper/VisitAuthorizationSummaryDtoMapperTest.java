@@ -8,11 +8,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.AttachedDocumentDomain;
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.AuthorizatorDomain;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationDomain;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationStatus;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitorDomain;
@@ -34,7 +36,8 @@ class VisitAuthorizationSummaryDtoMapperTest {
 			final String fileReference) {
 		return new VisitAuthorizationDomain(UUID.randomUUID(), start, start.plusSeconds(7200), START.minusSeconds(60),
 				"Llega en moto", "https://smartlife.sarl/visitas/autorizaciones/x", fileReference,
-				AttachedDocumentDomain.empty(), UUID.randomUUID(), UUID.randomUUID(), null, visitor, false,
+				AttachedDocumentDomain.empty(), UUID.randomUUID(), UUID.randomUUID(),
+				new AuthorizatorDomain(UUID.randomUUID(), UUID.randomUUID(), Set.of()), visitor, false,
 				"Apartamento 202 - Bloque B", "Servicio tecnico", VisitAuthorizationStatus.UPCOMING);
 	}
 
@@ -76,17 +79,6 @@ class VisitAuthorizationSummaryDtoMapperTest {
 
 		assertEquals("Luis Torres", dto.visitorFullName());
 		assertFalse(dto.documentAttached());
-	}
-
-	@Test
-	void aMissingVisitorShouldGiveEmptyTextsInsteadOfFailing() {
-		final VisitAuthorizationSummaryDtoResponse dto = VisitAuthorizationSummaryDtoMapper
-				.toDto(authorization(START, null, ""));
-
-		assertEquals("", dto.visitorFullName());
-		assertEquals("", dto.visitorDocumentNumber());
-		assertEquals("", dto.visitorEmail());
-		assertEquals("", dto.vehiclePlate());
 	}
 
 	@Test
@@ -136,11 +128,6 @@ class VisitAuthorizationSummaryDtoMapperTest {
 		assertTrue(page.content().isEmpty());
 		assertEquals(0, page.totalElements());
 		assertEquals(0, page.totalPages());
-	}
-
-	@Test
-	void aNullListShouldBeTreatedAsEmpty() {
-		assertTrue(VisitAuthorizationSummaryDtoMapper.toPage(null, 0, 10).content().isEmpty());
 	}
 
 	@Test

@@ -16,7 +16,6 @@ public final class AuthorizationOfPropertySpecification extends Specification<Vi
 
 	@Override
 	public boolean isSatisfiedBy(final VisitAuthorizationEntity data) {
-		return data != null && data.getProperty() != null && propertyId != null
-				&& propertyId.equals(data.getProperty().getId());
+		return propertyId.equals(data.getProperty().getId());
 	}
 }

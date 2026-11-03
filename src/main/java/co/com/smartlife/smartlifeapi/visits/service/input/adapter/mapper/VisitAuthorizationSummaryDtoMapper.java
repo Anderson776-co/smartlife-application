@@ -25,12 +25,9 @@ public final class VisitAuthorizationSummaryDtoMapper {
 		final VisitorDomain visitor = authorization.visitor();
 		return new VisitAuthorizationSummaryDtoResponse(authorization.id(), authorization.authorizationStartDate(),
 				authorization.authorizationEndDate(), authorization.registerDate(), authorization.observation(),
-				authorization.qrCode(), TextHelper.getDefault(authorization.propertyLocation()),
-				TextHelper.getDefault(authorization.visitReasonName()),
-				!TextHelper.getDefault(authorization.fileReference()).isBlank(),
-				visitor == null ? "" : TextHelper.getDefault(visitor.documentNumber()), fullName(visitor),
-				visitor == null ? "" : TextHelper.getDefault(visitor.email()),
-				visitor == null ? "" : TextHelper.getDefault(visitor.vehiclePlate()), authorization.status());
+				authorization.qrCode(), authorization.propertyLocation(), authorization.visitReasonName(),
+				!TextHelper.isEmptyWithTrim(authorization.fileReference()), visitor.documentNumber(),
+				fullName(visitor), visitor.email(), visitor.vehiclePlate(), authorization.status());
 	}
 
 	/**
@@ -40,24 +37,20 @@ public final class VisitAuthorizationSummaryDtoMapper {
 	 */
 	public static VisitAuthorizationPageDtoResponse toPage(final List<VisitAuthorizationDomain> all, final int page,
 			final int size) {
-		final List<VisitAuthorizationDomain> source = all == null ? List.of() : all;
 		final int safePage = Math.max(page, 0);
 		final int safeSize = size < 1 ? ListVisitAuthorizationsDtoRequest.DEFAULT_PAGE_SIZE
 				: Math.min(size, ListVisitAuthorizationsDtoRequest.MAX_PAGE_SIZE);
-		final long total = source.size();
+		final long total = all.size();
 		final int totalPages = (int) ((total + safeSize - 1) / safeSize);
 		final long from = (long) safePage * safeSize;
 		final List<VisitAuthorizationDomain> slice = from >= total ? List.of()
-				: source.subList((int) from, (int) Math.min(from + safeSize, total));
+				: all.subList((int) from, (int) Math.min(from + safeSize, total));
 		return new VisitAuthorizationPageDtoResponse(slice.stream().map(VisitAuthorizationSummaryDtoMapper::toDto).toList(),
 				safePage, safeSize, total, totalPages);
 	}
 
 	private static String fullName(final VisitorDomain visitor) {
-		if (visitor == null) {
-			return "";
-		}
 		return Stream.of(visitor.firstName(), visitor.middleName(), visitor.lastName(), visitor.secondLastName())
-				.filter(part -> part != null && !part.isBlank()).collect(Collectors.joining(" "));
+				.filter(part -> !TextHelper.isEmptyWithTrim(part)).collect(Collectors.joining(" "));
 	}
 }

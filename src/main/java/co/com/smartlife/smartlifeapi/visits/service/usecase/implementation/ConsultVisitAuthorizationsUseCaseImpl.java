@@ -2,6 +2,7 @@ package co.com.smartlife.smartlifeapi.visits.service.usecase.implementation;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -24,7 +25,8 @@ import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.speci
 
 /**
  * Consulta las autorizaciones de un autorizador y las entrega con el mismo dominio con el que se autoriza. Los
- * filtros se arman con el patron Specification (ver {@link AuthorizationSpecifications}).
+ * filtros se arman con el patron Specification (ver {@link AuthorizationSpecifications}). Las referencias de una
+ * autorizacion (propiedad, motivo, visitante y autorizador) siempre existen, como en el caso de uso de autorizar.
  */
 @Service
 public class ConsultVisitAuthorizationsUseCaseImpl implements ConsultVisitAuthorizationsUseCase {
@@ -68,29 +70,26 @@ public class ConsultVisitAuthorizationsUseCaseImpl implements ConsultVisitAuthor
 				authorization.getAuthorizationEndDate(), authorization.getRegisterDate(),
 				TextHelper.getDefault(authorization.getObservation()), authorization.getQrCode(),
 				TextHelper.getDefault(authorization.getFileReference()), AttachedDocumentDomain.empty(),
-				authorization.getProperty() == null ? null : authorization.getProperty().getId(),
-				authorization.getVisitReason() == null ? null : authorization.getVisitReason().getId(),
+				authorization.getProperty().getId(), authorization.getVisitReason().getId(),
 				toAuthorizatorDomain(authorization.getAuthorizator()),
-				authorization.getVisitor() == null ? null
-						: AuthorizeVisitUseCaseImpl.toVisitorDomain(authorization.getVisitor()),
-				false,
-				authorization.getProperty() == null ? "" : authorization.getProperty().getLocation(),
-				authorization.getVisitReason() == null ? "" : authorization.getVisitReason().getName(),
+				AuthorizeVisitUseCaseImpl.toVisitorDomain(authorization.getVisitor()), false,
+				authorization.getProperty().getLocation(), authorization.getVisitReason().getName(),
 				statusOf(authorization, now));
 	}
 
 	private static AuthorizatorDomain toAuthorizatorDomain(final AuthorizatorEntity authorizator) {
-		return authorizator == null ? null
-				: new AuthorizatorDomain(authorizator.getId(), authorizator.getUrbanizationId(), Set.of());
+		return new AuthorizatorDomain(authorizator.getId(), authorizator.getUrbanizationId(), Set.of());
 	}
 
-	/** Cada autorizacion tiene exactamente un estado: se busca cual de las Specification de estado cumple. */
+	/**
+	 * Cada autorizacion tiene exactamente un estado real: se busca cual de las Specification de estado cumple. El
+	 * valor por defecto solo queda si ninguna cumple, que no deberia pasar.
+	 */
 	private static VisitAuthorizationStatus statusOf(final VisitAuthorizationEntity authorization, final Instant now) {
-		for (final VisitAuthorizationStatus status : VisitAuthorizationStatus.values()) {
-			if (AuthorizationSpecifications.withStatus(status, now).isSatisfiedBy(authorization)) {
-				return status;
-			}
-		}
-		return VisitAuthorizationStatus.CANCELLED;
+		return Arrays.stream(VisitAuthorizationStatus.values())
+				.filter(VisitAuthorizationStatus::isSpecified)
+				.filter(status -> AuthorizationSpecifications.withStatus(status, now).isSatisfiedBy(authorization))
+				.findFirst()
+				.orElse(VisitAuthorizationStatus.UNSPECIFIED);
 	}
 }

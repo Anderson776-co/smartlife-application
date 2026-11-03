@@ -20,6 +20,7 @@ import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
 import co.com.smartlife.smartlifeapi.crosscutting.helper.UUIDHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.session.CurrentUser;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.AttachedDocumentDomain;
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.AuthorizatorDomain;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationDomain;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationStatus;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitorDomain;
@@ -38,6 +39,9 @@ class ConsultVisitAuthorizationsInputAdaptersTest {
 	private static final CurrentUser USER = new CurrentUser(USER_ID, "maria@example.com", Set.of("RESIDENT"),
 			UUID.randomUUID());
 
+	private static final VisitAuthorizationStatus ANY_STATUS = VisitAuthorizationStatus.UNSPECIFIED;
+	private static final UUID ANY_PROPERTY = UUIDHelper.getUUIDHelper().getDefault();
+
 	private ConsultVisitAuthorizationsUseCase useCase;
 	private ListVisitAuthorizationsInputAdapter listAdapter;
 	private GetVisitAuthorizationInputAdapter getAdapter;
@@ -52,9 +56,10 @@ class ConsultVisitAuthorizationsInputAdaptersTest {
 	private static VisitAuthorizationDomain authorization() {
 		final VisitorDomain visitor = new VisitorDomain(UUID.randomUUID(), "2001", "Luis", "", "Torres", "",
 				"luis@example.com", "ABC123");
+		final AuthorizatorDomain authorizator = new AuthorizatorDomain(USER_ID, UUID.randomUUID(), Set.of());
 		return new VisitAuthorizationDomain(UUID.randomUUID(), FROM, TO, FROM.minusSeconds(3600), "Llega en moto",
 				"https://smartlife.sarl/visitas/autorizaciones/x", "visits/authorizations/x/document.png",
-				AttachedDocumentDomain.empty(), PROPERTY_ID, UUID.randomUUID(), null, visitor, false,
+				AttachedDocumentDomain.empty(), PROPERTY_ID, UUID.randomUUID(), authorizator, visitor, false,
 				"Apartamento 202 - Bloque B", "Servicio tecnico", VisitAuthorizationStatus.CURRENT);
 	}
 
@@ -81,8 +86,8 @@ class ConsultVisitAuthorizationsInputAdaptersTest {
 	}
 
 	@Test
-	void theListShouldBeAnEmptyPageWhenThereAreNoAuthorizations() {
-		when(useCase.list(USER_ID, null, null, null, null)).thenReturn(List.of());
+	void theFiltersThatAreNotInformedReachTheUseCaseWithTheirDefaultValues() {
+		when(useCase.list(USER_ID, ANY_STATUS, Instant.EPOCH, Instant.MAX, ANY_PROPERTY)).thenReturn(List.of());
 
 		final VisitAuthorizationPageDtoResponse result = listAdapter
 				.execute(new ListVisitAuthorizationsDtoRequest(null, null, null, null, USER));
@@ -94,10 +99,14 @@ class ConsultVisitAuthorizationsInputAdaptersTest {
 	}
 
 	@Test
-	void aListRequestWithoutSessionShouldCarryTheAnonymousUser() {
+	void aListRequestWithNothingInformedCarriesOnlyDefaultValues() {
 		final ListVisitAuthorizationsDtoRequest request = new ListVisitAuthorizationsDtoRequest(null, null, null, null,
 				null);
 
+		assertEquals(VisitAuthorizationStatus.UNSPECIFIED, request.status());
+		assertEquals(Instant.EPOCH, request.from());
+		assertEquals(Instant.MAX, request.to());
+		assertTrue(UUIDHelper.getUUIDHelper().isDefaultUUID(request.propertyId()));
 		assertTrue(UUIDHelper.getUUIDHelper().isDefaultUUID(request.currentUser().userId()));
 		assertEquals(0, request.page());
 		assertEquals(ListVisitAuthorizationsDtoRequest.DEFAULT_PAGE_SIZE, request.size());

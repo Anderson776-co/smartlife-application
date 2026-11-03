@@ -21,6 +21,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
+import co.com.smartlife.smartlifeapi.crosscutting.helper.UUIDHelper;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogProvider;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.dto.MessageCatalogDTO;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationDomain;
@@ -39,6 +40,11 @@ class ConsultVisitAuthorizationsUseCaseImplTest {
 	private static final UUID URBANIZATION = UUID.fromString("dddddddd-0000-0000-0000-000000000001");
 	private static final UUID PROPERTY_A = UUID.fromString("cccccccc-0000-0000-0000-000000000001");
 	private static final UUID PROPERTY_B = UUID.fromString("cccccccc-0000-0000-0000-000000000002");
+
+	private static final VisitAuthorizationStatus ANY_STATUS = VisitAuthorizationStatus.UNSPECIFIED;
+	private static final Instant NO_LOWER_LIMIT = Instant.EPOCH;
+	private static final Instant NO_UPPER_LIMIT = Instant.MAX;
+	private static final UUID ANY_PROPERTY = UUIDHelper.getUUIDHelper().getDefault();
 
 	private VisitAuthorizationRepository repository;
 	private ConsultVisitAuthorizationsUseCaseImpl useCase;
@@ -61,9 +67,14 @@ class ConsultVisitAuthorizationsUseCaseImplTest {
 		return NOW.plusSeconds(fromNow * 3600);
 	}
 
+	private List<VisitAuthorizationDomain> listWithoutFilters() {
+		return useCase.list(AUTHORIZATOR, ANY_STATUS, NO_LOWER_LIMIT, NO_UPPER_LIMIT, ANY_PROPERTY);
+	}
+
 	private static VisitAuthorizationEntity authorization(final Instant start, final Instant end, final boolean active,
 			final UUID propertyId, final String fileReference) {
-		final PropertyVisitEntity property = new PropertyVisitEntity(propertyId, "Apartamento 202 - Bloque B", null);
+		final PropertyVisitEntity property = new PropertyVisitEntity(propertyId, "Apartamento 202 - Bloque B",
+				UUID.randomUUID());
 		final VisitorEntity visitor = new VisitorEntity(UUID.randomUUID(), "Luis", "Andres", "Torres", "Gomez", "2001",
 				"luis@example.com", "ABC123");
 		final VisitReasonEntity reason = new VisitReasonEntity(UUID.randomUUID(), "Servicio tecnico", true);
@@ -75,7 +86,7 @@ class ConsultVisitAuthorizationsUseCaseImplTest {
 
 	private static VisitAuthorizationEntity authorization(final Instant start, final Instant end, final boolean active,
 			final UUID propertyId) {
-		return authorization(start, end, active, propertyId, null);
+		return authorization(start, end, active, propertyId, "");
 	}
 
 	@Test
@@ -84,7 +95,7 @@ class ConsultVisitAuthorizationsUseCaseImplTest {
 				authorization(hours(1), hours(3), true, PROPERTY_A), authorization(hours(-1), hours(1), true, PROPERTY_A),
 				authorization(hours(-3), hours(-1), true, PROPERTY_A), authorization(hours(-1), hours(1), false, PROPERTY_A)));
 
-		final List<VisitAuthorizationDomain> result = useCase.list(AUTHORIZATOR, null, null, null, null);
+		final List<VisitAuthorizationDomain> result = listWithoutFilters();
 
 		assertEquals(4, result.size());
 		assertEquals(VisitAuthorizationStatus.UPCOMING, result.get(0).status());
@@ -94,13 +105,21 @@ class ConsultVisitAuthorizationsUseCaseImplTest {
 	}
 
 	@Test
+	void theStatusOfEveryAuthorizationIsARealOne() {
+		when(repository.findByAuthorizatorId(AUTHORIZATOR)).thenReturn(List.of(
+				authorization(hours(1), hours(3), true, PROPERTY_A), authorization(hours(-1), hours(1), false, PROPERTY_A)));
+
+		assertTrue(listWithoutFilters().stream().allMatch(domain -> domain.status().isSpecified()));
+	}
+
+	@Test
 	void listShouldKeepOnlyTheAuthorizationsThatMatchTheStatusFilter() {
 		when(repository.findByAuthorizatorId(AUTHORIZATOR)).thenReturn(List.of(
 				authorization(hours(1), hours(3), true, PROPERTY_A), authorization(hours(-1), hours(1), true, PROPERTY_A),
 				authorization(hours(5), hours(6), true, PROPERTY_A)));
 
 		final List<VisitAuthorizationDomain> result = useCase.list(AUTHORIZATOR, VisitAuthorizationStatus.UPCOMING,
-				null, null, null);
+				NO_LOWER_LIMIT, NO_UPPER_LIMIT, ANY_PROPERTY);
 
 		assertEquals(2, result.size());
 		assertTrue(result.stream().allMatch(domain -> domain.status() == VisitAuthorizationStatus.UPCOMING));
@@ -112,25 +131,26 @@ class ConsultVisitAuthorizationsUseCaseImplTest {
 				authorization(hours(10), hours(12), true, PROPERTY_A), authorization(hours(10), hours(12), true, PROPERTY_B),
 				authorization(hours(30), hours(32), true, PROPERTY_A)));
 
-		final List<VisitAuthorizationDomain> result = useCase.list(AUTHORIZATOR, null, hours(9), hours(13), PROPERTY_A);
+		final List<VisitAuthorizationDomain> result = useCase.list(AUTHORIZATOR, ANY_STATUS, hours(9), hours(13),
+				PROPERTY_A);
 
 		assertEquals(1, result.size());
 		assertEquals(hours(10), result.get(0).authorizationStartDate());
 	}
 
 	@Test
-	void listShouldNotApplyTheFiltersThatAreNull() {
-		when(repository.findByAuthorizatorId(AUTHORIZATOR))
-				.thenReturn(List.of(authorization(hours(1), hours(3), true, PROPERTY_A)));
+	void listShouldNotDiscardAnythingWhenEveryFilterIsAtItsDefault() {
+		when(repository.findByAuthorizatorId(AUTHORIZATOR)).thenReturn(List.of(
+				authorization(hours(1), hours(3), true, PROPERTY_A), authorization(hours(-3), hours(-1), false, PROPERTY_B)));
 
-		assertEquals(1, useCase.list(AUTHORIZATOR, null, null, null, null).size());
+		assertEquals(2, listWithoutFilters().size());
 	}
 
 	@Test
 	void listShouldOnlyAskForTheAuthorizatorsOwnAuthorizations() {
 		when(repository.findByAuthorizatorId(AUTHORIZATOR)).thenReturn(List.of());
 
-		assertTrue(useCase.list(AUTHORIZATOR, null, null, null, null).isEmpty());
+		assertTrue(listWithoutFilters().isEmpty());
 
 		verify(repository).findByAuthorizatorId(AUTHORIZATOR);
 		verify(repository, never()).findAll();
@@ -142,7 +162,7 @@ class ConsultVisitAuthorizationsUseCaseImplTest {
 				authorization(hours(1), hours(3), true, PROPERTY_A, "visits/authorizations/x/document.png"),
 				authorization(hours(1), hours(3), true, PROPERTY_A)));
 
-		final List<VisitAuthorizationDomain> result = useCase.list(AUTHORIZATOR, null, null, null, null);
+		final List<VisitAuthorizationDomain> result = listWithoutFilters();
 
 		final VisitAuthorizationDomain withDocument = result.get(0);
 		assertEquals("Luis", withDocument.visitor().firstName());

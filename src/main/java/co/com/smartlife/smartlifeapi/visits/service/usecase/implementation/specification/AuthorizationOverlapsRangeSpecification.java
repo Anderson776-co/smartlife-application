@@ -6,8 +6,8 @@ import co.com.smartlife.smartlifeapi.crosscutting.specification.Specification;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitAuthorizationEntity;
 
 /**
- * La autorizacion se cruza con el rango [from, to]. Un limite nulo significa "sin limite" por ese lado.
- * Dos rangos se cruzan cuando cada uno empieza antes de que el otro termine.
+ * La autorizacion se cruza con el rango [from, to]. Dos rangos se cruzan cuando cada uno empieza antes de que el otro
+ * termine. Un rango sin limite es de {@link Instant#EPOCH} a {@link Instant#MAX}: cruza con todas.
  */
 public final class AuthorizationOverlapsRangeSpecification extends Specification<VisitAuthorizationEntity> {
 
@@ -21,11 +21,6 @@ public final class AuthorizationOverlapsRangeSpecification extends Specification
 
 	@Override
 	public boolean isSatisfiedBy(final VisitAuthorizationEntity data) {
-		if (data == null) {
-			return false;
-		}
-		final boolean startsBeforeTheRangeEnds = to == null || data.getAuthorizationStartDate().isBefore(to);
-		final boolean endsAfterTheRangeStarts = from == null || data.getAuthorizationEndDate().isAfter(from);
-		return startsBeforeTheRangeEnds && endsAfterTheRangeStarts;
+		return data.getAuthorizationStartDate().isBefore(to) && data.getAuthorizationEndDate().isAfter(from);
 	}
 }

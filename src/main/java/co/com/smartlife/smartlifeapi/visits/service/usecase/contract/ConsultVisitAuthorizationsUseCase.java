@@ -11,8 +11,10 @@ import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthoriza
 public interface ConsultVisitAuthorizationsUseCase {
 
 	/**
-	 * Las autorizaciones del autorizador que cumplen los filtros, de la mas reciente a la mas antigua. Un filtro
-	 * nulo no se aplica.
+	 * Las autorizaciones del autorizador que cumplen los filtros, de la mas reciente a la mas antigua. Ningun
+	 * parametro es nulo: el valor por defecto de cada filtro (estado sin especificar, de {@link Instant#EPOCH} a
+	 * {@link Instant#MAX} y propiedad por defecto) quiere decir sin filtro. Nunca devuelve nulo: sin resultados, la
+	 * lista va vacia.
 	 */
 	List<VisitAuthorizationDomain> list(UUID authorizatorId, VisitAuthorizationStatus status, Instant from,
 			Instant to, UUID propertyId);
