@@ -3,9 +3,8 @@ package co.com.smartlife.smartlifeapi.visits.service.usecase.implementation;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 
@@ -13,19 +12,19 @@ import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
 import co.com.smartlife.smartlifeapi.crosscutting.helper.TextHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.specification.Specification;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogProvider;
-import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationFilterDomain;
-import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationPageDomain;
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.AttachedDocumentDomain;
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.AuthorizatorDomain;
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationDomain;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationStatus;
-import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationSummaryDomain;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.VisitAuthorizationRepository;
+import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.AuthorizatorEntity;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitAuthorizationEntity;
-import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitorEntity;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.contract.ConsultVisitAuthorizationsUseCase;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.specification.AuthorizationSpecifications;
 
 /**
- * Consulta las autorizaciones de un autorizador. Los filtros se arman con el patron Specification
- * (ver {@link AuthorizationSpecifications}) y se aplican sobre las autorizaciones de esa persona.
+ * Consulta las autorizaciones de un autorizador y las entrega con el mismo dominio con el que se autoriza. Los
+ * filtros se arman con el patron Specification (ver {@link AuthorizationSpecifications}).
  */
 @Service
 public class ConsultVisitAuthorizationsUseCaseImpl implements ConsultVisitAuthorizationsUseCase {
@@ -41,48 +40,48 @@ public class ConsultVisitAuthorizationsUseCaseImpl implements ConsultVisitAuthor
 	}
 
 	@Override
-	public List<VisitAuthorizationSummaryDomain> list(final UUID authorizatorId,
-			final VisitAuthorizationFilterDomain filter) {
+	public List<VisitAuthorizationDomain> list(final UUID authorizatorId, final VisitAuthorizationStatus status,
+			final Instant from, final Instant to, final UUID propertyId) {
 		final Instant now = Instant.now(clock);
-		final VisitAuthorizationFilterDomain criteria = filter == null ? VisitAuthorizationFilterDomain.none() : filter;
-		final Specification<VisitAuthorizationEntity> specification = AuthorizationSpecifications
-				.matching(criteria.status(), criteria.from(), criteria.to(), criteria.propertyId(), now);
+		final Specification<VisitAuthorizationEntity> specification = AuthorizationSpecifications.matching(status,
+				from, to, propertyId, now);
 
 		return repository.findByAuthorizatorId(authorizatorId).stream()
 				.filter(specification::isSatisfiedBy)
-				.map(authorization -> toSummary(authorization, now))
+				.map(authorization -> toDomain(authorization, now))
 				.toList();
 	}
 
 	@Override
-	public VisitAuthorizationPageDomain listPage(final UUID authorizatorId, final VisitAuthorizationFilterDomain filter,
-			final int page, final int size) {
-		return VisitAuthorizationPageDomain.of(list(authorizatorId, filter), page, size);
-	}
-
-	@Override
-	public VisitAuthorizationSummaryDomain find(final UUID authorizationId, final UUID authorizatorId) {
+	public VisitAuthorizationDomain find(final UUID authorizationId, final UUID authorizatorId) {
 		final Instant now = Instant.now(clock);
 		return repository.findByIdAndAuthorizatorId(authorizationId, authorizatorId)
-				.map(authorization -> toSummary(authorization, now))
+				.map(authorization -> toDomain(authorization, now))
 				.orElseThrow(() -> SmartLifeException.create(
 						MessageCatalogProvider.getContent("USER_MESSAGE_" + NOT_FOUND_CODE),
 						MessageCatalogProvider.getContent("TECHNICAL_MESSAGE_" + NOT_FOUND_CODE)));
 	}
 
-	private static VisitAuthorizationSummaryDomain toSummary(final VisitAuthorizationEntity authorization,
-			final Instant now) {
-		final VisitorEntity visitor = authorization.getVisitor();
-		return new VisitAuthorizationSummaryDomain(authorization.getId(), authorization.getAuthorizationStartDate(),
+	/** No se devuelven los bytes del documento: ya estan en R2, solo la referencia. */
+	private static VisitAuthorizationDomain toDomain(final VisitAuthorizationEntity authorization, final Instant now) {
+		return new VisitAuthorizationDomain(authorization.getId(), authorization.getAuthorizationStartDate(),
 				authorization.getAuthorizationEndDate(), authorization.getRegisterDate(),
 				TextHelper.getDefault(authorization.getObservation()), authorization.getQrCode(),
+				TextHelper.getDefault(authorization.getFileReference()), AttachedDocumentDomain.empty(),
+				authorization.getProperty() == null ? null : authorization.getProperty().getId(),
+				authorization.getVisitReason() == null ? null : authorization.getVisitReason().getId(),
+				toAuthorizatorDomain(authorization.getAuthorizator()),
+				authorization.getVisitor() == null ? null
+						: AuthorizeVisitUseCaseImpl.toVisitorDomain(authorization.getVisitor()),
+				false,
 				authorization.getProperty() == null ? "" : authorization.getProperty().getLocation(),
 				authorization.getVisitReason() == null ? "" : authorization.getVisitReason().getName(),
-				!TextHelper.getDefault(authorization.getFileReference()).isBlank(),
-				visitor == null ? "" : visitor.getDocumentNumber(), fullName(visitor),
-				visitor == null ? "" : visitor.getEmail(),
-				visitor == null ? "" : TextHelper.getDefault(visitor.getVehiclePlate()),
 				statusOf(authorization, now));
+	}
+
+	private static AuthorizatorDomain toAuthorizatorDomain(final AuthorizatorEntity authorizator) {
+		return authorizator == null ? null
+				: new AuthorizatorDomain(authorizator.getId(), authorizator.getUrbanizationId(), Set.of());
 	}
 
 	/** Cada autorizacion tiene exactamente un estado: se busca cual de las Specification de estado cumple. */
@@ -93,14 +92,5 @@ public class ConsultVisitAuthorizationsUseCaseImpl implements ConsultVisitAuthor
 			}
 		}
 		return VisitAuthorizationStatus.CANCELLED;
-	}
-
-	private static String fullName(final VisitorEntity visitor) {
-		if (visitor == null) {
-			return "";
-		}
-		return Stream.of(visitor.getFirstName(), visitor.getMiddleName(), visitor.getLastName(),
-				visitor.getSecondLastName()).filter(part -> part != null && !part.isBlank())
-				.collect(Collectors.joining(" "));
 	}
 }

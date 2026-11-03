@@ -201,7 +201,7 @@ public class AuthorizeVisitUseCaseImpl implements AuthorizeVisitUseCase {
 				toVisitorDomain(authorization.getVisitor()), notificationSent);
 	}
 
-	private static VisitorDomain toVisitorDomain(final VisitorEntity visitor) {
+	static VisitorDomain toVisitorDomain(final VisitorEntity visitor) {
 		return new VisitorDomain(visitor.getId(), visitor.getDocumentNumber(), visitor.getFirstName(),
 				visitor.getMiddleName(), visitor.getLastName(), visitor.getSecondLastName(), visitor.getEmail(),
 				TextHelper.getDefault(visitor.getVehiclePlate()));

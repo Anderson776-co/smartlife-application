@@ -23,11 +23,10 @@ import org.junit.jupiter.api.Test;
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogProvider;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.dto.MessageCatalogDTO;
-import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationFilterDomain;
-import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationPageDomain;
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationDomain;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationStatus;
-import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationSummaryDomain;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.VisitAuthorizationRepository;
+import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.AuthorizatorEntity;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.PropertyVisitEntity;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitAuthorizationEntity;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitReasonEntity;
@@ -37,6 +36,7 @@ class ConsultVisitAuthorizationsUseCaseImplTest {
 
 	private static final Instant NOW = Instant.parse("2026-11-03T15:00:00Z");
 	private static final UUID AUTHORIZATOR = UUID.fromString("bbbbbbbb-0000-0000-0000-000000000002");
+	private static final UUID URBANIZATION = UUID.fromString("dddddddd-0000-0000-0000-000000000001");
 	private static final UUID PROPERTY_A = UUID.fromString("cccccccc-0000-0000-0000-000000000001");
 	private static final UUID PROPERTY_B = UUID.fromString("cccccccc-0000-0000-0000-000000000002");
 
@@ -67,9 +67,10 @@ class ConsultVisitAuthorizationsUseCaseImplTest {
 		final VisitorEntity visitor = new VisitorEntity(UUID.randomUUID(), "Luis", "Andres", "Torres", "Gomez", "2001",
 				"luis@example.com", "ABC123");
 		final VisitReasonEntity reason = new VisitReasonEntity(UUID.randomUUID(), "Servicio tecnico", true);
+		final AuthorizatorEntity authorizator = new AuthorizatorEntity(AUTHORIZATOR, "Maria Perez", true, URBANIZATION);
 		return new VisitAuthorizationEntity(UUID.randomUUID(), start, end, NOW.minusSeconds(86400), "Llega en moto",
-				"https://smartlife.sarl/visitas/autorizaciones/x", fileReference, active, property, null, visitor,
-				reason);
+				"https://smartlife.sarl/visitas/autorizaciones/x", fileReference, active, property, authorizator,
+				visitor, reason);
 	}
 
 	private static VisitAuthorizationEntity authorization(final Instant start, final Instant end, final boolean active,
@@ -83,8 +84,7 @@ class ConsultVisitAuthorizationsUseCaseImplTest {
 				authorization(hours(1), hours(3), true, PROPERTY_A), authorization(hours(-1), hours(1), true, PROPERTY_A),
 				authorization(hours(-3), hours(-1), true, PROPERTY_A), authorization(hours(-1), hours(1), false, PROPERTY_A)));
 
-		final List<VisitAuthorizationSummaryDomain> result = useCase.list(AUTHORIZATOR,
-				VisitAuthorizationFilterDomain.none());
+		final List<VisitAuthorizationDomain> result = useCase.list(AUTHORIZATOR, null, null, null, null);
 
 		assertEquals(4, result.size());
 		assertEquals(VisitAuthorizationStatus.UPCOMING, result.get(0).status());
@@ -99,11 +99,11 @@ class ConsultVisitAuthorizationsUseCaseImplTest {
 				authorization(hours(1), hours(3), true, PROPERTY_A), authorization(hours(-1), hours(1), true, PROPERTY_A),
 				authorization(hours(5), hours(6), true, PROPERTY_A)));
 
-		final List<VisitAuthorizationSummaryDomain> result = useCase.list(AUTHORIZATOR,
-				new VisitAuthorizationFilterDomain(VisitAuthorizationStatus.UPCOMING, null, null, null));
+		final List<VisitAuthorizationDomain> result = useCase.list(AUTHORIZATOR, VisitAuthorizationStatus.UPCOMING,
+				null, null, null);
 
 		assertEquals(2, result.size());
-		assertTrue(result.stream().allMatch(summary -> summary.status() == VisitAuthorizationStatus.UPCOMING));
+		assertTrue(result.stream().allMatch(domain -> domain.status() == VisitAuthorizationStatus.UPCOMING));
 	}
 
 	@Test
@@ -112,103 +112,61 @@ class ConsultVisitAuthorizationsUseCaseImplTest {
 				authorization(hours(10), hours(12), true, PROPERTY_A), authorization(hours(10), hours(12), true, PROPERTY_B),
 				authorization(hours(30), hours(32), true, PROPERTY_A)));
 
-		final List<VisitAuthorizationSummaryDomain> result = useCase.list(AUTHORIZATOR,
-				new VisitAuthorizationFilterDomain(null, hours(9), hours(13), PROPERTY_A));
+		final List<VisitAuthorizationDomain> result = useCase.list(AUTHORIZATOR, null, hours(9), hours(13), PROPERTY_A);
 
 		assertEquals(1, result.size());
 		assertEquals(hours(10), result.get(0).authorizationStartDate());
 	}
 
 	@Test
-	void listPageShouldReturnOnlyTheRequestedPageKeepingTheOrder() {
-		final List<VisitAuthorizationEntity> stored = new java.util.ArrayList<>();
-		for (int i = 0; i < 7; i++) {
-			stored.add(authorization(hours(10 + i), hours(11 + i), true, PROPERTY_A));
-		}
-		when(repository.findByAuthorizatorId(AUTHORIZATOR)).thenReturn(stored);
-
-		final VisitAuthorizationPageDomain page = useCase.listPage(AUTHORIZATOR, VisitAuthorizationFilterDomain.none(), 1, 3);
-
-		assertEquals(3, page.content().size());
-		assertEquals(hours(13), page.content().get(0).authorizationStartDate());
-		assertEquals(hours(15), page.content().get(2).authorizationStartDate());
-		assertEquals(1, page.page());
-		assertEquals(3, page.size());
-		assertEquals(7, page.totalElements());
-		assertEquals(3, page.totalPages());
-	}
-
-	@Test
-	void listPageShouldCountOnlyTheAuthorizationsThatMatchTheFilter() {
-		when(repository.findByAuthorizatorId(AUTHORIZATOR)).thenReturn(List.of(
-				authorization(hours(1), hours(3), true, PROPERTY_A), authorization(hours(-3), hours(-1), true, PROPERTY_A),
-				authorization(hours(2), hours(4), true, PROPERTY_A), authorization(hours(5), hours(6), true, PROPERTY_A)));
-
-		final VisitAuthorizationPageDomain page = useCase.listPage(AUTHORIZATOR,
-				new VisitAuthorizationFilterDomain(VisitAuthorizationStatus.UPCOMING, null, null, null), 0, 2);
-
-		assertEquals(3, page.totalElements());
-		assertEquals(2, page.totalPages());
-		assertEquals(2, page.content().size());
-		assertTrue(page.content().stream().allMatch(summary -> summary.status() == VisitAuthorizationStatus.UPCOMING));
-	}
-
-	@Test
-	void listPageShouldOnlyAskForTheAuthorizatorsOwnAuthorizations() {
-		when(repository.findByAuthorizatorId(AUTHORIZATOR)).thenReturn(List.of());
-
-		final VisitAuthorizationPageDomain page = useCase.listPage(AUTHORIZATOR, null, 0, 10);
-
-		assertTrue(page.content().isEmpty());
-		assertEquals(0, page.totalPages());
-		verify(repository).findByAuthorizatorId(AUTHORIZATOR);
-		verify(repository, never()).findAll();
-	}
-
-	@Test
-	void listShouldTreatANullFilterAsNoFilter() {
+	void listShouldNotApplyTheFiltersThatAreNull() {
 		when(repository.findByAuthorizatorId(AUTHORIZATOR))
 				.thenReturn(List.of(authorization(hours(1), hours(3), true, PROPERTY_A)));
 
-		assertEquals(1, useCase.list(AUTHORIZATOR, null).size());
+		assertEquals(1, useCase.list(AUTHORIZATOR, null, null, null, null).size());
 	}
 
 	@Test
 	void listShouldOnlyAskForTheAuthorizatorsOwnAuthorizations() {
 		when(repository.findByAuthorizatorId(AUTHORIZATOR)).thenReturn(List.of());
 
-		assertTrue(useCase.list(AUTHORIZATOR, null).isEmpty());
+		assertTrue(useCase.list(AUTHORIZATOR, null, null, null, null).isEmpty());
 
 		verify(repository).findByAuthorizatorId(AUTHORIZATOR);
 		verify(repository, never()).findAll();
 	}
 
 	@Test
-	void theSummaryShouldCarryTheVisitorPropertyReasonAndDocumentData() {
+	void theDomainShouldCarryTheVisitorPropertyReasonAuthorizatorAndDocumentReference() {
 		when(repository.findByAuthorizatorId(AUTHORIZATOR)).thenReturn(List.of(
 				authorization(hours(1), hours(3), true, PROPERTY_A, "visits/authorizations/x/document.png"),
 				authorization(hours(1), hours(3), true, PROPERTY_A)));
 
-		final List<VisitAuthorizationSummaryDomain> result = useCase.list(AUTHORIZATOR, null);
+		final List<VisitAuthorizationDomain> result = useCase.list(AUTHORIZATOR, null, null, null, null);
 
-		final VisitAuthorizationSummaryDomain withDocument = result.get(0);
-		assertEquals("Luis Andres Torres Gomez", withDocument.visitorFullName());
-		assertEquals("2001", withDocument.visitorDocumentNumber());
-		assertEquals("luis@example.com", withDocument.visitorEmail());
-		assertEquals("ABC123", withDocument.vehiclePlate());
+		final VisitAuthorizationDomain withDocument = result.get(0);
+		assertEquals("Luis", withDocument.visitor().firstName());
+		assertEquals("Andres", withDocument.visitor().middleName());
+		assertEquals("2001", withDocument.visitor().documentNumber());
+		assertEquals("luis@example.com", withDocument.visitor().email());
+		assertEquals("ABC123", withDocument.visitor().vehiclePlate());
+		assertEquals(PROPERTY_A, withDocument.propertyId());
 		assertEquals("Apartamento 202 - Bloque B", withDocument.propertyLocation());
-		assertEquals("Servicio tecnico", withDocument.visitReason());
+		assertEquals("Servicio tecnico", withDocument.visitReasonName());
 		assertEquals("Llega en moto", withDocument.observation());
-		assertTrue(withDocument.documentAttached());
-		assertFalse(result.get(1).documentAttached());
+		assertEquals(AUTHORIZATOR, withDocument.authorizator().id());
+		assertEquals(URBANIZATION, withDocument.authorizator().urbanizationId());
+		assertEquals("visits/authorizations/x/document.png", withDocument.fileReference());
+		assertFalse(withDocument.attachedDocument().hasContent());
+		assertEquals("", result.get(1).fileReference());
 	}
 
 	@Test
-	void findShouldReturnTheSummaryWhenTheAuthorizationBelongsToTheAuthorizator() {
+	void findShouldReturnTheDomainWhenTheAuthorizationBelongsToTheAuthorizator() {
 		final VisitAuthorizationEntity own = authorization(hours(-1), hours(1), true, PROPERTY_A);
 		when(repository.findByIdAndAuthorizatorId(own.getId(), AUTHORIZATOR)).thenReturn(Optional.of(own));
 
-		final VisitAuthorizationSummaryDomain result = useCase.find(own.getId(), AUTHORIZATOR);
+		final VisitAuthorizationDomain result = useCase.find(own.getId(), AUTHORIZATOR);
 
 		assertEquals(own.getId(), result.id());
 		assertEquals(VisitAuthorizationStatus.CURRENT, result.status());

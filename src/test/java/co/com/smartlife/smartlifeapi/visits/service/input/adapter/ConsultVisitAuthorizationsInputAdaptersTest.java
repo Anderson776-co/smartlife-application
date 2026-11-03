@@ -1,7 +1,6 @@
 package co.com.smartlife.smartlifeapi.visits.service.input.adapter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -9,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -19,11 +19,10 @@ import org.junit.jupiter.api.Test;
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
 import co.com.smartlife.smartlifeapi.crosscutting.helper.UUIDHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.session.CurrentUser;
-import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationFilterDomain;
-import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationPageDomain;
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.AttachedDocumentDomain;
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationDomain;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationStatus;
-import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationSummaryDomain;
-import co.com.smartlife.smartlifeapi.visits.service.input.adapter.mapper.VisitAuthorizationSummaryDtoMapper;
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitorDomain;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.GetVisitAuthorizationDtoRequest;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.ListVisitAuthorizationsDtoRequest;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.response.VisitAuthorizationPageDtoResponse;
@@ -50,43 +49,48 @@ class ConsultVisitAuthorizationsInputAdaptersTest {
 		getAdapter = new GetVisitAuthorizationInputAdapter(useCase);
 	}
 
-	private static VisitAuthorizationSummaryDomain summary() {
-		return new VisitAuthorizationSummaryDomain(UUID.randomUUID(), FROM, TO, FROM.minusSeconds(3600), "Llega en moto",
-				"https://smartlife.sarl/visitas/autorizaciones/x", "Apartamento 202 - Bloque B", "Servicio tecnico", true,
-				"2001", "Luis Torres", "luis@example.com", "ABC123", VisitAuthorizationStatus.CURRENT);
+	private static VisitAuthorizationDomain authorization() {
+		final VisitorDomain visitor = new VisitorDomain(UUID.randomUUID(), "2001", "Luis", "", "Torres", "",
+				"luis@example.com", "ABC123");
+		return new VisitAuthorizationDomain(UUID.randomUUID(), FROM, TO, FROM.minusSeconds(3600), "Llega en moto",
+				"https://smartlife.sarl/visitas/autorizaciones/x", "visits/authorizations/x/document.png",
+				AttachedDocumentDomain.empty(), PROPERTY_ID, UUID.randomUUID(), null, visitor, false,
+				"Apartamento 202 - Bloque B", "Servicio tecnico", VisitAuthorizationStatus.CURRENT);
 	}
 
 	@Test
-	void theListShouldAskForTheSessionUsersAuthorizationsWithTheFiltersAndMapTheResult() {
-		final VisitAuthorizationSummaryDomain summary = summary();
-		when(useCase.listPage(USER_ID,
-				new VisitAuthorizationFilterDomain(VisitAuthorizationStatus.CURRENT, FROM, TO, PROPERTY_ID), 2, 5))
-				.thenReturn(new VisitAuthorizationPageDomain(List.of(summary), 2, 5, 11, 3));
+	void theListShouldAskForTheSessionUsersAuthorizationsWithTheFiltersAndReturnTheRequestedPage() {
+		final List<VisitAuthorizationDomain> all = new ArrayList<>();
+		for (int i = 0; i < 7; i++) {
+			all.add(authorization());
+		}
+		when(useCase.list(USER_ID, VisitAuthorizationStatus.CURRENT, FROM, TO, PROPERTY_ID)).thenReturn(all);
 
 		final VisitAuthorizationPageDtoResponse result = listAdapter.execute(new ListVisitAuthorizationsDtoRequest(
-				VisitAuthorizationStatus.CURRENT, FROM, TO, PROPERTY_ID, USER, 2, 5));
+				VisitAuthorizationStatus.CURRENT, FROM, TO, PROPERTY_ID, USER, 1, 3));
 
-		assertEquals(1, result.content().size());
-		assertEquals(summary.id(), result.content().get(0).authorizationId());
-		assertEquals(summary.qrCode(), result.content().get(0).qrUrl());
+		assertEquals(3, result.content().size());
+		assertEquals(all.get(3).id(), result.content().get(0).authorizationId());
+		assertEquals(all.get(3).qrCode(), result.content().get(0).qrUrl());
 		assertEquals("Luis Torres", result.content().get(0).visitorFullName());
 		assertEquals(VisitAuthorizationStatus.CURRENT, result.content().get(0).status());
-		assertEquals(2, result.page());
-		assertEquals(5, result.size());
-		assertEquals(11, result.totalElements());
+		assertEquals(1, result.page());
+		assertEquals(3, result.size());
+		assertEquals(7, result.totalElements());
 		assertEquals(3, result.totalPages());
 	}
 
 	@Test
-	void theListShouldBeEmptyWhenThereAreNoAuthorizations() {
-		when(useCase.listPage(USER_ID, VisitAuthorizationFilterDomain.none(), 0, 10))
-				.thenReturn(new VisitAuthorizationPageDomain(List.of(), 0, 10, 0, 0));
+	void theListShouldBeAnEmptyPageWhenThereAreNoAuthorizations() {
+		when(useCase.list(USER_ID, null, null, null, null)).thenReturn(List.of());
 
 		final VisitAuthorizationPageDtoResponse result = listAdapter
 				.execute(new ListVisitAuthorizationsDtoRequest(null, null, null, null, USER));
 
 		assertTrue(result.content().isEmpty());
 		assertEquals(0, result.totalElements());
+		assertEquals(0, result.totalPages());
+		assertEquals(ListVisitAuthorizationsDtoRequest.DEFAULT_PAGE_SIZE, result.size());
 	}
 
 	@Test
@@ -95,17 +99,19 @@ class ConsultVisitAuthorizationsInputAdaptersTest {
 				null);
 
 		assertTrue(UUIDHelper.getUUIDHelper().isDefaultUUID(request.currentUser().userId()));
+		assertEquals(0, request.page());
+		assertEquals(ListVisitAuthorizationsDtoRequest.DEFAULT_PAGE_SIZE, request.size());
 	}
 
 	@Test
 	void theDetailShouldAskForTheAuthorizationOfTheSessionUserAndMapIt() {
-		final VisitAuthorizationSummaryDomain summary = summary();
-		when(useCase.find(summary.id(), USER_ID)).thenReturn(summary);
+		final VisitAuthorizationDomain authorization = authorization();
+		when(useCase.find(authorization.id(), USER_ID)).thenReturn(authorization);
 
 		final VisitAuthorizationSummaryDtoResponse result = getAdapter
-				.execute(new GetVisitAuthorizationDtoRequest(summary.id(), USER));
+				.execute(new GetVisitAuthorizationDtoRequest(authorization.id(), USER));
 
-		assertEquals(summary.id(), result.authorizationId());
+		assertEquals(authorization.id(), result.authorizationId());
 		assertEquals("Apartamento 202 - Bloque B", result.propertyLocation());
 		assertTrue(result.documentAttached());
 	}
@@ -127,28 +133,5 @@ class ConsultVisitAuthorizationsInputAdaptersTest {
 
 		assertTrue(UUIDHelper.getUUIDHelper().isDefaultUUID(request.authorizationId()));
 		assertTrue(UUIDHelper.getUUIDHelper().isDefaultUUID(request.currentUser().userId()));
-	}
-
-	@Test
-	void theMapperShouldCarryEveryFieldAndExposeTheQrCodeAsQrUrl() {
-		final VisitAuthorizationSummaryDomain summary = summary();
-
-		final VisitAuthorizationSummaryDtoResponse dto = VisitAuthorizationSummaryDtoMapper.toDto(summary);
-
-		assertEquals(summary.id(), dto.authorizationId());
-		assertEquals(summary.authorizationStartDate(), dto.authorizationStartDate());
-		assertEquals(summary.authorizationEndDate(), dto.authorizationEndDate());
-		assertEquals(summary.registerDate(), dto.registerDate());
-		assertEquals(summary.observation(), dto.observation());
-		assertEquals(summary.qrCode(), dto.qrUrl());
-		assertEquals(summary.propertyLocation(), dto.propertyLocation());
-		assertEquals(summary.visitReason(), dto.visitReason());
-		assertEquals(summary.documentAttached(), dto.documentAttached());
-		assertEquals(summary.visitorDocumentNumber(), dto.visitorDocumentNumber());
-		assertEquals(summary.visitorFullName(), dto.visitorFullName());
-		assertEquals(summary.visitorEmail(), dto.visitorEmail());
-		assertEquals(summary.vehiclePlate(), dto.vehiclePlate());
-		assertEquals(summary.status(), dto.status());
-		assertFalse(dto.qrUrl().isBlank());
 	}
 }

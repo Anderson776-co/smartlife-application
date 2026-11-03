@@ -23,6 +23,9 @@ public interface VisitAuthorizationMapperInput extends DtoMapper<AuthorizeVisitD
     @Mapping(target = "qrCode", ignore = true)         
     @Mapping(target = "fileReference", ignore = true)
     @Mapping(target = "notificationSent", ignore = true)
+    @Mapping(target = "propertyLocation", ignore = true)
+    @Mapping(target = "visitReasonName", ignore = true)
+    @Mapping(target = "status", ignore = true)
     VisitAuthorizationDomain toDomain(AuthorizeVisitDtoRequest request);
 
 	@Override

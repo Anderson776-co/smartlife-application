@@ -1,25 +1,22 @@
 package co.com.smartlife.smartlifeapi.visits.service.usecase.contract;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
-import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationFilterDomain;
-import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationPageDomain;
-import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationSummaryDomain;
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationDomain;
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationStatus;
 
 /** Consulta de las autorizaciones que creo un autorizador. Nadie ve las de otra persona. */
 public interface ConsultVisitAuthorizationsUseCase {
 
-	/** Las autorizaciones del autorizador que cumplen los filtros, de la mas reciente a la mas antigua. */
-	List<VisitAuthorizationSummaryDomain> list(UUID authorizatorId, VisitAuthorizationFilterDomain filter);
-
 	/**
-	 * Una pagina de las autorizaciones del autorizador que cumplen los filtros, de la mas reciente a la mas antigua.
-	 * La pagina empieza en 0; ver {@link VisitAuthorizationPageDomain} para los limites del tamano.
+	 * Las autorizaciones del autorizador que cumplen los filtros, de la mas reciente a la mas antigua. Un filtro
+	 * nulo no se aplica.
 	 */
-	VisitAuthorizationPageDomain listPage(UUID authorizatorId, VisitAuthorizationFilterDomain filter, int page,
-			int size);
+	List<VisitAuthorizationDomain> list(UUID authorizatorId, VisitAuthorizationStatus status, Instant from,
+			Instant to, UUID propertyId);
 
 	/** Una autorizacion del autorizador. Si no existe o es de otra persona, se rechaza con el mismo mensaje. */
-	VisitAuthorizationSummaryDomain find(UUID authorizationId, UUID authorizatorId);
+	VisitAuthorizationDomain find(UUID authorizationId, UUID authorizatorId);
 }
