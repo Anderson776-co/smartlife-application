@@ -50,7 +50,7 @@ public final class ParameterCatalog {
 	public static volatile Duration MAX_ANTICIPATION;
 	public static volatile Duration START_TOLERANCE;
 	public static volatile Long DOCUMENT_MAX_SIZE_IN_BYTES;
-	public static volatile Set<String> DOCUMENT_ALLOWED_TYPES;
+	public static Set<String> DOCUMENT_ALLOWED_TYPES;
 	public static volatile String QR_BASE_URL;
 	public static volatile ZoneId TIME_ZONE;
 
