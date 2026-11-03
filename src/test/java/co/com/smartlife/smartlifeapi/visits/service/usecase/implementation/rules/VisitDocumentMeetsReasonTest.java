@@ -1,6 +1,7 @@
 package co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.rules;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.nio.charset.StandardCharsets;
@@ -9,8 +10,10 @@ import java.time.ZoneOffset;
 import java.util.Set;
 import java.util.UUID;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import co.com.smartlife.smartlifeapi.crosscutting.parameters.ParameterCatalogTestSupport;
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.AttachedDocumentDomain;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.VisitParametersDTO;
@@ -23,6 +26,11 @@ class VisitDocumentMeetsReasonTest {
 			ZoneOffset.UTC);
 	private static final VisitReasonEntity REQUIRES = new VisitReasonEntity(UUID.randomUUID(), "Servicio tecnico", true);
 	private static final VisitReasonEntity DOES_NOT_REQUIRE = new VisitReasonEntity(UUID.randomUUID(), "Visita", false);
+
+	@BeforeEach
+	void loadParameters() {
+		ParameterCatalogTestSupport.load();
+	}
 
 	@Test
 	void shouldNotDemandADocumentWhenTheReasonDoesNotRequireIt() {
@@ -61,6 +69,23 @@ class VisitDocumentMeetsReasonTest {
 	void shouldRejectADocumentOverTheMaximumSize() {
 		final String content = "%PDF-" + "x".repeat(40);
 		assertThrows(SmartLifeException.class, () -> run(REQUIRES, document("application/pdf", content)));
+	}
+
+	@Test
+	void shouldRejectContentShorterThanTheSignature() {
+		assertThrows(SmartLifeException.class, () -> run(REQUIRES, document("application/pdf", "%PD")));
+	}
+
+	@Test
+	void shouldFailNamingTheTypeThatIsAllowedButHasNoSignature() {
+		final VisitParametersDTO withWebp = new VisitParametersDTO(Duration.ofHours(24), Duration.ofDays(30),
+				Duration.ofMinutes(10), 32, Set.of("application/pdf", "image/webp"), "http://qr/", ZoneOffset.UTC);
+
+		final IllegalStateException failure = assertThrows(IllegalStateException.class, () -> VisitDocumentMeetsReason
+				.executeRule(REQUIRES, document("image/webp", "RIFF...."), withWebp));
+
+		assertTrue(failure.getMessage().contains("image/webp"));
+		assertTrue(failure.getMessage().contains("document-signatures"));
 	}
 
 	@Test

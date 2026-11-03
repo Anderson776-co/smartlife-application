@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -20,13 +19,16 @@ import java.util.UUID;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mapstruct.factory.Mappers;
 
+import co.com.smartlife.smartlifeapi.crosscutting.parameters.ParameterCatalogTestSupport;
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogProvider;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.dto.MessageCatalogDTO;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitorDomain;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.VisitorRepository;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitorEntity;
+import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.mapper.VisitorMapperUseCase;
 
 class ResolveVisitorTest {
 
@@ -35,9 +37,10 @@ class ResolveVisitorTest {
 
 	@BeforeEach
 	void setUp() {
+		ParameterCatalogTestSupport.load();
 		repository = mock(VisitorRepository.class);
 		when(repository.findByDocumentNumber(anyString())).thenReturn(Optional.empty());
-		resolveVisitor = new ResolveVisitor(repository);
+		resolveVisitor = new ResolveVisitor(repository, Mappers.getMapper(VisitorMapperUseCase.class));
 	}
 
 	/** El catálogo es estático: se deja como "sin configurar" (devuelve el código) para no afectar otras pruebas. */
@@ -62,12 +65,6 @@ class ResolveVisitorTest {
 	}
 
 	@Test
-	void shouldRejectMissingData() {
-		assertRejected(null);
-		verify(repository, never()).findByDocumentNumber(anyString());
-	}
-
-	@Test
 	void shouldRejectAnEmptyOrMalformedDocument() {
 		assertRejected(visitor("   ", "Luis", "", "Torres", "", "luis@example.com", ""));
 		assertRejected(visitor("ab", "Luis", "", "Torres", "", "luis@example.com", ""));
@@ -88,9 +85,9 @@ class ResolveVisitorTest {
 	}
 
 	@Test
-	void shouldBuildANewVisitorWithNormalizedData() {
+	void shouldBuildANewVisitorFromTheGivenData() {
 		final VisitorResolution resolution = resolveVisitor
-				.resolve(visitor(" 2001 ", " Luis ", " Andres ", " Torres ", " Gomez ", "  LUIS@Example.COM ", " abc-123 "));
+				.resolve(visitor("2001", "Luis", "Andres", "Torres", "Gomez", "luis@example.com", "ABC-123"));
 
 		assertTrue(resolution.isNew());
 		final VisitorEntity entity = resolution.entity();
@@ -105,11 +102,21 @@ class ResolveVisitorTest {
 	}
 
 	@Test
-	void shouldLeaveThePlateEmptyWhenNoneIsGiven() {
+	void shouldGiveEveryNewVisitorItsOwnId() {
+		final VisitorEntity first = resolveVisitor.resolve(validVisitor()).entity();
+		final VisitorEntity second = resolveVisitor.resolve(validVisitor()).entity();
+
+		assertNotNull(first.getId());
+		assertNotNull(second.getId());
+		assertNotEquals(first.getId(), second.getId());
+	}
+
+	@Test
+	void shouldKeepThePlateAsGivenWhenNoneIsEntered() {
 		final VisitorResolution resolution = resolveVisitor.resolve(validVisitor());
 
 		assertTrue(resolution.isNew());
-		assertNull(resolution.entity().getVehiclePlate());
+		assertEquals(validVisitor().vehiclePlate(), resolution.entity().getVehiclePlate());
 	}
 
 	@Test

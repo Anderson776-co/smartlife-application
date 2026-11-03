@@ -16,6 +16,9 @@ public final class ValidateAuthorizatorHasAccessToProperty implements Validator 
 
 	@Override
 	public void validate(final Object... data) {
+		if (data.length > 0) {
+			IsUUIDPresentRule.executeRule(data[1]);
+		}
 		AuthorizatorHasAccessToProperty.executeRule(data);
 	}
 

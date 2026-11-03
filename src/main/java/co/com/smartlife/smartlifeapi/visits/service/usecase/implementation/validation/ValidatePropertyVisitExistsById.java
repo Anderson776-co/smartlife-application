@@ -13,6 +13,9 @@ public class ValidatePropertyVisitExistsById implements Validator{
 	
 	@Override
 	public void validate(Object... data) {
+		if (data.length > 0) {
+			IsUUIDPresentRule.executeRule(data[0]);
+		}
 		PropertyVisitExistsById.executeRule(data);
 	}
 	

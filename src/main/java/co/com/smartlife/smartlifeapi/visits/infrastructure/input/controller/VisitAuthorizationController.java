@@ -72,11 +72,7 @@ public class VisitAuthorizationController {
 				.body(Response.createSuccededResponse(List.of(result)));
 	}
 	
-	/**
-	 * Las autorizaciones de quien tiene la sesion, de la mas reciente a la mas antigua. Filtros opcionales:
-	 * status (UPCOMING, CURRENT, EXPIRED o CANCELLED), from y to (fechas ISO-8601, por ejemplo 2026-11-03T15:00:00Z)
-	 * y propertyId. Se devuelve una pagina por llamada: page (desde 0, por defecto 0) y size (por defecto 10, maximo 50).
-	 */
+	
 	@CanConsultVisitAuthorizations
 	@GetMapping
 	public ResponseEntity<Response<VisitAuthorizationPageDtoResponse>> list(
@@ -94,7 +90,6 @@ public class VisitAuthorizationController {
 		return ResponseEntity.ok(Response.createSuccededResponse(List.of(authorizations)));
 	}
 	
-	/** Una autorizacion de quien tiene la sesion. Si no existe o es de otra persona, se rechaza igual. */
 	@CanConsultVisitAuthorizations
 	@GetMapping("/{authorizationId}")
 	public ResponseEntity<Response<VisitAuthorizationSummaryDtoResponse>> find(

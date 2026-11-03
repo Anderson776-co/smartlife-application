@@ -15,8 +15,7 @@ public record AttachedDocumentDomain(String fileName, String contentType, byte[]
 		return content.length > 0;
 	}
 
-	/** Un record con un arreglo debe comparar su contenido y no su referencia. */
-	@Override
+	
 	public boolean equals(final Object other) {
 		if (this == other) {
 			return true;
@@ -33,8 +32,7 @@ public record AttachedDocumentDomain(String fileName, String contentType, byte[]
 		return 31 * Objects.hash(fileName, contentType) + Arrays.hashCode(content);
 	}
 
-	/** No se imprime el contenido del archivo, solo su tamano. */
-	@Override
+	
 	public String toString() {
 		return "AttachedDocumentDomain[fileName=" + fileName + ", contentType=" + contentType + ", contentLength="
 				+ (content == null ? 0 : content.length) + "]";

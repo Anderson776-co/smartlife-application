@@ -1,8 +1,8 @@
 package co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.rules;
 
 import java.util.Arrays;
-import java.util.Map;
 
+import co.com.smartlife.smartlifeapi.crosscutting.parameters.ParameterCatalog;
 import co.com.smartlife.smartlifeapi.crosscutting.rules.Rule;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.AttachedDocumentDomain;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.dto.VisitParametersDTO;
@@ -14,11 +14,6 @@ import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entit
  * Datos: {@link VisitReasonEntity}, {@link AttachedDocumentDomain} y {@link VisitParametersDTO}.
  */
 public final class VisitDocumentMeetsReason implements Rule {
-
-	private static final Map<String, byte[]> SIGNATURES = Map.of(
-			"application/pdf", new byte[] { '%', 'P', 'D', 'F' },
-			"image/jpeg", new byte[] { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF },
-			"image/png", new byte[] { (byte) 0x89, 'P', 'N', 'G' });
 
 	private static final Rule instance = new VisitDocumentMeetsReason();
 
@@ -53,11 +48,19 @@ public final class VisitDocumentMeetsReason implements Rule {
 		}
 	}
 
-	/** El tipo viene del cliente; se contrasta con los primeros bytes. Un tipo sin firma conocida se acepta. */
+	/**
+	 * El tipo viene del cliente; se contrasta con los primeros bytes que define el parametro {@code DOCUMENT_SIGNATURES}
+	 * del {@link ParameterCatalog}. Un tipo permitido que no tenga firma es un error de configuracion y no se acepta
+	 * a ciegas: se falla indicando cual falta, igual que cuando falta cualquier otro parametro.
+	 */
 	private static boolean matchesSignature(final AttachedDocumentDomain document) {
-		final byte[] signature = SIGNATURES.get(document.contentType());
-		return signature == null
-				|| Arrays.equals(Arrays.copyOf(document.content(), signature.length), signature);
+		final byte[] signature = ParameterCatalog.DOCUMENT_SIGNATURES.get(document.contentType());
+		if (signature == null) {
+			throw new IllegalStateException("El tipo de documento permitido '" + document.contentType()
+					+ "' no tiene firma en smartlife.visits.validation.format.document-signatures");
+		}
+		return document.content().length >= signature.length
+				&& Arrays.equals(Arrays.copyOf(document.content(), signature.length), signature);
 	}
 
 }
