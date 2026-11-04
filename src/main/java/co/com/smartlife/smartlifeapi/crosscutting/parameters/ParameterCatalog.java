@@ -53,6 +53,10 @@ public final class ParameterCatalog {
 	public static Set<String> DOCUMENT_ALLOWED_TYPES;
 	public static volatile String QR_BASE_URL;
 	public static volatile ZoneId TIME_ZONE;
+	public static volatile String QR_CONTENT_ID;
+	public static volatile String QR_FILE_NAME;
+	public static volatile String QR_CONTENT_TYPE;
+	public static volatile String NOTIFICATION_DATE_PATTERN;
 
 
 	public static final AtomicReference<Map<String, byte[]>> DOCUMENT_SIGNATURES = new AtomicReference<>(Map.of());

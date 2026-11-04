@@ -29,10 +29,6 @@ public class VisitAuthorizationNotifier {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(VisitAuthorizationNotifier.class);
 	public static final String NOTIFICATION_CODE = "VISIT_AUTHORIZATION_CREATED";
-	public static final String QR_CONTENT_ID = "visit-qr";
-	private static final String QR_FILE_NAME = "autorizacion-visita.png";
-	private static final String QR_CONTENT_TYPE = "image/png";
-	private static final String DATE_PATTERN = "dd/MM/yyyy hh:mm a";
 
 	private final NotificationCatalogOutputPort notificationCatalog;
 	private final NotificationGatewayOutputPort notificationGateway;
@@ -56,7 +52,8 @@ public class VisitAuthorizationNotifier {
 					authorization.getVisitor().getEmail(),
 					render(template.subject(), values, false),
 					render(template.content(), values, true),
-					List.of(new EmailAttachmentDTO(QR_FILE_NAME, qrBase64, QR_CONTENT_TYPE, QR_CONTENT_ID))));
+					List.of(new EmailAttachmentDTO(ParameterCatalog.QR_FILE_NAME, qrBase64,
+							ParameterCatalog.QR_CONTENT_TYPE, ParameterCatalog.QR_CONTENT_ID))));
 			LOGGER.info("Autorización {} notificada (Resend id={})", authorization.getId(), emailId);
 			return true;
 		} catch (final RuntimeException exception) {
@@ -67,7 +64,7 @@ public class VisitAuthorizationNotifier {
 	}
 
 	private Map<String, String> placeholders(final VisitAuthorizationEntity authorization, final Locale locale) {
-		final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_PATTERN, locale).withZone(ParameterCatalog.TIME_ZONE);
+		final DateTimeFormatter formatter = DateTimeFormatter.ofPattern(ParameterCatalog.NOTIFICATION_DATE_PATTERN, locale).withZone(ParameterCatalog.TIME_ZONE);
 		final VisitorEntity visitor = authorization.getVisitor();
 		final Map<String, String> values = new HashMap<>();
 		values.put("visitorName", join(visitor.getFirstName(), visitor.getMiddleName(),

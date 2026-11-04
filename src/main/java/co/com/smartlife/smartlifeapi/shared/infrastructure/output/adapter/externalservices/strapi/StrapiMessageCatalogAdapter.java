@@ -4,8 +4,6 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
@@ -13,8 +11,8 @@ import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
-import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
+import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
 import co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.strapi.dto.StrapiMessageCatalogData;
 import co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.strapi.dto.StrapiMessageCatalogResponse;
 import co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.strapi.mapper.MessageCatalogMapper;
@@ -24,8 +22,6 @@ import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices
 
 @Component
 public class StrapiMessageCatalogAdapter implements MessageCatalogOutputPort {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(StrapiMessageCatalogAdapter.class);
 
 	private static final String QUERY_CODE = "filters[code][$eq]";
 	private static final String QUERY_LOCALE = "locale";
@@ -77,8 +73,6 @@ public class StrapiMessageCatalogAdapter implements MessageCatalogOutputPort {
 	@Cacheable(value = "message-catalog", key = "#code + ':' + #locale")
 	public MessageCatalogDTO findByCodeAndLocale(final String code, final String locale) {
 		if (baseUrl.isBlank()) {
-			LOGGER.warn("La URL de Strapi no está configurada (strapi.url): no se puede consultar el mensaje {} ({})",
-					code, locale);
 			throw unavailable(new IllegalStateException("strapi.url no esta configurada"), code, locale);
 		}
 
@@ -88,7 +82,6 @@ public class StrapiMessageCatalogAdapter implements MessageCatalogOutputPort {
 		} catch (final SmartLifeException exception) {
 			throw exception;
 		} catch (final RuntimeException exception) {
-			LOGGER.warn("Falló la consulta a Strapi del mensaje {} ({}): {}", code, locale, exception.getMessage());
 			throw unavailable(exception, code, locale);
 		}
 	}

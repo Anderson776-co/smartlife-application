@@ -52,6 +52,10 @@ public final class ParameterCatalogTestSupport {
 		ParameterCatalog.DOCUMENT_ALLOWED_TYPES = Set.of("application/pdf", "image/jpeg", "image/png");
 		ParameterCatalog.QR_BASE_URL = "http://localhost:5173/visitas/autorizaciones/";
 		ParameterCatalog.TIME_ZONE = ZoneId.of("UTC");
+		ParameterCatalog.QR_CONTENT_ID = "visit-qr";
+		ParameterCatalog.QR_FILE_NAME = "autorizacion-visita.png";
+		ParameterCatalog.QR_CONTENT_TYPE = "image/png";
+		ParameterCatalog.NOTIFICATION_DATE_PATTERN = "dd/MM/yyyy hh:mm a";
 		ParameterCatalog.DOCUMENT_SIGNATURES.set(Map.of(
 				"application/pdf", new byte[] { '%', 'P', 'D', 'F' },
 				"image/jpeg", new byte[] { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF },
