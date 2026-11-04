@@ -17,6 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
+import co.com.smartlife.smartlifeapi.crosscutting.parameters.ParameterCatalogTestSupport;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.AttachedDocumentDomain;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.externalservices.FileStorageOutputPort;
 
@@ -27,6 +28,7 @@ class VisitDocumentStorageTest {
 
 	@BeforeEach
 	void setUp() {
+		ParameterCatalogTestSupport.load();
 		fileStorage = mock(FileStorageOutputPort.class);
 		storage = new VisitDocumentStorage(fileStorage);
 	}

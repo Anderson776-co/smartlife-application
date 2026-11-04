@@ -48,6 +48,9 @@ class ParameterCatalogConfigurationTest {
 		properties.put(VISITS + "document.allowed-types", "application/pdf,image/png");
 		properties.put(VISITS + "qr-base-url", "https://app.smartlife.co/visitas/");
 		properties.put(VISITS + "time-zone", "America/Bogota");
+		properties.put(VISITS + "document.storage-key-format", "visits/authorizations/%s/document.%s");
+		properties.put(VISITS + "document.default-extension", "bin");
+		properties.put(VISITS + "document.extensions", "application/pdf=pdf,image/jpeg=jpg,image/png=png");
 		properties.put(VISITS + "qr-content-id", "visit-qr");
 		properties.put(VISITS + "qr-file-name", "autorizacion-visita.png");
 		properties.put(VISITS + "qr-content-type", "image/png");

@@ -7,11 +7,13 @@ import java.time.format.DateTimeFormatter;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
@@ -109,6 +111,11 @@ public class ParameterCatalogConfiguration {
 		final Optional<String> notificationDatePattern = bound(binder, "notification-date-pattern", String.class, missing)
 				.filter(value -> datePattern(value, missing));
 
+		final Optional<String> documentStorageKeyFormat = bound(binder, "document.storage-key-format", String.class, missing)
+				.filter(value -> storageKeyFormat(value, missing));
+		final Optional<String> documentDefaultExtension = bound(binder, "document.default-extension", String.class, missing);
+		final Optional<Map<String, String>> documentExtensions = extensions(environment, VISITS + "document.extensions", missing);
+
 		range(LENGTH + "document-number", documentNumberMin, documentNumberMax, missing);
 		range(LENGTH + "first-name", firstNameMin, firstNameMax, missing);
 		range(LENGTH + "middle-name", middleNameMin, middleNameMax, missing);
@@ -170,6 +177,9 @@ public class ParameterCatalogConfiguration {
 		ParameterCatalog.QR_FILE_NAME = qrFileName.orElseThrow();
 		ParameterCatalog.QR_CONTENT_TYPE = qrContentType.orElseThrow();
 		ParameterCatalog.NOTIFICATION_DATE_PATTERN = notificationDatePattern.orElseThrow();
+		ParameterCatalog.DOCUMENT_STORAGE_KEY_FORMAT = documentStorageKeyFormat.orElseThrow();
+		ParameterCatalog.DOCUMENT_DEFAULT_EXTENSION = documentDefaultExtension.orElseThrow().trim();
+		ParameterCatalog.DOCUMENT_EXTENSIONS = documentExtensions.orElseThrow();
 
 		ParameterCatalog.markLoaded(List.of());
 		LOGGER.info("Parametros cargados desde el servidor de configuracion");
@@ -307,6 +317,36 @@ public class ParameterCatalogConfiguration {
 			missing.add(VISITS + "qr-base-url (debe ser una URL http o https completa)");
 		}
 		return valid;
+	}
+
+	private static boolean storageKeyFormat(final String value, final List<String> missing) {
+		try {
+			value.formatted(UUID.randomUUID(), "ext");
+			return true;
+		} catch (final IllegalFormatException _) {
+			missing.add(VISITS + "document.storage-key-format (formato invalido: '" + value
+					+ "'; use dos %s: id de la autorizacion y extension)");
+			return false;
+		}
+	}
+
+	private static Optional<Map<String, String>> extensions(final Environment environment, final String key,
+			final List<String> missing) {
+		final String value = environment.getProperty(key);
+		if (ObjectHelper.isNull(value) || value.isBlank()) {
+			missing.add(key);
+			return Optional.empty();
+		}
+		final Map<String, String> extensions = new LinkedHashMap<>();
+		for (final String entry : value.split(",")) {
+			final String[] parts = entry.trim().split("=", 2);
+			if (parts.length != 2 || parts[0].isBlank() || parts[1].isBlank()) {
+				missing.add(key + " (entrada invalida: '" + entry.trim() + "')");
+				return Optional.empty();
+			}
+			extensions.put(parts[0].trim().toLowerCase(Locale.ROOT), parts[1].trim());
+		}
+		return Optional.of(Map.copyOf(extensions));
 	}
 
 	private static boolean datePattern(final String value, final List<String> missing) {
