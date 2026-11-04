@@ -27,11 +27,6 @@ public class GlobalExceptionHandler {
     static final String ACCESS_DENIED_CODE = "USER_MESSAGE_ACCESS_DENIED";
     static final String SESSION_REQUIRED_CODE = "USER_MESSAGE_SESSION_REQUIRED";
     static final String UNEXPECTED_ERROR_CODE = "USER_ERROR_TRYING_TO_MAKE_AN_OPERATION";
-    private static final int PAYLOAD_TOO_LARGE_STATUS = 413;
-    private static final String PAYLOAD_TOO_LARGE_DEFAULT = "El archivo supera el tamaño máximo permitido.";
-    private static final String REQUEST_INVALID_DEFAULT = "No pudimos leer la solicitud. Revisa los datos e intenta de nuevo.";
-    private static final String ACCESS_DENIED_DEFAULT = "No tienes permiso para realizar esta acción.";
-    private static final String SESSION_REQUIRED_DEFAULT = "Tu sesión no es válida o expiró. Inicia sesión de nuevo.";
     private static final String UNEXPECTED_ERROR_DEFAULT =
             "Se ha presentado un problema tratando de realizar la operación. Por favor intente de nuevo.";
 
@@ -58,41 +53,40 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<Response<Object>> handleUploadTooLarge(final MaxUploadSizeExceededException exception) {
         LOGGER.warn("[REQUEST] Carga por encima del límite: {}", exception.getMessage());
-        return failed(HttpStatus.valueOf(PAYLOAD_TOO_LARGE_STATUS), PAYLOAD_TOO_LARGE_CODE, PAYLOAD_TOO_LARGE_DEFAULT);
+        return failed(HttpStatus.CONTENT_TOO_LARGE, PAYLOAD_TOO_LARGE_CODE);
     }
 
     @ExceptionHandler({ HttpMessageNotReadableException.class, TypeMismatchException.class })
     public ResponseEntity<Response<Object>> handleUnreadable(final Exception exception) {
         LOGGER.warn("[REQUEST] Cuerpo ilegible: {}", exception.getMessage());
-        return failed(HttpStatus.BAD_REQUEST, REQUEST_INVALID_CODE, REQUEST_INVALID_DEFAULT);
+        return failed(HttpStatus.BAD_REQUEST, REQUEST_INVALID_CODE);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Response<Object>> handleAccessDenied(final AccessDeniedException exception) {
         LOGGER.warn("[AUTHORIZATION] {}", exception.getMessage());
-        return failed(HttpStatus.FORBIDDEN, ACCESS_DENIED_CODE, ACCESS_DENIED_DEFAULT);
+        return failed(HttpStatus.FORBIDDEN, ACCESS_DENIED_CODE);
     }
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<Response<Object>> handleAuthentication(final AuthenticationException exception) {
         LOGGER.warn("[AUTHENTICATION] {}", exception.getMessage());
-        return failed(HttpStatus.UNAUTHORIZED, SESSION_REQUIRED_CODE, SESSION_REQUIRED_DEFAULT);
+        return failed(HttpStatus.UNAUTHORIZED, SESSION_REQUIRED_CODE);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Response<Object>> handleUnexpected(final Exception exception) {
         if (exception instanceof ErrorResponse errorResponse && errorResponse.getStatusCode().is4xxClientError()) {
             LOGGER.warn("[REQUEST] {}", exception.getMessage());
-            return failed(errorResponse.getStatusCode(), REQUEST_INVALID_CODE, REQUEST_INVALID_DEFAULT);
+            return failed(errorResponse.getStatusCode(), REQUEST_INVALID_CODE);
         }
         LOGGER.error("[UNEXPECTED] {}", exception.getMessage(), exception);
-        return failed(HttpStatus.INTERNAL_SERVER_ERROR, UNEXPECTED_ERROR_CODE, UNEXPECTED_ERROR_DEFAULT);
+        return failed(HttpStatus.INTERNAL_SERVER_ERROR, UNEXPECTED_ERROR_CODE);
     }
 
-    private ResponseEntity<Response<Object>> failed(final HttpStatusCode status, final String code,
-            final String fallback) {
+    private ResponseEntity<Response<Object>> failed(final HttpStatusCode status, final String code) {
         final Response<Object> body = Response.createFailedResponse();
-        body.addMessage(messages.resolve(code, fallback));
+        body.addMessage(messages.resolve(code, UNEXPECTED_ERROR_DEFAULT));
         return ResponseEntity.status(status).body(body);
     }
 }
