@@ -236,4 +236,131 @@ class ParameterCatalogConfigurationTest {
 		assertEquals(Duration.ofDays(3), ParameterCatalog.MAX_ANTICIPATION);
 	}
 
+	@Test
+	void shouldLoadTheNotificationAndDocumentStorageParameters() {
+		load();
+
+		assertTrue(ParameterCatalog.isLoaded());
+		assertEquals("visit-qr", ParameterCatalog.QR_CONTENT_ID);
+		assertEquals("autorizacion-visita.png", ParameterCatalog.QR_FILE_NAME);
+		assertEquals("image/png", ParameterCatalog.QR_CONTENT_TYPE);
+		assertEquals("dd/MM/yyyy hh:mm a", ParameterCatalog.NOTIFICATION_DATE_PATTERN);
+		assertEquals("visits/authorizations/%s/document.%s", ParameterCatalog.DOCUMENT_STORAGE_KEY_FORMAT);
+		assertEquals("bin", ParameterCatalog.DOCUMENT_DEFAULT_EXTENSION);
+		assertEquals(Map.of("application/pdf", "pdf", "image/jpeg", "jpg", "image/png", "png"),
+				ParameterCatalog.DOCUMENT_EXTENSIONS);
+	}
+
+	@Test
+	void shouldStoreTheDocumentExtensionsInLowerCaseAndTrimTheDefaultExtension() {
+		properties.put(VISITS + "document.extensions", "Application/PDF=pdf");
+		properties.put(VISITS + "document.default-extension", " bin ");
+
+		load();
+
+		assertTrue(ParameterCatalog.isLoaded());
+		assertEquals(Map.of("application/pdf", "pdf"), ParameterCatalog.DOCUMENT_EXTENSIONS);
+		assertEquals("bin", ParameterCatalog.DOCUMENT_DEFAULT_EXTENSION);
+	}
+
+	@Test
+	void shouldAcceptAQrBaseUrlThatUsesPlainHttp() {
+		properties.put(VISITS + "qr-base-url", "http://localhost:5173/visitas/autorizaciones/");
+
+		load();
+
+		assertTrue(ParameterCatalog.isLoaded());
+		assertEquals("http://localhost:5173/visitas/autorizaciones/", ParameterCatalog.QR_BASE_URL);
+	}
+
+	@Test
+	void shouldRejectAQrBaseUrlWithASchemeThatIsNotHttp() {
+		properties.put(VISITS + "qr-base-url", "ftp://files.smartlife.co/visitas/");
+
+		load();
+
+		assertFalse(ParameterCatalog.isLoaded());
+		final IllegalStateException exception = assertThrows(IllegalStateException.class, ParameterCatalog::ensureLoaded);
+		assertTrue(exception.getMessage().contains(VISITS + "qr-base-url (debe ser una URL http o https completa)"));
+	}
+
+	@Test
+	void shouldRejectAQrBaseUrlThatIsNotAValidUri() {
+		properties.put(VISITS + "qr-base-url", "http://exa mple.com/visitas/");
+
+		load();
+
+		assertFalse(ParameterCatalog.isLoaded());
+		final IllegalStateException exception = assertThrows(IllegalStateException.class, ParameterCatalog::ensureLoaded);
+		assertTrue(exception.getMessage().contains(VISITS + "qr-base-url (debe ser una URL http o https completa)"));
+	}
+
+	@Test
+	void shouldRejectANotificationDatePatternThatCannotBeUsed() {
+		properties.put(VISITS + "notification-date-pattern", "dd/MM/yyyy {hh}");
+
+		load();
+
+		assertFalse(ParameterCatalog.isLoaded());
+		final IllegalStateException exception = assertThrows(IllegalStateException.class, ParameterCatalog::ensureLoaded);
+		assertTrue(exception.getMessage().contains(VISITS + "notification-date-pattern (patron de fecha invalido"));
+	}
+
+	@Test
+	void shouldRejectAStorageKeyFormatThatCannotReceiveTheIdAndTheExtension() {
+		for (final String value : new String[] { "visits/%s/%s/%s", "visits/%d/document.%s", "visits/%q" }) {
+			properties.put(VISITS + "document.storage-key-format", value);
+
+			load();
+
+			final IllegalStateException exception = assertThrows(IllegalStateException.class, ParameterCatalog::ensureLoaded);
+			assertTrue(exception.getMessage().contains(VISITS + "document.storage-key-format (formato invalido"),
+					"no rechazo " + value);
+		}
+	}
+
+	@Test
+	void shouldRejectEveryMalformedEntryOfTheDocumentExtensions() {
+		for (final String value : new String[] { "application/pdf", "=pdf", "application/pdf=",
+				"application/pdf=pdf,image/png" }) {
+			properties.put(VISITS + "document.extensions", value);
+
+			load();
+
+			final IllegalStateException exception = assertThrows(IllegalStateException.class, ParameterCatalog::ensureLoaded);
+			assertTrue(exception.getMessage().contains(VISITS + "document.extensions (entrada invalida"),
+					"no rechazo " + value);
+		}
+	}
+
+	@Test
+	void shouldRejectEveryMalformedEntryOfTheDocumentSignatures() {
+		for (final String value : new String[] { "application/pdf", "=25504446", "application/pdf=25504446,image/png" }) {
+			properties.put(FORMAT + "document-signatures", value);
+
+			load();
+
+			final IllegalStateException exception = assertThrows(IllegalStateException.class, ParameterCatalog::ensureLoaded);
+			assertTrue(exception.getMessage().contains(FORMAT + "document-signatures (entrada invalida"),
+					"no rechazo " + value);
+		}
+	}
+
+	@Test
+	void shouldTreatBlankFormatLengthAndExtensionValuesAsMissing() {
+		properties.put(FORMAT + "email", "   ");
+		properties.put(LENGTH + "email-min", "  ");
+		properties.put(FORMAT + "document-signatures", "");
+		properties.put(VISITS + "document.extensions", " ");
+
+		load();
+
+		assertFalse(ParameterCatalog.isLoaded());
+		final IllegalStateException exception = assertThrows(IllegalStateException.class, ParameterCatalog::ensureLoaded);
+		assertTrue(exception.getMessage().contains(FORMAT + "email"));
+		assertTrue(exception.getMessage().contains(LENGTH + "email-min"));
+		assertTrue(exception.getMessage().contains(FORMAT + "document-signatures"));
+		assertTrue(exception.getMessage().contains(VISITS + "document.extensions"));
+	}
+
 }
