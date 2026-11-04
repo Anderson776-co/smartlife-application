@@ -3,6 +3,7 @@ package co.com.smartlife.smartlifeapi.crosscutting.parameters.config;
 import java.net.URI;
 import java.time.DateTimeException;
 import java.time.Duration;
+import java.time.format.DateTimeFormatter;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -102,6 +103,12 @@ public class ParameterCatalogConfiguration {
 		final Optional<ZoneId> timeZone = bound(binder, "time-zone", String.class, missing)
 				.flatMap(zone -> zoneOf(zone, missing));
 
+		final Optional<String> qrContentId = bound(binder, "qr-content-id", String.class, missing);
+		final Optional<String> qrFileName = bound(binder, "qr-file-name", String.class, missing);
+		final Optional<String> qrContentType = bound(binder, "qr-content-type", String.class, missing);
+		final Optional<String> notificationDatePattern = bound(binder, "notification-date-pattern", String.class, missing)
+				.filter(value -> datePattern(value, missing));
+
 		range(LENGTH + "document-number", documentNumberMin, documentNumberMax, missing);
 		range(LENGTH + "first-name", firstNameMin, firstNameMax, missing);
 		range(LENGTH + "middle-name", middleNameMin, middleNameMax, missing);
@@ -159,6 +166,10 @@ public class ParameterCatalogConfiguration {
 		ParameterCatalog.DOCUMENT_ALLOWED_TYPES = documentAllowedTypes.orElseThrow();
 		ParameterCatalog.QR_BASE_URL = qrBaseUrl.orElseThrow();
 		ParameterCatalog.TIME_ZONE = timeZone.orElseThrow();
+		ParameterCatalog.QR_CONTENT_ID = qrContentId.orElseThrow();
+		ParameterCatalog.QR_FILE_NAME = qrFileName.orElseThrow();
+		ParameterCatalog.QR_CONTENT_TYPE = qrContentType.orElseThrow();
+		ParameterCatalog.NOTIFICATION_DATE_PATTERN = notificationDatePattern.orElseThrow();
 
 		ParameterCatalog.markLoaded(List.of());
 		LOGGER.info("Parametros cargados desde el servidor de configuracion");
@@ -296,6 +307,16 @@ public class ParameterCatalogConfiguration {
 			missing.add(VISITS + "qr-base-url (debe ser una URL http o https completa)");
 		}
 		return valid;
+	}
+
+	private static boolean datePattern(final String value, final List<String> missing) {
+		try {
+			DateTimeFormatter.ofPattern(value.trim());
+			return true;
+		} catch (final IllegalArgumentException _) {
+			missing.add(VISITS + "notification-date-pattern (patron de fecha invalido: '" + value + "')");
+			return false;
+		}
 	}
 
 	private static Optional<ZoneId> zoneOf(final String value, final List<String> missing) {

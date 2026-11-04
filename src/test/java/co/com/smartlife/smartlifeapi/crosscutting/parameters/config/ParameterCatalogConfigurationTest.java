@@ -48,6 +48,10 @@ class ParameterCatalogConfigurationTest {
 		properties.put(VISITS + "document.allowed-types", "application/pdf,image/png");
 		properties.put(VISITS + "qr-base-url", "https://app.smartlife.co/visitas/");
 		properties.put(VISITS + "time-zone", "America/Bogota");
+		properties.put(VISITS + "qr-content-id", "visit-qr");
+		properties.put(VISITS + "qr-file-name", "autorizacion-visita.png");
+		properties.put(VISITS + "qr-content-type", "image/png");
+		properties.put(VISITS + "notification-date-pattern", "dd/MM/yyyy hh:mm a");
 		environment.getPropertySources().addFirst(new MapPropertySource("test", properties));
 		ParameterCatalogTestSupport.unload();
 	}
