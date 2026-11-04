@@ -56,6 +56,9 @@ public final class ParameterCatalogTestSupport {
 		ParameterCatalog.QR_FILE_NAME = "autorizacion-visita.png";
 		ParameterCatalog.QR_CONTENT_TYPE = "image/png";
 		ParameterCatalog.NOTIFICATION_DATE_PATTERN = "dd/MM/yyyy hh:mm a";
+		ParameterCatalog.DOCUMENT_STORAGE_KEY_FORMAT = "visits/authorizations/%s/document.%s";
+		ParameterCatalog.DOCUMENT_DEFAULT_EXTENSION = "bin";
+		ParameterCatalog.DOCUMENT_EXTENSIONS = Map.of("application/pdf", "pdf", "image/jpeg", "jpg", "image/png", "png");
 		ParameterCatalog.DOCUMENT_SIGNATURES.set(Map.of(
 				"application/pdf", new byte[] { '%', 'P', 'D', 'F' },
 				"image/jpeg", new byte[] { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF },
