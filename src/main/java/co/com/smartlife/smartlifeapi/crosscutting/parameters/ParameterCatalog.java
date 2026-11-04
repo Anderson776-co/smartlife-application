@@ -59,7 +59,7 @@ public final class ParameterCatalog {
 	public static volatile String NOTIFICATION_DATE_PATTERN;
 	public static volatile String DOCUMENT_STORAGE_KEY_FORMAT;
 	public static volatile String DOCUMENT_DEFAULT_EXTENSION;
-	public static volatile Map<String, String> DOCUMENT_EXTENSIONS;
+	public static Map<String, String> DOCUMENT_EXTENSIONS;
 
 
 	public static final AtomicReference<Map<String, byte[]>> DOCUMENT_SIGNATURES = new AtomicReference<>(Map.of());

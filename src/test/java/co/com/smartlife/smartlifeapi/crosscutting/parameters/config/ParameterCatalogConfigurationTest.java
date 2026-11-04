@@ -12,10 +12,14 @@ import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 
@@ -27,6 +31,7 @@ class ParameterCatalogConfigurationTest {
 	private static final String FORMAT = "smartlife.visits.validation.format.";
 	private static final String LENGTH = "smartlife.visits.validation.length.";
 	private static final String VISITS = "smartlife.visits.";
+	private static final String QR_BASE_URL_REJECTED = "qr-base-url (debe ser una URL http o https completa)";
 
 	private final Map<String, Object> properties = new HashMap<>();
 	private final StandardEnvironment environment = new StandardEnvironment();
@@ -273,37 +278,25 @@ class ParameterCatalogConfigurationTest {
 		assertEquals("http://localhost:5173/visitas/autorizaciones/", ParameterCatalog.QR_BASE_URL);
 	}
 
-	@Test
-	void shouldRejectAQrBaseUrlWithASchemeThatIsNotHttp() {
-		properties.put(VISITS + "qr-base-url", "ftp://files.smartlife.co/visitas/");
+	@ParameterizedTest(name = "{0} = {1}")
+	@MethodSource("rejectedVisitValues")
+	void shouldNameTheVisitParameterWhoseValueIsRejected(final String parameter, final String value,
+			final String expectedMessage) {
+		properties.put(VISITS + parameter, value);
 
 		load();
 
 		assertFalse(ParameterCatalog.isLoaded());
 		final IllegalStateException exception = assertThrows(IllegalStateException.class, ParameterCatalog::ensureLoaded);
-		assertTrue(exception.getMessage().contains(VISITS + "qr-base-url (debe ser una URL http o https completa)"));
+		assertTrue(exception.getMessage().contains(VISITS + expectedMessage));
 	}
 
-	@Test
-	void shouldRejectAQrBaseUrlThatIsNotAValidUri() {
-		properties.put(VISITS + "qr-base-url", "http://exa mple.com/visitas/");
-
-		load();
-
-		assertFalse(ParameterCatalog.isLoaded());
-		final IllegalStateException exception = assertThrows(IllegalStateException.class, ParameterCatalog::ensureLoaded);
-		assertTrue(exception.getMessage().contains(VISITS + "qr-base-url (debe ser una URL http o https completa)"));
-	}
-
-	@Test
-	void shouldRejectANotificationDatePatternThatCannotBeUsed() {
-		properties.put(VISITS + "notification-date-pattern", "dd/MM/yyyy {hh}");
-
-		load();
-
-		assertFalse(ParameterCatalog.isLoaded());
-		final IllegalStateException exception = assertThrows(IllegalStateException.class, ParameterCatalog::ensureLoaded);
-		assertTrue(exception.getMessage().contains(VISITS + "notification-date-pattern (patron de fecha invalido"));
+	static Stream<Arguments> rejectedVisitValues() {
+		return Stream.of(
+				Arguments.of("qr-base-url", "ftp://files.smartlife.co/visitas/", QR_BASE_URL_REJECTED),
+				Arguments.of("qr-base-url", "http://exa mple.com/visitas/", QR_BASE_URL_REJECTED),
+				Arguments.of("notification-date-pattern", "dd/MM/yyyy {hh}",
+						"notification-date-pattern (patron de fecha invalido"));
 	}
 
 	@Test
