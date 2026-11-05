@@ -7,7 +7,7 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Encabezado } from '../../../shared/encabezado/encabezado';
 import { Pie } from '../../../shared/pie/pie';
-import { MOTIVOS, Opcion } from '../catalogos';
+import { Opcion } from '../catalogos';
 import {
   AutorizacionCreada,
   SolicitudAutorizacion,
@@ -28,18 +28,15 @@ export class AutorizarVisita {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
-  /** Solo las viviendas del usuario en sesión, pedidas al backend. */
   protected readonly propiedades = signal<Opcion[]>([]);
-  /** true cuando el backend respondió y el usuario no tiene ninguna vivienda sobre la que autorizar. */
   protected readonly sinPropiedades = signal(false);
-  protected readonly motivos = MOTIVOS;
+  protected readonly motivos = signal<Opcion[]>([]);
 
   protected readonly cargando = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly resultado = signal<AutorizacionCreada | null>(null);
   protected readonly documento = signal<File | null>(null);
 
-  /** Sin validaciones: el backend valida todo y responde con el mensaje del catálogo. */
   protected readonly formulario = this.fb.nonNullable.group({
     propiedadId: [''],
     motivoId: [''],
@@ -60,7 +57,7 @@ export class AutorizarVisita {
   });
 
   protected readonly requiereDocumento = computed(
-    () => MOTIVOS.find((m) => m.id === this.motivoSeleccionado())?.requiereDocumento ?? false,
+    () => this.motivos().find((m) => m.id === this.motivoSeleccionado())?.requiereDocumento ?? false,
   );
 
   private readonly valores = toSignal(this.formulario.valueChanges, {
@@ -79,7 +76,7 @@ export class AutorizarVisita {
       .join(' ');
     return {
       propiedad: this.propiedades().find((p) => p.id === v.propiedadId)?.nombre ?? null,
-      motivo: MOTIVOS.find((m) => m.id === v.motivoId)?.nombre ?? null,
+      motivo: this.motivos().find((m) => m.id === v.motivoId)?.nombre ?? null,
       inicio: this.formatoLegible(v.inicio),
       fin: this.formatoLegible(v.fin),
       duracion: this.duracion(),
@@ -89,9 +86,8 @@ export class AutorizarVisita {
     };
   });
 
-  /** Porcentaje de campos principales que ya tienen contenido (no valida: solo orienta). */
   protected readonly progreso = computed(() => {
-    this.valores(); // se recalcula con cada cambio del formulario
+    this.valores();
     const c = this.formulario.controls;
     const principales = [
       c.propiedadId,
@@ -115,17 +111,28 @@ export class AutorizarVisita {
   constructor() {
     this.formulario.patchValue(this.fechasIniciales());
     void this.cargarPropiedades();
+    void this.cargarMotivos();
   }
 
   private async cargarPropiedades(): Promise<void> {
     try {
       const propiedades = await this.servicio.listarPropiedades();
-      this.propiedades.set(propiedades.map((p) => ({ id: p.propertyId, nombre: p.location })));
+      this.propiedades.set(propiedades.map((p) => ({ id: p.id, nombre: p.location })));
       this.sinPropiedades.set(propiedades.length === 0);
-      // Si solo tiene una vivienda, queda elegida
       if (propiedades.length === 1) {
-        this.formulario.controls.propiedadId.setValue(propiedades[0].propertyId);
+        this.formulario.controls.propiedadId.setValue(propiedades[0].id);
       }
+    } catch (e) {
+      this.error.set(this.mensajeDeError(e));
+    }
+  }
+
+  private async cargarMotivos(): Promise<void> {
+    try {
+      const motivos = await this.servicio.listarMotivos();
+      this.motivos.set(
+        motivos.map((m) => ({ id: m.id, nombre: m.name, requiereDocumento: m.requiresDocument })),
+      );
     } catch (e) {
       this.error.set(this.mensajeDeError(e));
     }
@@ -196,7 +203,6 @@ export class AutorizarVisita {
     return this.router.navigate(['/inicio']);
   }
 
-  /** Muestra el mensaje que responde el backend (viene del catálogo de Strapi). */
   private mensajeDeError(e: unknown): string {
     if (e instanceof HttpErrorResponse && e.status !== 0) {
       const mensaje = (e.error as { messages?: string[] } | null)?.messages?.[0];
@@ -222,7 +228,6 @@ export class AutorizarVisita {
     return resto === 0 ? `${horas} h` : `${horas} h ${resto} min`;
   }
 
-  /** Inicio en 5 minutos y fin 2 horas después, en el formato del input datetime-local. */
   private fechasIniciales(): { inicio: string; fin: string } {
     const inicio = new Date(Date.now() + 5 * 60 * 1000);
     const fin = new Date(inicio.getTime() + 2 * 60 * 60 * 1000);

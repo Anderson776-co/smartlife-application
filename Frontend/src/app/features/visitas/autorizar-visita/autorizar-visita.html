@@ -57,7 +57,7 @@
               <label for="motivoId">Motivo de la visita</label>
               <select id="motivoId" formControlName="motivoId" class="f-control">
                 <option value="" disabled>Selecciona un motivo</option>
-                @for (m of motivos; track m.id) {
+                @for (m of motivos(); track m.id) {
                   <option [value]="m.id">{{ m.nombre }}</option>
                 }
               </select>

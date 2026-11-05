@@ -16,11 +16,17 @@ const SERVICIO_TECNICO = 'ffffffff-0000-0000-0000-000000000005';
 describe('AutorizarVisita', () => {
   const autorizar = vi.fn();
   const listarPropiedades = vi.fn();
+  const listarMotivos = vi.fn();
 
   beforeEach(async () => {
     autorizar.mockReset();
     listarPropiedades.mockReset();
-    listarPropiedades.mockResolvedValue([{ propertyId: CASA_101, location: 'Casa 101 - Bloque A' }]);
+    listarMotivos.mockReset();
+    listarPropiedades.mockResolvedValue([{ id: CASA_101, location: 'Casa 101 - Bloque A' }]);
+    listarMotivos.mockResolvedValue([
+      { id: VISITA_FAMILIAR, name: 'Visita familiar', requiresDocument: false },
+      { id: SERVICIO_TECNICO, name: 'Servicio técnico', requiresDocument: true },
+    ]);
     autorizar.mockResolvedValue({
       authorizationId: 'abc-123',
       qrUrl: 'http://localhost:4200/visitas/autorizaciones/abc-123',
@@ -34,7 +40,7 @@ describe('AutorizarVisita', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: Auth, useValue: {} },
-        { provide: VisitAuthorizationService, useValue: { autorizar, listarPropiedades } },
+        { provide: VisitAuthorizationService, useValue: { autorizar, listarPropiedades, listarMotivos } },
       ],
     }).compileComponents();
   });
@@ -72,6 +78,15 @@ describe('AutorizarVisita', () => {
     );
     expect(listarPropiedades).toHaveBeenCalledTimes(1);
     expect(opciones.map((o) => o.textContent?.trim())).toEqual(['Casa 101 - Bloque A']);
+  });
+
+  it('ofrece los motivos que devuelve el backend, no una lista escrita en el front', async () => {
+    const { pagina } = await crear(['RESIDENT']);
+    const opciones = Array.from(
+      pagina.querySelectorAll<HTMLOptionElement>('#motivoId option:not([disabled])'),
+    );
+    expect(listarMotivos).toHaveBeenCalledTimes(1);
+    expect(opciones.map((o) => o.textContent?.trim())).toEqual(['Visita familiar', 'Servicio técnico']);
   });
 
   it('avisa cuando el usuario no tiene ninguna vivienda para autorizar visitas', async () => {

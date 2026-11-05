@@ -153,6 +153,19 @@ paths:
       responses:
         "200":
           description: Respuesta de la aplicacion
+  /api/v1/visits/properties:
+    get:
+      summary: Vivienda donde reside quien tiene la sesion, para autorizar visitas
+      operationId: listVisitProperties
+      responses:
+        "200":
+          description: Lista de viviendas del residente
+    options:
+      summary: Verificacion previa de CORS
+      operationId: listVisitPropertiesOptions
+      responses:
+        "200":
+          description: Respuesta de la aplicacion
   /api/v1/visits/reasons:
     get:
       summary: Motivos de visita disponibles para autorizar una visita
@@ -310,4 +323,3 @@ paths:
           description: Recarga aceptada
         "401":
           description: Firma invalida
-  
