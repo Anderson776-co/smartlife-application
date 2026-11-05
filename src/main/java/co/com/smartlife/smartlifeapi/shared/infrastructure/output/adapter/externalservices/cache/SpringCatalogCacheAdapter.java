@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.cache;
+package co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.cache;
 
 import java.util.Map;
 import java.util.Optional;

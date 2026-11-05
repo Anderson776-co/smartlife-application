@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.strapi.mapper;
+package co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.messagecatalog.strapi.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -8,7 +8,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
-import co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.strapi.dto.StrapiMessageCatalogData;
+import co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.messagecatalog.strapi.dto.StrapiMessageCatalogData;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.dto.MessageCatalogDTO;
 
 class MessageCatalogMapperTest {

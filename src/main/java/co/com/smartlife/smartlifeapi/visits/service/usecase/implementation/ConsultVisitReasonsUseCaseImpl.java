@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import co.com.smartlife.smartlifeapi.visits.domain.VisitReasonDomain;
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitReasonDomain;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.VisitReasonRepository;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.contract.ConsultVisitReasonsUseCase;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.mapper.VisitReasonMapperUseCase;

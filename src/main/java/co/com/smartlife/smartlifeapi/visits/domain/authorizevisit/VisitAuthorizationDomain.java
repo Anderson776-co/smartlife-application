@@ -3,7 +3,6 @@ package co.com.smartlife.smartlifeapi.visits.domain.authorizevisit;
 import java.time.Instant;
 import java.util.UUID;
 
-/** Datos con los que se REGISTRA una autorizacion. La consulta usa {@link VisitAuthorizationSummaryDomain}. */
 public record VisitAuthorizationDomain(
 		UUID id,
 		Instant authorizationStartDate,

@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.parameters;
+package co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.parameters.spring;
 
 import java.util.Set;
 

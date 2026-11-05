@@ -7,6 +7,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
+import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
+import co.com.smartlife.smartlifeapi.crosscutting.helper.UUIDHelper;
 import co.com.smartlife.smartlifeapi.shared.repository.criteria.Criteria;
 import co.com.smartlife.smartlifeapi.shared.repository.criteria.Filter;
 import co.com.smartlife.smartlifeapi.shared.repository.criteria.Filters;
@@ -58,21 +60,25 @@ public class ConsultVisitAuthorizationsUseCaseImpl implements ConsultVisitAuthor
 						MessageCatalogProvider.getContent("TECHNICAL_MESSAGE_" + NOT_FOUND_CODE)));
 	}
 
-	/** Solo las del residente en sesion; los demas filtros se agregan unicamente si vienen informados. */
+
 	private static List<Filter> filtersOf(final VisitAuthorizationFilterDomain filter) {
 		final List<Filter> filters = new ArrayList<>();
+		
 		filters.add(Filter.equal(VisitAuthorizationEntity.AUTHORIZATOR_ID, filter.authorizatorId()));
-		if (filter.isActive() != null) {
+		
+		if (!ObjectHelper.isNull(filter.isActive())) {
 			filters.add(Filter.equal(VisitAuthorizationEntity.IS_ACTIVE, filter.isActive()));
 		}
-		if (filter.propertyId() != null) {
+		
+		if (!UUIDHelper.getUUIDHelper().isDefaultUUID(filter.propertyId())) {
 			filters.add(Filter.equal(VisitAuthorizationEntity.PROPERTY_ID, filter.propertyId()));
 		}
-		// La autorizacion se cruza con [from, to] si empieza antes de "to" y termina despues de "from"
-		if (filter.from() != null) {
+		
+		if (!ObjectHelper.isNull(filter.from())) {
 			filters.add(Filter.greaterThan(VisitAuthorizationEntity.AUTHORIZATION_END_DATE, filter.from()));
 		}
-		if (filter.to() != null) {
+		
+		if (!ObjectHelper.isNull(filter.to())) {
 			filters.add(Filter.lessThan(VisitAuthorizationEntity.AUTHORIZATION_START_DATE, filter.to()));
 		}
 		return filters;

@@ -16,8 +16,8 @@ import org.mapstruct.factory.Mappers;
 
 import co.com.smartlife.smartlifeapi.crosscutting.helper.UUIDHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.session.CurrentUser;
-import co.com.smartlife.smartlifeapi.visits.domain.PropertyVisitDomain;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.AuthorizatorDomain;
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.PropertyVisitDomain;
 import co.com.smartlife.smartlifeapi.visits.service.input.adapter.mapper.AuthorizatorMapperInput;
 import co.com.smartlife.smartlifeapi.visits.service.input.adapter.mapper.PropertyVisitInputMapper;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.ListAuthorizatorPropertiesDtoRequest;

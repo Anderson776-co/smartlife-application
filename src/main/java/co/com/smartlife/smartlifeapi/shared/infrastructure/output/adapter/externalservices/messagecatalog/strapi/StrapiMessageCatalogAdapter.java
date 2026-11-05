@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.strapi;
+package co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.messagecatalog.strapi;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -13,9 +13,9 @@ import org.springframework.web.client.RestClient;
 
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
 import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
-import co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.strapi.dto.StrapiMessageCatalogData;
-import co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.strapi.dto.StrapiMessageCatalogResponse;
-import co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.strapi.mapper.MessageCatalogMapper;
+import co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.messagecatalog.strapi.dto.StrapiMessageCatalogData;
+import co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.messagecatalog.strapi.dto.StrapiMessageCatalogResponse;
+import co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.messagecatalog.strapi.mapper.MessageCatalogMapper;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogOutputPort;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogProvider;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.dto.MessageCatalogDTO;

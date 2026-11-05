@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.parameters;
+package co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.parameters.spring;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
