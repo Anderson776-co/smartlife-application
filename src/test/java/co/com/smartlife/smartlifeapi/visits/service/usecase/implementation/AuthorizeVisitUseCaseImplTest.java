@@ -51,7 +51,6 @@ import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.mappe
 import co.com.smartlife.smartlifeapi.visits.service.usecase.contract.VerifyVisitAuthorizationAccessUseCase;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.support.RegisterVisitAuthorization;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.support.ResolveVisitor;
-import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.support.VisitAuthorizationNotifier;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.support.VisitDocumentStorage;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.support.VisitorResolution;
 
@@ -75,7 +74,6 @@ class AuthorizeVisitUseCaseImplTest {
 	private ResolveVisitor resolveVisitor;
 	private VisitDocumentStorage documentStorage;
 	private RegisterVisitAuthorization registerAuthorization;
-	private VisitAuthorizationNotifier notifier;
 	private TelemetryOutputPort telemetry;
 	private AuthorizeVisitUseCaseImpl useCase;
 
@@ -94,12 +92,11 @@ class AuthorizeVisitUseCaseImplTest {
 		resolveVisitor = mock(ResolveVisitor.class);
 		documentStorage = mock(VisitDocumentStorage.class);
 		registerAuthorization = mock(RegisterVisitAuthorization.class);
-		notifier = mock(VisitAuthorizationNotifier.class);
 		telemetry = mock(TelemetryOutputPort.class);
 
 		useCase = new AuthorizeVisitUseCaseImpl(authorizatorRepository, propertyVisitRepository,
 				visitReasonRepository, visitAuthorizationRepository, verifyAccess, resolveVisitor, documentStorage,
-				registerAuthorization, notifier, telemetry, Clock.fixed(NOW, ZoneOffset.UTC),
+				registerAuthorization, telemetry, Clock.fixed(NOW, ZoneOffset.UTC),
 				Mappers.getMapper(VisitAuthorizationMapperUseCase.class));
 
 		authorizator = new AuthorizatorDomain(authorizatorId, urbanizationId, Set.of("RESIDENT"));
@@ -115,7 +112,6 @@ class AuthorizeVisitUseCaseImplTest {
 				.thenReturn(Optional.of(new VisitReasonEntity(technicalReasonId, "Servicio tecnico", true)));
 		when(verifyAccess.execute(any(VisitAuthorizationAccessDomain.class))).thenReturn(true);
 		when(resolveVisitor.resolve(any())).thenReturn(VisitorResolution.created(newVisitor));
-		when(notifier.notifyVisitor(any())).thenReturn(true);
 	}
 
 	@Test
@@ -151,7 +147,6 @@ class AuthorizeVisitUseCaseImplTest {
 		assertSame(newVisitor, saved.getValue().getVisitor());
 		assertEquals(NOW, saved.getValue().getRegisterDate());
 		verify(documentStorage, never()).store(any(), any());
-		verify(notifier).notifyVisitor(saved.getValue());
 	}
 
 	@Test
@@ -176,7 +171,6 @@ class AuthorizeVisitUseCaseImplTest {
 		assertEquals(SmartLifeException.Type.BUSINESS, exception.getType());
 		verify(documentStorage, never()).store(any(), any());
 		verify(registerAuthorization, never()).register(any(), anyBoolean());
-		verify(notifier, never()).notifyVisitor(any());
 	}
 
 	@Test
@@ -188,7 +182,6 @@ class AuthorizeVisitUseCaseImplTest {
 		assertThrows(IllegalStateException.class, () -> useCase.execute(command));
 
 		verify(documentStorage).discard(DOCUMENT_KEY);
-		verify(notifier, never()).notifyVisitor(any());
 	}
 
 	@Test
@@ -202,13 +195,12 @@ class AuthorizeVisitUseCaseImplTest {
 	}
 
 	@Test
-	void shouldKeepTheAuthorizationWhenTheNotificationFails() {
-		when(notifier.notifyVisitor(any())).thenReturn(false);
+	void shouldRejectTheAuthorizationWhenTheNotificationFails() {
+		doThrow(SmartLifeException.create("correo no disponible")).when(registerAuthorization).register(any(), anyBoolean());
 
-		final VisitAuthorizationDomain result = useCase.execute(request(familyReasonId, AttachedDocumentDomain.empty()));
+		final VisitAuthorizationDomain command = request(familyReasonId, AttachedDocumentDomain.empty());
 
-		assertFalse(result.notificationSent());
-		verify(registerAuthorization).register(any(), eq(true));
+		assertThrows(SmartLifeException.class, () -> useCase.execute(command));
 	}
 
 	@Test
@@ -318,14 +310,16 @@ class AuthorizeVisitUseCaseImplTest {
 	}
 
 	@Test
-	void shouldCountTheNotificationFailureWithoutFailingTheAuthorization() {
-		when(notifier.notifyVisitor(any())).thenReturn(false);
+	void shouldDiscardTheStoredDocumentWhenTheNotificationFails() {
+		when(documentStorage.store(any(UUID.class), any())).thenReturn(DOCUMENT_KEY);
+		doThrow(SmartLifeException.create("correo no disponible")).when(registerAuthorization).register(any(), anyBoolean());
 
-		useCase.execute(request(familyReasonId, AttachedDocumentDomain.empty()));
+		final VisitAuthorizationDomain command = request(technicalReasonId, pdf());
+		assertThrows(SmartLifeException.class, () -> useCase.execute(command));
 
-		verify(telemetry).incrementCounter("smartlife.visits.notifications.failed");
-		verify(telemetry).incrementCounter("smartlife.visits.authorizations.created");
-		verify(telemetry, never()).incrementCounter("smartlife.visits.authorizations.failed");
+		verify(documentStorage).discard(DOCUMENT_KEY);
+		verify(telemetry).incrementCounter("smartlife.visits.authorizations.failed");
+		verify(telemetry, never()).incrementCounter("smartlife.visits.authorizations.created");
 	}
 
 	private VisitAuthorizationDomain request(final UUID reasonId, final AttachedDocumentDomain document) {

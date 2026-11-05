@@ -29,7 +29,6 @@ import co.com.smartlife.smartlifeapi.visits.service.usecase.contract.VerifyVisit
 import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.mapper.VisitAuthorizationMapperUseCase;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.support.RegisterVisitAuthorization;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.support.ResolveVisitor;
-import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.support.VisitAuthorizationNotifier;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.support.VisitDocumentStorage;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.support.VisitorResolution;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.validation.ValidateActiveAuthorizator;
@@ -48,7 +47,6 @@ public class AuthorizeVisitUseCaseImpl implements AuthorizeVisitUseCase {
 	private static final String PATH_SEPARATOR = "/";
 	static final String AUTHORIZATIONS_CREATED = "smartlife.visits.authorizations.created";
 	static final String AUTHORIZATIONS_FAILED = "smartlife.visits.authorizations.failed";
-	static final String NOTIFICATIONS_FAILED = "smartlife.visits.notifications.failed";
 	static final String AUTHORIZATION_DURATION = "smartlife.visits.authorizations.duration";
 
 	private final AuthorizatorRepository authorizatorRepository;
@@ -59,7 +57,6 @@ public class AuthorizeVisitUseCaseImpl implements AuthorizeVisitUseCase {
 	private final ResolveVisitor resolveVisitor;
 	private final VisitDocumentStorage documentStorage;
 	private final RegisterVisitAuthorization registerAuthorization;
-	private final VisitAuthorizationNotifier notifier;
 	private final TelemetryOutputPort telemetry;
 	private final Clock clock;
 	private final VisitAuthorizationMapperUseCase mapper;
@@ -69,7 +66,7 @@ public class AuthorizeVisitUseCaseImpl implements AuthorizeVisitUseCase {
 			final VisitAuthorizationRepository visitAuthorizationRepository,
 			final VerifyVisitAuthorizationAccessUseCase verifyAccess, final ResolveVisitor resolveVisitor,
 			final VisitDocumentStorage documentStorage, final RegisterVisitAuthorization registerAuthorization,
-			final VisitAuthorizationNotifier notifier, final TelemetryOutputPort telemetry,
+			final TelemetryOutputPort telemetry,
 			final Clock clock, final VisitAuthorizationMapperUseCase mapper) {
 		this.authorizatorRepository = authorizatorRepository;
 		this.propertyVisitRepository = propertyVisitRepository;
@@ -79,7 +76,6 @@ public class AuthorizeVisitUseCaseImpl implements AuthorizeVisitUseCase {
 		this.resolveVisitor = resolveVisitor;
 		this.documentStorage = documentStorage;
 		this.registerAuthorization = registerAuthorization;
-		this.notifier = notifier;
 		this.telemetry = telemetry;
 		this.clock = clock;
 		this.mapper = mapper;
@@ -125,11 +121,7 @@ public class AuthorizeVisitUseCaseImpl implements AuthorizeVisitUseCase {
 
 		register(authorization, visitor.isNew());
 
-		final boolean notificationSent = notifier.notifyVisitor(authorization);
-		if (!notificationSent) {
-			telemetry.incrementCounter(NOTIFICATIONS_FAILED);
-		}
-		return mapper.toDomain(authorization, input.authorizator(), notificationSent);
+		return mapper.toDomain(authorization, input.authorizator(), true);
 	}
 
 	private static String qrUrlFor(final UUID authorizationId) {
