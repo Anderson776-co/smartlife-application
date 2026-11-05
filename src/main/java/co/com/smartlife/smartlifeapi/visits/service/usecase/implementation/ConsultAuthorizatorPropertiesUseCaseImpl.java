@@ -1,6 +1,5 @@
 package co.com.smartlife.smartlifeapi.visits.service.usecase.implementation;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,22 +38,22 @@ public class ConsultAuthorizatorPropertiesUseCaseImpl implements ConsultAuthoriz
 	}
 
 	@Override
-	public List<PropertyVisitDomain> list(final AuthorizatorDomain authorizator) {
-		ValidateUserAuthorizatorExistsById.executeValidation(authorizator.id(), authorizatorRepository);
-		ValidateActiveAuthorizator.executeValidation(authorizator.id(), authorizatorRepository);
-		
-		final Optional<UUID> propertyId = visitResidentRepository.findById(authorizator.id())
-				.map(visitResident -> visitResident.getProperty().getId());
-		
-		if (propertyId.isEmpty()){
-			return List.of();
-		}
-		
-		return propertyVisitRepository.
-				matching(Criteria.of(Filter.equalTo(PropertyVisitEntity.ID, propertyId.get())))
-				.stream()
-				.map(mapperUseCase::toDomain)
-				.toList();
+	public Optional<PropertyVisitDomain> list(
+	        final AuthorizatorDomain authorizator) {
+
+	    ValidateUserAuthorizatorExistsById.executeValidation(authorizator.id(), authorizatorRepository);
+
+	    ValidateActiveAuthorizator.executeValidation(authorizator.id(), authorizatorRepository);
+
+	    final Optional<UUID> propertyId = visitResidentRepository.findById(authorizator.id())
+	                    .map(visitResident ->
+	                            visitResident.getProperty().getId());
+
+	    return propertyId.flatMap(id ->
+	           	propertyVisitRepository.matching(Criteria.of(Filter.equalTo(PropertyVisitEntity.ID,id)))
+	            .stream()
+	            .findFirst())
+	            .map(mapperUseCase::toDomain);
 	}
 
 }

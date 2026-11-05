@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.AuthorizatorDomain;
 import co.com.smartlife.smartlifeapi.visits.service.input.adapter.mapper.AuthorizatorMapperInput;
 import co.com.smartlife.smartlifeapi.visits.service.input.adapter.mapper.PropertyVisitInputMapper;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.ListAuthorizatorPropertiesDtoRequest;
@@ -28,10 +27,9 @@ public class ConsultAuthorizatorPropertiesInputAdapter implements ConsultAuthori
 
 	@Override
 	public List<PropertyVisitDtoResponse> execute(final ListAuthorizatorPropertiesDtoRequest data) {
-		final AuthorizatorDomain authorizator = mapper.toDomain(data);
-		return useCase.list(authorizator)
-				.stream()
+		return useCase.list(mapper.toDomain(data))
 				.map(propertyVisitInputMapper::toDto)
+				.stream()
 				.toList();
 	}
 

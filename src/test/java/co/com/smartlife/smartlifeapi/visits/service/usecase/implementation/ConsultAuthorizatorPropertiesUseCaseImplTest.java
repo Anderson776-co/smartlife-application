@@ -55,14 +55,35 @@ class ConsultAuthorizatorPropertiesUseCaseImplTest {
 	}
 
 	@Test
-	void shouldListTheDwellingWhereTheResidentLives() {
+	void shouldFindTheDwellingWhereTheResidentLives() {
 		givenRegisteredAuthorizator(true);
 		givenResidentLivesIn(APARTMENT_202);
 		when(propertyVisitRepository.matching(any(Criteria.class))).thenReturn(List.of(APARTMENT_202));
 
-		final List<PropertyVisitDomain> result = useCase.list(authorizator("RESIDENT"));
+		final Optional<PropertyVisitDomain> result = useCase.list(authorizator("RESIDENT"));
 
-		assertEquals(List.of(new PropertyVisitDomain(APARTMENT_202.getId(), APARTMENT_202.getLocation())), result);
+		assertEquals(Optional.of(new PropertyVisitDomain(APARTMENT_202.getId(), APARTMENT_202.getLocation())), result);
+	}
+
+	@Test
+	void shouldReturnNothingWhenTheDwellingOfTheResidentIsNotInThePropertyView() {
+		givenRegisteredAuthorizator(true);
+		givenResidentLivesIn(APARTMENT_202);
+		when(propertyVisitRepository.matching(any(Criteria.class))).thenReturn(List.of());
+
+		assertTrue(useCase.list(authorizator("RESIDENT")).isEmpty());
+	}
+
+	@Test
+	void shouldKeepOnlyTheFirstPropertyWhenTheQueryReturnsMoreThanOne() {
+		final PropertyVisitEntity other = new PropertyVisitEntity(UUID.randomUUID(), "Bloque A, Vivienda 101");
+		givenRegisteredAuthorizator(true);
+		givenResidentLivesIn(APARTMENT_202);
+		when(propertyVisitRepository.matching(any(Criteria.class))).thenReturn(List.of(APARTMENT_202, other));
+
+		final Optional<PropertyVisitDomain> result = useCase.list(authorizator("RESIDENT"));
+
+		assertEquals(Optional.of(new PropertyVisitDomain(APARTMENT_202.getId(), APARTMENT_202.getLocation())), result);
 	}
 
 	@Test

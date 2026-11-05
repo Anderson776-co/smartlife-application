@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -45,7 +46,7 @@ class ConsultAuthorizatorPropertiesInputAdapterTest {
 	@Test
 	void shouldAskTheUseCaseForTheSessionUserAndMapTheirPropertiesToTheResponse() {
 		final AuthorizatorDomain authorizator = new AuthorizatorDomain(USER_ID, URBANIZATION_ID, Set.of("RESIDENT"));
-		when(useCase.list(authorizator)).thenReturn(List.of(new PropertyVisitDomain(PROPERTY_ID, "Bloque B, Vivienda 202")));
+		when(useCase.list(authorizator)).thenReturn(Optional.of(new PropertyVisitDomain(PROPERTY_ID, "Bloque B, Vivienda 202")));
 
 		final List<PropertyVisitDtoResponse> result = adapter.execute(new ListAuthorizatorPropertiesDtoRequest(USER));
 
@@ -54,8 +55,8 @@ class ConsultAuthorizatorPropertiesInputAdapterTest {
 	}
 
 	@Test
-	void shouldReturnAnEmptyListWhenTheUseCaseFindsNoProperties() {
-		when(useCase.list(new AuthorizatorDomain(USER_ID, URBANIZATION_ID, Set.of("RESIDENT")))).thenReturn(List.of());
+	void shouldReturnAnEmptyListWhenTheUseCaseFindsNoProperty() {
+		when(useCase.list(new AuthorizatorDomain(USER_ID, URBANIZATION_ID, Set.of("RESIDENT")))).thenReturn(Optional.empty());
 
 		assertTrue(adapter.execute(new ListAuthorizatorPropertiesDtoRequest(USER)).isEmpty());
 	}
