@@ -2,7 +2,9 @@ package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repos
 
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
@@ -11,6 +13,12 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+
+import co.com.smartlife.smartlifeapi.shared.repository.criteria.Criteria;
+import co.com.smartlife.smartlifeapi.shared.repository.criteria.Filter;
+import co.com.smartlife.smartlifeapi.shared.repository.criteria.Order;
 
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa.PropertyVisitJpaRepository;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa.entity.PropertyVisitJpaEntity;
@@ -65,5 +73,20 @@ class PropertyVisitJpaRepositoryAdapterTest {
 	@Test
 	void findByFilterShouldReturnAnEmptyListForNow() {
 		assertTrue(adapter.findByFilter(mock(PropertyVisitEntity.class)).isEmpty());
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	void matchingShouldFilterWithTheCriteriaAndReturnTheMappedList() {
+		List<PropertyVisitJpaEntity> jpaList = List.of(mock(PropertyVisitJpaEntity.class));
+		List<PropertyVisitEntity> entities = List.of(mock(PropertyVisitEntity.class));
+		when(repository.findAll(any(Specification.class), any(Sort.class))).thenReturn(jpaList);
+		when(mapper.toEntity(jpaList)).thenReturn(entities);
+
+		Criteria criteria = Criteria.of(Filter.equalTo(PropertyVisitEntity.ID, UUID.randomUUID()))
+				.orderedBy(Order.asc(PropertyVisitEntity.LOCATION));
+
+		assertSame(entities, adapter.matching(criteria));
+		verify(repository).findAll(any(Specification.class), any(Sort.class));
 	}
 }

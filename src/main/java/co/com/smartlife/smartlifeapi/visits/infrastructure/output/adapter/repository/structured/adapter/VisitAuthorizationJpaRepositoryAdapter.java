@@ -7,6 +7,8 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
 
+import co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.repository.criteria.CriteriaToJpaConverter;
+import co.com.smartlife.smartlifeapi.shared.repository.criteria.Criteria;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa.VisitAuthorizationJpaRepository;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa.entity.VisitAuthorizationJpaEntity;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.mapper.VisitAuthorizationMapper;
@@ -68,8 +70,15 @@ public class VisitAuthorizationJpaRepositoryAdapter implements VisitAuthorizatio
 	}
 
 	@Override
-	public List<VisitAuthorizationEntity> findByAuthorizatorId(UUID authorizatorId) {
-		return mapper.toEntity(repository.findByAuthorizatorIdOrderByAuthorizationStartDateDesc(authorizatorId));
+	public List<VisitAuthorizationEntity> matching(final Criteria criteria) {
+		return mapper.toEntity(repository.findAll(
+				CriteriaToJpaConverter.<VisitAuthorizationJpaEntity>toSpecification(criteria),
+				CriteriaToJpaConverter.toPageable(criteria)).getContent());
+	}
+
+	@Override
+	public long count(final Criteria criteria) {
+		return repository.count(CriteriaToJpaConverter.<VisitAuthorizationJpaEntity>toSpecification(criteria));
 	}
 
 	@Override

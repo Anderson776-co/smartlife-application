@@ -40,7 +40,7 @@ class AuthorizeVisitDtoRequestTest {
 		final VisitorDtoRequest visitor = new VisitorDtoRequest("2001", "Luis", "", "Torres", "", "luis@example.com", "");
 		final AttachedDocumentDtoRequest document = new AttachedDocumentDtoRequest("a.pdf", "application/pdf",
 				new byte[] { 1 });
-		final CurrentUser user = new CurrentUser(UUID.randomUUID(), "ana@example.com", Set.of("OWNER"), UUID.randomUUID());
+		final CurrentUser user = new CurrentUser(UUID.randomUUID(), "ana@example.com", Set.of("RESIDENT"), UUID.randomUUID());
 
 		final AuthorizeVisitDtoRequest request = new AuthorizeVisitDtoRequest(propertyId, reasonId, start, end,
 				"Entrega", visitor, document, user);

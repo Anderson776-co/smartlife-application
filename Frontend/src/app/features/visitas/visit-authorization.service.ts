@@ -17,11 +17,21 @@ export interface VisitanteSolicitud {
 export interface SolicitudAutorizacion {
   propertyId: string;
   visitReasonId: string;
-  /** Fecha y hora en formato ISO 8601 (UTC). */
   authorizationStartDate: string;
   authorizationEndDate: string;
   observation: string;
   visitor: VisitanteSolicitud;
+}
+
+export interface PropiedadAutorizable {
+  id: string;
+  location: string;
+}
+
+export interface MotivoVisita {
+  id: string;
+  name: string;
+  requiresDocument: boolean;
 }
 
 export interface AutorizacionCreada {
@@ -30,17 +40,10 @@ export interface AutorizacionCreada {
   notificationSent: boolean;
 }
 
-/** Estado de una autorización, calculado por el backend: próxima, vigente, vencida o cancelada. */
-export type EstadoAutorizacion = 'UPCOMING' | 'CURRENT' | 'EXPIRED' | 'CANCELLED';
-
-/** Una autorización ya registrada, tal como la devuelve GET /visits/authorizations. */
 export interface AutorizacionResumen {
   authorizationId: string;
   authorizationStartDate: string;
   authorizationEndDate: string;
-  registerDate: string;
-  observation: string;
-  qrUrl: string;
   propertyLocation: string;
   visitReason: string;
   documentAttached: boolean;
@@ -48,10 +51,9 @@ export interface AutorizacionResumen {
   visitorFullName: string;
   visitorEmail: string;
   vehiclePlate: string;
-  status: EstadoAutorizacion;
+  isActive: boolean;
 }
 
-/** Una página de resultados (los números de página empiezan en 0, como en el backend). */
 export interface PaginaAutorizaciones {
   content: AutorizacionResumen[];
   page: number;
@@ -71,15 +73,10 @@ export class VisitAuthorizationService {
   private readonly http = inject(HttpClient);
   private readonly url = `${API_URL}/visits/authorizations`;
 
-  /**
-   * Envía la autorización como multipart: la parte "authorization" lleva el JSON
-   * y la parte "document" (opcional) lleva el archivo.
-   */
   async autorizar(
     solicitud: SolicitudAutorizacion,
     documento: File | null,
   ): Promise<AutorizacionCreada> {
-    // Deja la cookie XSRF-TOKEN al día; Angular la envía como encabezado X-XSRF-TOKEN
     await firstValueFrom(this.http.get(`${API_URL}/users/sessions/csrf`));
 
     const cuerpo = new FormData();
@@ -101,18 +98,27 @@ export class VisitAuthorizationService {
     return creada;
   }
 
-  /**
-   * Una página de las autorizaciones que hizo el usuario en sesión, de la más reciente a la más antigua
-   * (GET /visits/authorizations?page=0&size=10, con `status` opcional). La paginación la hace el
-   * servidor: la respuesta trae `data[0]` con `content`, `page`, `size`, `totalElements` y `totalPages`.
-   */
+  async listarPropiedades(): Promise<PropiedadAutorizable[]> {
+    const respuesta = await firstValueFrom(
+      this.http.get<RespuestaApi<PropiedadAutorizable>>(`${API_URL}/visits/properties`),
+    );
+    return respuesta.data;
+  }
+
+  async listarMotivos(): Promise<MotivoVisita[]> {
+    const respuesta = await firstValueFrom(
+      this.http.get<RespuestaApi<MotivoVisita>>(`${API_URL}/visits/reasons`),
+    );
+    return respuesta.data;
+  }
+
   async listar(
     pagina: number,
     tamano: number,
-    estado?: EstadoAutorizacion,
+    activa?: boolean,
   ): Promise<PaginaAutorizaciones> {
-    const params: Record<string, string | number> = { page: pagina, size: tamano };
-    if (estado) params['status'] = estado;
+    const params: Record<string, string | number | boolean> = { page: pagina, size: tamano };
+    if (activa !== undefined) params['isActive'] = activa;
     const respuesta = await firstValueFrom(
       this.http.get<RespuestaApi<PaginaAutorizaciones>>(this.url, { params }),
     );

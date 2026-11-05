@@ -4,6 +4,14 @@ import java.time.Instant;
 import java.util.UUID;
 
 public class VisitAuthorizationEntity {
+
+	public static final String ID = "id";
+	public static final String AUTHORIZATION_START_DATE = "authorizationStartDate";
+	public static final String AUTHORIZATION_END_DATE = "authorizationEndDate";
+	public static final String IS_ACTIVE = "isActive";
+	public static final String PROPERTY_ID = "property.id";
+	public static final String AUTHORIZATOR_ID = "authorizator.id";
+
 	private UUID id;
 	private Instant authorizationStartDate;
 	private Instant authorizationEndDate;

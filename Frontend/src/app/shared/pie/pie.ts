@@ -13,5 +13,5 @@ export class Pie {
   private readonly auth = inject(AuthService);
 
   protected readonly anio = new Date().getFullYear();
-  protected readonly puedeAutorizar = computed(() => this.auth.tieneRol('OWNER', 'RESIDENT'));
+  protected readonly puedeAutorizar = computed(() => this.auth.tieneRol('RESIDENT'));
 }

@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationDomain;
 import co.com.smartlife.smartlifeapi.visits.service.input.adapter.mapper.VisitAuthorizationMapperInput;
+import co.com.smartlife.smartlifeapi.visits.service.input.adapter.mapper.VisitAuthorizationMapperResponseInput;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.AuthorizeVisitDtoRequest;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.response.VisitAuthorizationDtoResponse;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.contract.AuthorizeVisitUseCase;
@@ -20,13 +21,15 @@ class AuthorizeVisitInputAdapterTest {
 
 	private AuthorizeVisitUseCase useCase;
 	private VisitAuthorizationMapperInput mapper;
+	private VisitAuthorizationMapperResponseInput mapperResponse;
 	private AuthorizeVisitInputAdapter adapter;
 
 	@BeforeEach
 	void setUp() {
 		useCase = mock(AuthorizeVisitUseCase.class);
 		mapper = mock(VisitAuthorizationMapperInput.class);
-		adapter = new AuthorizeVisitInputAdapter(useCase, mapper);
+		mapperResponse = mock(VisitAuthorizationMapperResponseInput.class);
+		adapter = new AuthorizeVisitInputAdapter(useCase, mapper, mapperResponse);
 	}
 
 	@Test
@@ -39,7 +42,7 @@ class AuthorizeVisitInputAdapterTest {
 				new VisitAuthorizationDtoResponse(UUID.randomUUID(), "http://qr", true);
 		when(mapper.toDomain(any(AuthorizeVisitDtoRequest.class))).thenReturn(requested);
 		when(useCase.execute(requested)).thenReturn(registered);
-		when(mapper.toDTO(registered)).thenReturn(response);
+		when(mapperResponse.toDto(registered)).thenReturn(response);
 
 		assertSame(response, adapter.execute(request));
 	}

@@ -44,17 +44,20 @@
               <label for="propiedadId">Propiedad</label>
               <select id="propiedadId" formControlName="propiedadId" class="f-control">
                 <option value="" disabled>Selecciona una propiedad</option>
-                @for (p of propiedades; track p.id) {
+                @for (p of propiedades(); track p.id) {
                   <option [value]="p.id">{{ p.nombre }}</option>
                 }
               </select>
+              @if (sinPropiedades()) {
+                <small class="f-ayuda">No tienes viviendas asociadas para autorizar visitas.</small>
+              }
             </div>
 
             <div class="f-campo">
               <label for="motivoId">Motivo de la visita</label>
               <select id="motivoId" formControlName="motivoId" class="f-control">
                 <option value="" disabled>Selecciona un motivo</option>
-                @for (m of motivos; track m.id) {
+                @for (m of motivos(); track m.id) {
                   <option [value]="m.id">{{ m.nombre }}</option>
                 }
               </select>

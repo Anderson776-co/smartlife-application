@@ -1,23 +1,26 @@
 package co.com.smartlife.smartlifeapi.visits.service.usecase.implementation;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
-import co.com.smartlife.smartlifeapi.crosscutting.specification.Specification;
+import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
+import co.com.smartlife.smartlifeapi.crosscutting.helper.UUIDHelper;
+import co.com.smartlife.smartlifeapi.shared.repository.criteria.Criteria;
+import co.com.smartlife.smartlifeapi.shared.repository.criteria.Filter;
+import co.com.smartlife.smartlifeapi.shared.repository.criteria.Filters;
+import co.com.smartlife.smartlifeapi.shared.repository.criteria.Order;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogProvider;
-import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationDomain;
-import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationStatus;
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationFilterDomain;
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationPageDomain;
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationSummaryDomain;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.VisitAuthorizationRepository;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitAuthorizationEntity;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.contract.ConsultVisitAuthorizationsUseCase;
-import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.mapper.VisitAuthorizationMapperUseCase;
-import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.specification.AuthorizationSpecifications;
+import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.mapper.VisitAuthorizationSummaryMapperUseCase;
 
 @Service
 public class ConsultVisitAuthorizationsUseCaseImpl implements ConsultVisitAuthorizationsUseCase {
@@ -25,44 +28,59 @@ public class ConsultVisitAuthorizationsUseCaseImpl implements ConsultVisitAuthor
 	private static final String NOT_FOUND_CODE = "VISIT_AUTHORIZATION_NOT_FOUND";
 
 	private final VisitAuthorizationRepository repository;
-	private final Clock clock;
-	private final VisitAuthorizationMapperUseCase mapper;
+	private final VisitAuthorizationSummaryMapperUseCase mapper;
 
-	public ConsultVisitAuthorizationsUseCaseImpl(final VisitAuthorizationRepository repository, final Clock clock,
-			final VisitAuthorizationMapperUseCase mapper) {
+	public ConsultVisitAuthorizationsUseCaseImpl(final VisitAuthorizationRepository repository,
+			final VisitAuthorizationSummaryMapperUseCase mapper) {
 		this.repository = repository;
-		this.clock = clock;
 		this.mapper = mapper;
 	}
 
 	@Override
-	public List<VisitAuthorizationDomain> list(final UUID authorizatorId, final VisitAuthorizationStatus status,
-			final Instant from, final Instant to, final UUID propertyId) {
-		final Instant now = Instant.now(clock);
-		final Specification<VisitAuthorizationEntity> specification = AuthorizationSpecifications.matching(status,
-				from, to, propertyId, now);
+	public VisitAuthorizationPageDomain list(final VisitAuthorizationFilterDomain filter) {
+		final long offset = (long) filter.page() * filter.size();
+		final Criteria criteria = new Criteria(new Filters(filtersOf(filter)),
+				Order.desc(VisitAuthorizationEntity.AUTHORIZATION_START_DATE), filter.size(),
+				(int) Math.min(offset, Integer.MAX_VALUE));
 
-		return repository.findByAuthorizatorId(authorizatorId).stream()
-				.filter(specification::isSatisfiedBy)
-				.map(authorization -> mapper.toDomain(authorization, statusOf(authorization, now)))
-				.toList();
+		final long total = repository.count(criteria);
+		final List<VisitAuthorizationSummaryDomain> content = offset >= total ? List.of()
+				: repository.matching(criteria).stream().map(mapper::toDomain).toList();
+		final int totalPages = (int) ((total + filter.size() - 1) / filter.size());
+
+		return new VisitAuthorizationPageDomain(content, filter.page(), filter.size(), total, totalPages);
 	}
 
 	@Override
-	public VisitAuthorizationDomain find(final UUID authorizationId, final UUID authorizatorId) {
-		final Instant now = Instant.now(clock);
+	public VisitAuthorizationSummaryDomain find(final UUID authorizationId, final UUID authorizatorId) {
 		return repository.findByIdAndAuthorizatorId(authorizationId, authorizatorId)
-				.map(authorization -> mapper.toDomain(authorization, statusOf(authorization, now)))
+				.map(mapper::toDomain)
 				.orElseThrow(() -> SmartLifeException.create(
 						MessageCatalogProvider.getContent("USER_MESSAGE_" + NOT_FOUND_CODE),
 						MessageCatalogProvider.getContent("TECHNICAL_MESSAGE_" + NOT_FOUND_CODE)));
 	}
 
-	private static VisitAuthorizationStatus statusOf(final VisitAuthorizationEntity authorization, final Instant now) {
-		return Arrays.stream(VisitAuthorizationStatus.values())
-				.filter(VisitAuthorizationStatus::isSpecified)
-				.filter(status -> AuthorizationSpecifications.withStatus(status, now).isSatisfiedBy(authorization))
-				.findFirst()
-				.orElse(VisitAuthorizationStatus.UNSPECIFIED);
+
+	private static List<Filter> filtersOf(final VisitAuthorizationFilterDomain filter) {
+		final List<Filter> filters = new ArrayList<>();
+		
+		filters.add(Filter.equalTo(VisitAuthorizationEntity.AUTHORIZATOR_ID, filter.authorizatorId()));
+		
+		if (!ObjectHelper.isNull(filter.isActive())) {
+			filters.add(Filter.equalTo(VisitAuthorizationEntity.IS_ACTIVE, filter.isActive()));
+		}
+		
+		if (!UUIDHelper.getUUIDHelper().isDefaultUUID(filter.propertyId())) {
+			filters.add(Filter.equalTo(VisitAuthorizationEntity.PROPERTY_ID, filter.propertyId()));
+		}
+		
+		if (!ObjectHelper.isNull(filter.from())) {
+			filters.add(Filter.greaterThan(VisitAuthorizationEntity.AUTHORIZATION_END_DATE, filter.from()));
+		}
+		
+		if (!ObjectHelper.isNull(filter.to())) {
+			filters.add(Filter.lessThan(VisitAuthorizationEntity.AUTHORIZATION_START_DATE, filter.to()));
+		}
+		return filters;
 	}
 }

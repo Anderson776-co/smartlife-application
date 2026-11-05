@@ -1,4 +1,8 @@
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Auth } from '@angular/fire/auth';
+import { provideRouter } from '@angular/router';
 
 import { Recuperar } from './recuperar';
 
@@ -9,6 +13,12 @@ describe('Recuperar', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Recuperar],
+      providers: [
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: Auth, useValue: {} },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Recuperar);

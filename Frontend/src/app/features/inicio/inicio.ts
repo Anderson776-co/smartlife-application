@@ -16,8 +16,8 @@ export class Inicio {
   protected readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
-  /** Propietarios y residentes pueden autorizar visitas. */
-  protected readonly puedeAutorizar = computed(() => this.auth.tieneRol('OWNER', 'RESIDENT'));
+  /** Solo los residentes pueden autorizar visitas. */
+  protected readonly puedeAutorizar = computed(() => this.auth.tieneRol('RESIDENT'));
 
   protected readonly rol = computed(() => this.auth.roles().map(nombreDeRol).join(' · '));
 

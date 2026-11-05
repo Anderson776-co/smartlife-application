@@ -78,16 +78,11 @@ paths:
       summary: Autorizaciones de quien tiene la sesion, por paginas, de la mas reciente a la mas antigua
       operationId: listVisitAuthorizations
       parameters:
-        - name: status
+        - name: isActive
           in: query
           required: false
-          type: string
-          enum:
-            - UPCOMING
-            - CURRENT
-            - EXPIRED
-            - CANCELLED
-          description: Estado de la autorizacion
+          type: boolean
+          description: true para las autorizaciones activas, false para las canceladas; sin valor trae todas
         - name: from
           in: query
           required: false
@@ -155,6 +150,32 @@ paths:
           in: path
           required: true
           type: string
+      responses:
+        "200":
+          description: Respuesta de la aplicacion
+  /api/v1/visits/properties:
+    get:
+      summary: Vivienda donde reside quien tiene la sesion, para autorizar visitas
+      operationId: listVisitProperties
+      responses:
+        "200":
+          description: Lista de viviendas del residente
+    options:
+      summary: Verificacion previa de CORS
+      operationId: listVisitPropertiesOptions
+      responses:
+        "200":
+          description: Respuesta de la aplicacion
+  /api/v1/visits/reasons:
+    get:
+      summary: Motivos de visita disponibles para autorizar una visita
+      operationId: listVisitReasons
+      responses:
+        "200":
+          description: Lista de motivos de visita
+    options:
+      summary: Verificacion previa de CORS
+      operationId: listVisitReasonsOptions
       responses:
         "200":
           description: Respuesta de la aplicacion
@@ -302,4 +323,3 @@ paths:
           description: Recarga aceptada
         "401":
           description: Firma invalida
-  

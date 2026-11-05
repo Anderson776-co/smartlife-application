@@ -69,7 +69,7 @@ class VisitAuthorizationNotifierTest {
 	private static VisitAuthorizationEntity authorization(final VisitorEntity visitor) {
 		final UUID authorizatorId = UUID.randomUUID();
 		return new VisitAuthorizationEntity(UUID.randomUUID(), START, END, START, "Entrega", QR_URL, null,
-				Boolean.TRUE, new PropertyVisitEntity(UUID.randomUUID(), "Torre 1 - 101", authorizatorId),
+				Boolean.TRUE, new PropertyVisitEntity(UUID.randomUUID(), "Torre 1 - 101"),
 				new AuthorizatorEntity(authorizatorId, "Ana Ruiz", true, UUID.randomUUID()), visitor,
 				new VisitReasonEntity(UUID.randomUUID(), "Visita familiar", false));
 	}

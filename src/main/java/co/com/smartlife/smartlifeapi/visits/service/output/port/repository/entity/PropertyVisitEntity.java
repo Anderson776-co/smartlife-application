@@ -4,14 +4,15 @@ import java.util.UUID;
 
 public class PropertyVisitEntity {
 	
+	public static final String ID = "id";
+	public static final String LOCATION = "location";
+	
 	private final UUID id;
 	private final String location;
-	private final UUID ownerId;
 	
-	public PropertyVisitEntity(final UUID id, final String location, final UUID ownerId) {
+	public PropertyVisitEntity(final UUID id, final String location) {
 		this.id = id;
 		this.location = location;
-		this.ownerId = ownerId;
 	}
 
 	public UUID getId() {
@@ -20,9 +21,5 @@ public class PropertyVisitEntity {
 	
 	public String getLocation() {
 		return location;
-	}
-
-	public UUID getOwnerId() {
-		return ownerId;
 	}
 }
