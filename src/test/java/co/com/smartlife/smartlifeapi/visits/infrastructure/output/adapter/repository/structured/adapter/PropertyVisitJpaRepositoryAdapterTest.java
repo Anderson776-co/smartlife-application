@@ -83,7 +83,7 @@ class PropertyVisitJpaRepositoryAdapterTest {
 		when(repository.findAll(any(Specification.class), any(Sort.class))).thenReturn(jpaList);
 		when(mapper.toEntity(jpaList)).thenReturn(entities);
 
-		Criteria criteria = Criteria.of(Filter.equal(PropertyVisitEntity.ID, UUID.randomUUID()))
+		Criteria criteria = Criteria.of(Filter.equalTo(PropertyVisitEntity.ID, UUID.randomUUID()))
 				.orderedBy(Order.asc(PropertyVisitEntity.LOCATION));
 
 		assertSame(entities, adapter.matching(criteria));

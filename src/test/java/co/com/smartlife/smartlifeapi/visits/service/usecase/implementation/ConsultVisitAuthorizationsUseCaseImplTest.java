@@ -78,7 +78,7 @@ class ConsultVisitAuthorizationsUseCaseImplTest {
 		final Criteria criteria = listAndCaptureCriteria(
 				new VisitAuthorizationFilterDomain(AUTHORIZATOR, null, null, null, null, 0, 10));
 
-		assertEquals(List.of(Filter.equal(VisitAuthorizationEntity.AUTHORIZATOR_ID, AUTHORIZATOR)),
+		assertEquals(List.of(Filter.equalTo(VisitAuthorizationEntity.AUTHORIZATOR_ID, AUTHORIZATOR)),
 				criteria.filters().values());
 		assertEquals(Order.desc(VisitAuthorizationEntity.AUTHORIZATION_START_DATE), criteria.order());
 		assertEquals(10, criteria.limit());
@@ -91,9 +91,9 @@ class ConsultVisitAuthorizationsUseCaseImplTest {
 				new VisitAuthorizationFilterDomain(AUTHORIZATOR, true, FROM, TO, PROPERTY, 0, 10));
 
 		assertEquals(List.of(
-				Filter.equal(VisitAuthorizationEntity.AUTHORIZATOR_ID, AUTHORIZATOR),
-				Filter.equal(VisitAuthorizationEntity.IS_ACTIVE, true),
-				Filter.equal(VisitAuthorizationEntity.PROPERTY_ID, PROPERTY),
+				Filter.equalTo(VisitAuthorizationEntity.AUTHORIZATOR_ID, AUTHORIZATOR),
+				Filter.equalTo(VisitAuthorizationEntity.IS_ACTIVE, true),
+				Filter.equalTo(VisitAuthorizationEntity.PROPERTY_ID, PROPERTY),
 				Filter.greaterThan(VisitAuthorizationEntity.AUTHORIZATION_END_DATE, FROM),
 				Filter.lessThan(VisitAuthorizationEntity.AUTHORIZATION_START_DATE, TO)),
 				criteria.filters().values());

@@ -15,7 +15,7 @@ class CriteriaModelTest {
 
 	@Test
 	void theFilterFactoriesShouldSetTheOperator() {
-		assertEquals(new Filter("f", FilterOperator.EQUAL, 1), Filter.equal("f", 1));
+		assertEquals(new Filter("f", FilterOperator.EQUAL, 1), Filter.equalTo("f", 1));
 		assertEquals(new Filter("f", FilterOperator.GREATER_THAN, 1), Filter.greaterThan("f", 1));
 		assertEquals(new Filter("f", FilterOperator.LESS_THAN, 1), Filter.lessThan("f", 1));
 	}
@@ -32,17 +32,17 @@ class CriteriaModelTest {
 
 	@Test
 	void filtersShouldKeepAnImmutableCopyOfTheirValues() {
-		final List<Filter> source = new ArrayList<>(List.of(Filter.equal("f", 1)));
+		final List<Filter> source = new ArrayList<>(List.of(Filter.equalTo("f", 1)));
 		final Filters filters = new Filters(source);
-		source.add(Filter.equal("g", 2));
+		source.add(Filter.equalTo("g", 2));
 
 		assertEquals(1, filters.values().size());
-		assertThrows(UnsupportedOperationException.class, () -> filters.values().add(Filter.equal("h", 3)));
+		assertThrows(UnsupportedOperationException.class, () -> filters.values().add(Filter.equalTo("h", 3)));
 	}
 
 	@Test
 	void aCriteriaOfFiltersStartsWithoutOrderLimitNorOffset() {
-		final Criteria criteria = Criteria.of(Filter.equal("f", 1), Filter.equal("g", 2));
+		final Criteria criteria = Criteria.of(Filter.equalTo("f", 1), Filter.equalTo("g", 2));
 
 		assertEquals(2, criteria.filters().values().size());
 		assertEquals(Order.none(), criteria.order());
@@ -52,7 +52,7 @@ class CriteriaModelTest {
 
 	@Test
 	void orderedByShouldKeepTheFiltersTheLimitAndTheOffset() {
-		final Criteria criteria = new Criteria(Filters.of(Filter.equal("f", 1)), Order.none(), 5, 10)
+		final Criteria criteria = new Criteria(Filters.of(Filter.equalTo("f", 1)), Order.none(), 5, 10)
 				.orderedBy(Order.desc("f"));
 
 		assertEquals(Order.desc("f"), criteria.order());

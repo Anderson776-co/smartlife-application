@@ -81,7 +81,7 @@ class VisitResidentJpaRepositoryAdapterTest {
 		when(repository.findAll(any(Specification.class), any(Sort.class))).thenReturn(jpaList);
 		when(mapper.toEntity(jpaList)).thenReturn(entities);
 
-		assertSame(entities, adapter.matching(Criteria.of(Filter.equal(VisitResidentEntity.RESIDENT_ID, UUID.randomUUID()))));
+		assertSame(entities, adapter.matching(Criteria.of(Filter.equalTo(VisitResidentEntity.RESIDENT_ID, UUID.randomUUID()))));
 	}
 
 	@Test

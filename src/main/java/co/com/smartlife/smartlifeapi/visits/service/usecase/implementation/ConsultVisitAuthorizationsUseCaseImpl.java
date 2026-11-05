@@ -61,12 +61,12 @@ public class ConsultVisitAuthorizationsUseCaseImpl implements ConsultVisitAuthor
 	/** Solo las del residente en sesion; los demas filtros se agregan unicamente si vienen informados. */
 	private static List<Filter> filtersOf(final VisitAuthorizationFilterDomain filter) {
 		final List<Filter> filters = new ArrayList<>();
-		filters.add(Filter.equal(VisitAuthorizationEntity.AUTHORIZATOR_ID, filter.authorizatorId()));
+		filters.add(Filter.equalTo(VisitAuthorizationEntity.AUTHORIZATOR_ID, filter.authorizatorId()));
 		if (filter.isActive() != null) {
-			filters.add(Filter.equal(VisitAuthorizationEntity.IS_ACTIVE, filter.isActive()));
+			filters.add(Filter.equalTo(VisitAuthorizationEntity.IS_ACTIVE, filter.isActive()));
 		}
 		if (filter.propertyId() != null) {
-			filters.add(Filter.equal(VisitAuthorizationEntity.PROPERTY_ID, filter.propertyId()));
+			filters.add(Filter.equalTo(VisitAuthorizationEntity.PROPERTY_ID, filter.propertyId()));
 		}
 		// La autorizacion se cruza con [from, to] si empieza antes de "to" y termina despues de "from"
 		if (filter.from() != null) {

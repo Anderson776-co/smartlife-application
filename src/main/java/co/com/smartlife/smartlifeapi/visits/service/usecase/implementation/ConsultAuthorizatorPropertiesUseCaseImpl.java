@@ -51,7 +51,7 @@ public class ConsultAuthorizatorPropertiesUseCaseImpl implements ConsultAuthoriz
 		}
 		
 		return propertyVisitRepository.
-				matching(Criteria.of(Filter.equal(PropertyVisitEntity.ID, propertyId.get())))
+				matching(Criteria.of(Filter.equalTo(PropertyVisitEntity.ID, propertyId.get())))
 				.stream()
 				.map(mapperUseCase::toDomain)
 				.toList();

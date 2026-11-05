@@ -45,7 +45,7 @@ class VisitAuthorizationJpaRepositoryAdapterConsultTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	void matchingShouldSearchWithTheSpecificationAndThePageOfTheCriteriaAndReturnTheMappedList() {
-		final Criteria criteria = new Criteria(Filters.of(Filter.equal("authorizator.id", UUID.randomUUID())),
+		final Criteria criteria = new Criteria(Filters.of(Filter.equalTo("authorizator.id", UUID.randomUUID())),
 				Order.desc("authorizationStartDate"), 5, 10);
 		final List<VisitAuthorizationJpaEntity> jpaList = List.of(mock(VisitAuthorizationJpaEntity.class),
 				mock(VisitAuthorizationJpaEntity.class));
@@ -68,7 +68,7 @@ class VisitAuthorizationJpaRepositoryAdapterConsultTest {
 	void countShouldCountWithTheSpecificationOfTheCriteria() {
 		when(repository.count(any(Specification.class))).thenReturn(7L);
 
-		assertEquals(7L, adapter.count(Criteria.of(Filter.equal("authorizator.id", UUID.randomUUID()))));
+		assertEquals(7L, adapter.count(Criteria.of(Filter.equalTo("authorizator.id", UUID.randomUUID()))));
 	}
 
 	@Test

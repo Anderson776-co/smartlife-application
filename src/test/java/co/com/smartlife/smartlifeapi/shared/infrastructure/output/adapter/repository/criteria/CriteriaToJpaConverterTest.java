@@ -49,7 +49,7 @@ class CriteriaToJpaConverterTest {
 
 	@Test
 	void equalShouldCompareThePathWithTheValue() {
-		apply(Filter.equal("field", "x"));
+		apply(Filter.equalTo("field", "x"));
 
 		verify(cb).equal(path, "x");
 	}
@@ -122,7 +122,7 @@ class CriteriaToJpaConverterTest {
 		when(root.get("authorizator")).thenReturn(authorizator);
 		when(authorizator.get("id")).thenReturn(id);
 
-		apply(Filter.equal("authorizator.id", userId));
+		apply(Filter.equalTo("authorizator.id", userId));
 
 		verify(cb).equal(id, userId);
 	}
@@ -130,7 +130,7 @@ class CriteriaToJpaConverterTest {
 	@Test
 	void everyFilterShouldBecomeAPredicateOfTheSameAnd() {
 		final Specification<Object> specification = CriteriaToJpaConverter
-				.toSpecification(Criteria.of(Filter.equal("field", 1), Filter.equal("field", 2)));
+				.toSpecification(Criteria.of(Filter.equalTo("field", 1), Filter.equalTo("field", 2)));
 
 		specification.toPredicate(root, query, cb);
 
