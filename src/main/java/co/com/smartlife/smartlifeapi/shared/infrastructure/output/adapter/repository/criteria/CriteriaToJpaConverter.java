@@ -33,7 +33,6 @@ public final class CriteriaToJpaConverter {
 							: Sort.unsorted();
 	}
 
-	/** limit y offset se traducen a la pagina que Spring Data pide al motor; sin limit no se pagina. */
 	public static Pageable toPageable(final Criteria c) {
 		final Sort sort = toSort(c.order());
 		if (c.limit() == null || c.limit() < 1) {
