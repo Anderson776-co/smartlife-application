@@ -13,7 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mapstruct.factory.Mappers;
 
-import co.com.smartlife.smartlifeapi.visits.domain.VisitReasonDomain;
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitReasonDomain;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.VisitReasonRepository;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.entity.VisitReasonEntity;
 import co.com.smartlife.smartlifeapi.visits.service.usecase.implementation.mapper.VisitReasonMapperUseCase;

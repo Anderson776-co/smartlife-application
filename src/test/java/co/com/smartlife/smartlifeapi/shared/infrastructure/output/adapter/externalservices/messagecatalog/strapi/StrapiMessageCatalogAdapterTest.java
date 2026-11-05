@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.strapi;
+package co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.messagecatalog.strapi;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -28,7 +28,7 @@ import org.springframework.web.client.RestClient;
 import com.sun.net.httpserver.HttpServer;
 
 import co.com.smartlife.smartlifeapi.crosscutting.exception.SmartLifeException;
-import co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.strapi.mapper.MessageCatalogMapper;
+import co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.externalservices.messagecatalog.strapi.mapper.MessageCatalogMapper;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogOutputPort;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.MessageCatalogProvider;
 import co.com.smartlife.smartlifeapi.shared.service.output.port.externalservices.messagecatalog.dto.MessageCatalogDTO;

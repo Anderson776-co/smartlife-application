@@ -8,7 +8,6 @@ import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.helper.UUIDHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.session.CurrentUser;
 
-/** isActive, from, to y propertyId son filtros opcionales: si no vienen (null) no se aplican. */
 public record ListVisitAuthorizationsDtoRequest(Boolean isActive, Instant from, Instant to, UUID propertyId,
 		CurrentUser currentUser, int page, int size) {
 

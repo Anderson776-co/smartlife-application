@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 
 import co.com.smartlife.smartlifeapi.shared.repository.criteria.Criteria;
 import co.com.smartlife.smartlifeapi.shared.repository.criteria.Filter;
-import co.com.smartlife.smartlifeapi.visits.domain.PropertyVisitDomain;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.AuthorizatorDomain;
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.PropertyVisitDomain;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.AuthorizatorRepository;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.PropertyVisitRepository;
 import co.com.smartlife.smartlifeapi.visits.service.output.port.repository.VisitResidentRepository;

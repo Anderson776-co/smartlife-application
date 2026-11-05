@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.views;
+package co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.repository.views;
 
 import java.util.Map;
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.views;
+package co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.repository.views;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
