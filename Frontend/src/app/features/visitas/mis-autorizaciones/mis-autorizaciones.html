@@ -92,7 +92,7 @@
             </dl>
 
             <div class="fila-extra">
-              <span class="estado-chip estado-chip--{{ a.status.toLowerCase() }}">{{ etiqueta(a.status) }}</span>
+              <span class="estado-chip estado-chip--{{ estadoVisual(a).toLowerCase() }}">{{ etiqueta(estadoVisual(a)) }}</span>
               <span class="codigo" title="Código completo: {{ a.authorizationId }}">
                 #{{ codigoCorto(a.authorizationId) }}
               </span>

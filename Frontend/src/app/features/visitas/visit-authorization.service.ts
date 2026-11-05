@@ -24,23 +24,23 @@ export interface SolicitudAutorizacion {
   visitor: VisitanteSolicitud;
 }
 
+/** Una vivienda sobre la que el usuario en sesión puede autorizar visitas (GET /visits/properties). */
+export interface PropiedadAutorizable {
+  propertyId: string;
+  location: string;
+}
+
 export interface AutorizacionCreada {
   authorizationId: string;
   qrUrl: string;
   notificationSent: boolean;
 }
 
-/** Estado de una autorización, calculado por el backend: próxima, vigente, vencida o cancelada. */
-export type EstadoAutorizacion = 'UPCOMING' | 'CURRENT' | 'EXPIRED' | 'CANCELLED';
-
-/** Una autorización ya registrada, tal como la devuelve GET /visits/authorizations. */
+/** Una autorización ya registrada, tal como la devuelve GET /visits/authorizations. `isActive` es el de la base de datos. */
 export interface AutorizacionResumen {
   authorizationId: string;
   authorizationStartDate: string;
   authorizationEndDate: string;
-  registerDate: string;
-  observation: string;
-  qrUrl: string;
   propertyLocation: string;
   visitReason: string;
   documentAttached: boolean;
@@ -48,7 +48,7 @@ export interface AutorizacionResumen {
   visitorFullName: string;
   visitorEmail: string;
   vehiclePlate: string;
-  status: EstadoAutorizacion;
+  isActive: boolean;
 }
 
 /** Una página de resultados (los números de página empiezan en 0, como en el backend). */
@@ -101,18 +101,26 @@ export class VisitAuthorizationService {
     return creada;
   }
 
+  /** Solo las viviendas del usuario en sesión (solo donde es residente); el backend filtra. */
+  async listarPropiedades(): Promise<PropiedadAutorizable[]> {
+    const respuesta = await firstValueFrom(
+      this.http.get<RespuestaApi<PropiedadAutorizable>>(`${API_URL}/visits/properties`),
+    );
+    return respuesta.data;
+  }
+
   /**
    * Una página de las autorizaciones que hizo el usuario en sesión, de la más reciente a la más antigua
-   * (GET /visits/authorizations?page=0&size=10, con `status` opcional). La paginación la hace el
+   * (GET /visits/authorizations?page=0&size=10, con `isActive` opcional). La paginación la hace el
    * servidor: la respuesta trae `data[0]` con `content`, `page`, `size`, `totalElements` y `totalPages`.
    */
   async listar(
     pagina: number,
     tamano: number,
-    estado?: EstadoAutorizacion,
+    activa?: boolean,
   ): Promise<PaginaAutorizaciones> {
-    const params: Record<string, string | number> = { page: pagina, size: tamano };
-    if (estado) params['status'] = estado;
+    const params: Record<string, string | number | boolean> = { page: pagina, size: tamano };
+    if (activa !== undefined) params['isActive'] = activa;
     const respuesta = await firstValueFrom(
       this.http.get<RespuestaApi<PaginaAutorizaciones>>(this.url, { params }),
     );

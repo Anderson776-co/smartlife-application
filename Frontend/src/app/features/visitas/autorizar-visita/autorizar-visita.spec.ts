@@ -15,9 +15,12 @@ const SERVICIO_TECNICO = 'ffffffff-0000-0000-0000-000000000005';
 
 describe('AutorizarVisita', () => {
   const autorizar = vi.fn();
+  const listarPropiedades = vi.fn();
 
   beforeEach(async () => {
     autorizar.mockReset();
+    listarPropiedades.mockReset();
+    listarPropiedades.mockResolvedValue([{ propertyId: CASA_101, location: 'Casa 101 - Bloque A' }]);
     autorizar.mockResolvedValue({
       authorizationId: 'abc-123',
       qrUrl: 'http://localhost:4200/visitas/autorizaciones/abc-123',
@@ -31,7 +34,7 @@ describe('AutorizarVisita', () => {
         provideHttpClient(),
         provideHttpClientTesting(),
         { provide: Auth, useValue: {} },
-        { provide: VisitAuthorizationService, useValue: { autorizar } },
+        { provide: VisitAuthorizationService, useValue: { autorizar, listarPropiedades } },
       ],
     }).compileComponents();
   });
@@ -56,14 +59,32 @@ describe('AutorizarVisita', () => {
     placa: 'abc123',
   };
 
-  it('se muestra igual para el propietario (Carlos)', async () => {
-    const { pagina } = await crear(['OWNER']);
+  it('se muestra para la residente (María)', async () => {
+    const { pagina } = await crear(['RESIDENT']);
     expect(pagina.querySelector('h1')?.textContent).toContain('Autorizar visita');
     expect(pagina.querySelectorAll('form select').length).toBe(2);
   });
 
+  it('solo ofrece las viviendas que devuelve el backend para el usuario', async () => {
+    const { pagina } = await crear(['RESIDENT']);
+    const opciones = Array.from(
+      pagina.querySelectorAll<HTMLOptionElement>('#propiedadId option:not([disabled])'),
+    );
+    expect(listarPropiedades).toHaveBeenCalledTimes(1);
+    expect(opciones.map((o) => o.textContent?.trim())).toEqual(['Casa 101 - Bloque A']);
+  });
+
+  it('avisa cuando el usuario no tiene ninguna vivienda para autorizar visitas', async () => {
+    listarPropiedades.mockResolvedValue([]);
+    const { fixture, pagina } = await crear(['RESIDENT']);
+    fixture.detectChanges();
+    const opciones = pagina.querySelectorAll('#propiedadId option:not([disabled])');
+    expect(opciones.length).toBe(0);
+    expect(pagina.textContent).toContain('No tienes viviendas asociadas');
+  });
+
   it('envía la autorización con los datos normalizados', async () => {
-    const { fixture, formulario, pagina } = await crear(['OWNER']);
+    const { fixture, formulario, pagina } = await crear(['RESIDENT']);
     formulario.patchValue({ propiedadId: CASA_101, motivoId: VISITA_FAMILIAR, ...visitanteValido });
     fixture.detectChanges();
 
@@ -104,7 +125,7 @@ describe('AutorizarVisita', () => {
   });
 
   it('envía duraciones largas sin bloquearlas: la regla es del backend', async () => {
-    const { fixture, formulario, pagina } = await crear(['OWNER']);
+    const { fixture, formulario, pagina } = await crear(['RESIDENT']);
     const pad = (n: number) => String(n).padStart(2, '0');
     const local = (f: Date) =>
       `${f.getFullYear()}-${pad(f.getMonth() + 1)}-${pad(f.getDate())}T${pad(f.getHours())}:${pad(f.getMinutes())}`;
@@ -130,7 +151,7 @@ describe('AutorizarVisita', () => {
     autorizar.mockRejectedValue(
       new HttpErrorResponse({ status: 403, error: { messages: ['Sin acceso según el catálogo'] } }),
     );
-    const { fixture, formulario, pagina } = await crear(['OWNER']);
+    const { fixture, formulario, pagina } = await crear(['RESIDENT']);
     formulario.patchValue({ propiedadId: CASA_101, motivoId: VISITA_FAMILIAR, ...visitanteValido });
     fixture.detectChanges();
 

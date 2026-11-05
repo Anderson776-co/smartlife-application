@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
 
+import co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.repository.criteria.CriteriaToJpaConverter;
+import co.com.smartlife.smartlifeapi.shared.repository.criteria.Criteria;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa.PropertyVisitJpaRepository;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa.entity.PropertyVisitJpaEntity;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.mapper.PropertyVisitMapper;
@@ -42,9 +44,12 @@ public class PropertyVisitJpaRepositoryAdapter implements PropertyVisitRepositor
 		return List.of();
 	}
 
+
 	@Override
-	public boolean isOwnedBy(final UUID propertyId, final UUID ownerId) {
-		return repository.existsByIdAndOwnerId(propertyId, ownerId);
+	public List<PropertyVisitEntity> matching(Criteria criteria) {
+		return mapper.toEntity(repository.findAll(
+				CriteriaToJpaConverter.<PropertyVisitJpaEntity>toSpecification(criteria),
+				CriteriaToJpaConverter.toSort(criteria.order())));
 	}
 	
 }

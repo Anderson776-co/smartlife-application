@@ -27,9 +27,9 @@ describe('Inicio', () => {
     return fixture.nativeElement as HTMLElement;
   };
 
-  it('muestra "Autorizar visita" al propietario', async () => {
+  it('no muestra "Autorizar visita" al propietario que no es residente', async () => {
     const pagina = await mostrar(['OWNER']);
-    expect(pagina.textContent).toContain('Autorizar visita');
+    expect(pagina.textContent).not.toContain('Autorizar visita');
     expect(pagina.textContent).toContain('Propietario');
   });
 
@@ -38,7 +38,7 @@ describe('Inicio', () => {
     expect(pagina.textContent).toContain('Autorizar visita');
   });
 
-  it('no muestra "Autorizar visita" a quien no es propietario ni residente', async () => {
+  it('no muestra "Autorizar visita" a quien no es residente', async () => {
     const pagina = await mostrar(['ADMIN']);
     expect(pagina.textContent).not.toContain('Autorizar visita');
   });

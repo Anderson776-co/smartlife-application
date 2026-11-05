@@ -22,7 +22,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 import co.com.smartlife.smartlifeapi.crosscutting.helper.ObjectHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.session.CurrentUser;
 import co.com.smartlife.smartlifeapi.shared.infrastructure.input.controller.dto.Response;
-import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationStatus;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.input.security.CanAuthorizeVisit;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.input.security.CanConsultVisitAuthorizations;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.AttachedDocumentDtoRequest;
@@ -77,7 +76,7 @@ public class VisitAuthorizationController {
 	@CanConsultVisitAuthorizations
 	@GetMapping
 	public ResponseEntity<Response<VisitAuthorizationPageDtoResponse>> list(
-			@RequestParam(value = "status", required = false) final VisitAuthorizationStatus status,
+			@RequestParam(value = "isActive", required = false) final Boolean isActive,
 			@RequestParam(value = "from", required = false) final Instant from,
 			@RequestParam(value = "to", required = false) final Instant to,
 			@RequestParam(value = "propertyId", required = false) final UUID propertyId,
@@ -86,7 +85,7 @@ public class VisitAuthorizationController {
 			@AuthenticationPrincipal final CurrentUser currentUser) {
 		
 		VisitAuthorizationPageDtoResponse authorizations = listVisitAuthorizationsInputPort
-				.execute(new ListVisitAuthorizationsDtoRequest(status, from, to, propertyId, currentUser, page, size));
+				.execute(new ListVisitAuthorizationsDtoRequest(isActive, from, to, propertyId, currentUser, page, size));
 		
 		return ResponseEntity.ok(Response.createSuccededResponse(List.of(authorizations)));
 	}

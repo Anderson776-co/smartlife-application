@@ -11,6 +11,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 @Documented
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-@PreAuthorize("hasAnyRole('OWNER', 'RESIDENT')")
+@PreAuthorize("hasRole('RESIDENT')")
 public @interface CanConsultVisitAuthorizations {
 }

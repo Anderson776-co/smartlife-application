@@ -17,7 +17,7 @@ export class Encabezado {
   protected readonly correo = computed(() => this.auth.sesion()?.email ?? '');
   protected readonly inicial = computed(() => this.correo().charAt(0).toUpperCase() || '?');
   protected readonly rol = computed(() => this.auth.roles().map(nombreDeRol).join(' · '));
-  protected readonly puedeAutorizar = computed(() => this.auth.tieneRol('OWNER', 'RESIDENT'));
+  protected readonly puedeAutorizar = computed(() => this.auth.tieneRol('RESIDENT'));
 
   protected async salir(): Promise<void> {
     await this.auth.cerrarSesion();

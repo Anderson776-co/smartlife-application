@@ -1,18 +1,14 @@
 package co.com.smartlife.smartlifeapi.visits.service.usecase.contract;
 
-import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
-import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationDomain;
-import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationStatus;
-
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationFilterDomain;
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationPageDomain;
+import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationSummaryDomain;
 
 public interface ConsultVisitAuthorizationsUseCase {
 
-	
-	List<VisitAuthorizationDomain> list(UUID authorizatorId, VisitAuthorizationStatus status, Instant from,
-			Instant to, UUID propertyId);
+	VisitAuthorizationPageDomain list(VisitAuthorizationFilterDomain filter);
 
-	VisitAuthorizationDomain find(UUID authorizationId, UUID authorizatorId);
+	VisitAuthorizationSummaryDomain find(UUID authorizationId, UUID authorizatorId);
 }

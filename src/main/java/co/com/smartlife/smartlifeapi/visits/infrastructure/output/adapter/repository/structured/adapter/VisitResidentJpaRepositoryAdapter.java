@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Repository;
 
+import co.com.smartlife.smartlifeapi.shared.infrastructure.output.adapter.repository.criteria.CriteriaToJpaConverter;
+import co.com.smartlife.smartlifeapi.shared.repository.criteria.Criteria;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa.VisitResidentJpaRepository;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa.entity.VisitResidentJpaEntity;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.mapper.VisitResidentMapper;
@@ -39,6 +41,13 @@ public class VisitResidentJpaRepositoryAdapter implements VisitResidentRepositor
 	@Override
 	public List<VisitResidentEntity> findByFilter(VisitResidentEntity entity) {
 		return List.of();
+	}
+
+	@Override
+	public List<VisitResidentEntity> matching(final Criteria criteria) {
+		return mapper.toEntity(repository.findAll(
+				CriteriaToJpaConverter.<VisitResidentJpaEntity>toSpecification(criteria),
+				CriteriaToJpaConverter.toSort(criteria.order())));
 	}
 
 	@Override

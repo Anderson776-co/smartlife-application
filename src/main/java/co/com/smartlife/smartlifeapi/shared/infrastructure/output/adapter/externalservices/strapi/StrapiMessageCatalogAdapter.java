@@ -78,7 +78,7 @@ public class StrapiMessageCatalogAdapter implements MessageCatalogOutputPort {
 
 		try {
 			final StrapiMessageCatalogData message = query(code, locale).orElseThrow(() -> notFound(code, locale));
-			return mapper.toDTO(message);
+			return mapper.toDto(message);
 		} catch (final SmartLifeException exception) {
 			throw exception;
 		} catch (final RuntimeException exception) {

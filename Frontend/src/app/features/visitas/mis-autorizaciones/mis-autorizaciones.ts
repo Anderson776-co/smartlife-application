@@ -8,7 +8,7 @@ import { Encabezado } from '../../../shared/encabezado/encabezado';
 import { Paginador } from '../../../shared/paginador/paginador';
 import { Pie } from '../../../shared/pie/pie';
 import {
-  EstadoAutorizacion,
+  AutorizacionResumen,
   PaginaAutorizaciones,
   VisitAuthorizationService,
 } from '../visit-authorization.service';
@@ -16,11 +16,22 @@ import {
 const TAMANO_POR_DEFECTO = 10;
 const TAMANOS = [5, 10, 20];
 
-const ETIQUETAS: Record<EstadoAutorizacion, string> = {
+/** Lo que se ve en la insignia: sale de `isActive` y de las fechas, el backend ya no lo calcula. */
+type EstadoVisual = 'CURRENT' | 'UPCOMING' | 'EXPIRED' | 'CANCELLED';
+
+const ETIQUETAS: Record<EstadoVisual, string> = {
   CURRENT: 'Vigente',
   UPCOMING: 'Programada',
   EXPIRED: 'Vencida',
   CANCELLED: 'Cancelada',
+};
+
+/** Filtro de la lista: se traduce a `isActive=true|false` en la petición. */
+type FiltroEstado = 'ACTIVAS' | 'CANCELADAS';
+
+const FILTROS: Record<FiltroEstado, { etiqueta: string; activa: boolean }> = {
+  ACTIVAS: { etiqueta: 'Activas', activa: true },
+  CANCELADAS: { etiqueta: 'Canceladas', activa: false },
 };
 
 @Component({
@@ -36,9 +47,9 @@ export class MisAutorizaciones {
   private readonly ruta = inject(ActivatedRoute);
 
   protected readonly tamanos = TAMANOS;
-  protected readonly estados = (Object.keys(ETIQUETAS) as EstadoAutorizacion[]).map((valor) => ({
+  protected readonly estados = (Object.keys(FILTROS) as FiltroEstado[]).map((valor) => ({
     valor,
-    etiqueta: ETIQUETAS[valor],
+    etiqueta: FILTROS[valor].etiqueta,
   }));
 
   protected readonly cargando = signal(true);
@@ -46,11 +57,11 @@ export class MisAutorizaciones {
   /** La página que devolvió el servidor (solo trae los elementos de esa página). */
   protected readonly resultado = signal<PaginaAutorizaciones | null>(null);
 
-  /** Estado, página y tamaño viven en la URL (?estado=EXPIRED&pagina=3&tamano=10): sirven "atrás" y recargar. */
+  /** Estado, página y tamaño viven en la URL (?estado=CANCELADAS&pagina=3&tamano=10): sirven "atrás" y recargar. */
   private readonly params = toSignal(this.ruta.queryParamMap, { requireSync: true });
-  protected readonly filtroEstado = computed<EstadoAutorizacion | ''>(() => {
+  protected readonly filtroEstado = computed<FiltroEstado | ''>(() => {
     const valor = this.params().get('estado');
-    return valor && valor in ETIQUETAS ? (valor as EstadoAutorizacion) : '';
+    return valor && valor in FILTROS ? (valor as FiltroEstado) : '';
   });
   protected readonly numeroPagina = computed(() => {
     const n = Number(this.params().get('pagina'));
@@ -78,13 +89,17 @@ export class MisAutorizaciones {
   protected async cargar(
     pagina = this.numeroPagina(),
     tamano = this.tamano(),
-    estado: EstadoAutorizacion | '' = this.filtroEstado(),
+    estado: FiltroEstado | '' = this.filtroEstado(),
   ): Promise<void> {
     const actual = ++this.peticion; // ignora respuestas viejas si el usuario cambia rápido de página
     this.cargando.set(true);
     this.error.set(null);
     try {
-      const respuesta = await this.servicio.listar(pagina, tamano, estado || undefined);
+      const respuesta = await this.servicio.listar(
+        pagina,
+        tamano,
+        estado ? FILTROS[estado].activa : undefined,
+      );
       if (actual !== this.peticion) return;
       // Si la página pedida ya no existe (p. ej. ?pagina=99), vuelve a la última que sí existe.
       if (respuesta.totalPages > 0 && pagina >= respuesta.totalPages) {
@@ -115,7 +130,15 @@ export class MisAutorizaciones {
     return this.navegar({ pagina: null, estado: valor || null });
   }
 
-  protected etiqueta(estado: EstadoAutorizacion): string {
+  protected estadoVisual(a: AutorizacionResumen): EstadoVisual {
+    if (!a.isActive) return 'CANCELLED';
+    const ahora = Date.now();
+    if (ahora < new Date(a.authorizationStartDate).getTime()) return 'UPCOMING';
+    if (ahora > new Date(a.authorizationEndDate).getTime()) return 'EXPIRED';
+    return 'CURRENT';
+  }
+
+  protected etiqueta(estado: EstadoVisual): string {
     return ETIQUETAS[estado];
   }
 

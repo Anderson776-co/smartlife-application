@@ -20,15 +20,11 @@ public class PropertyVisitJpaEntity {
 	@Column(name = "location")
 	private String location;
 	
-	@Column(name = "owner_id")
-	private UUID ownerId;
-	
 	protected PropertyVisitJpaEntity() {}
 
-	public PropertyVisitJpaEntity(final UUID id, final String location, final UUID ownerId) {
+	public PropertyVisitJpaEntity(final UUID id, final String location) {
 		this.id = id;
 		this.location = location;
-		this.ownerId = ownerId;
 	}
 
 	public UUID getId() {
@@ -37,10 +33,6 @@ public class PropertyVisitJpaEntity {
 
 	public String getLocation() {
 		return location;
-	}
-
-	public UUID getOwnerId() {
-		return ownerId;
 	}
 
 	

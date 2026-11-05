@@ -3,8 +3,6 @@ package co.com.smartlife.smartlifeapi.visits.service.input.adapter.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationStatus;
-import co.com.smartlife.smartlifeapi.crosscutting.helper.TextHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.session.CurrentUser;
 import co.com.smartlife.smartlifeapi.shared.mapper.DtoMapper;
 import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.AttachedDocumentDomain;
@@ -14,10 +12,9 @@ import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitorDomain;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.AttachedDocumentDtoRequest;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.AuthorizeVisitDtoRequest;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.VisitorDtoRequest;
-import co.com.smartlife.smartlifeapi.visits.service.input.dto.response.VisitAuthorizationDtoResponse;
 
-@Mapper(componentModel = "spring", imports = { TextHelper.class, VisitAuthorizationStatus.class })
-public interface VisitAuthorizationMapperInput extends DtoMapper<AuthorizeVisitDtoRequest, VisitAuthorizationDtoResponse, VisitAuthorizationDomain>{
+@Mapper(componentModel = "spring")
+public interface VisitAuthorizationMapperInput extends DtoMapper<AuthorizeVisitDtoRequest, VisitAuthorizationDomain>{
 	
 	@Override
     @Mapping(target = "id", ignore = true)              
@@ -25,15 +22,8 @@ public interface VisitAuthorizationMapperInput extends DtoMapper<AuthorizeVisitD
     @Mapping(target = "qrCode", ignore = true)         
     @Mapping(target = "fileReference", ignore = true)
     @Mapping(target = "notificationSent", ignore = true)
-    @Mapping(target = "propertyLocation", expression = "java(TextHelper.getDefault())")
-    @Mapping(target = "visitReasonName", expression = "java(TextHelper.getDefault())")
-    @Mapping(target = "status", expression = "java(VisitAuthorizationStatus.UNSPECIFIED)")
     VisitAuthorizationDomain toDomain(AuthorizeVisitDtoRequest request);
 
-	@Override
-	@Mapping(target = "authorizationId", source = "id")
-	@Mapping(target = "qrUrl", source = "qrCode")
-	VisitAuthorizationDtoResponse toDTO(VisitAuthorizationDomain domain);
 	
 	@Mapping(target = "id", ignore = true)
     VisitorDomain toVisitorDomain(VisitorDtoRequest visitor);

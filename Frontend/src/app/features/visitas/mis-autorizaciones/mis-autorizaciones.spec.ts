@@ -17,9 +17,6 @@ const pagina = (page: number, size: number, total: number): PaginaAutorizaciones
     authorizationId: `id-${page}-${i}-00000000`,
     authorizationStartDate: '2026-01-01T10:00:00Z',
     authorizationEndDate: '2026-01-01T12:00:00Z',
-    registerDate: '2025-12-31T10:00:00Z',
-    observation: '',
-    qrUrl: '',
     propertyLocation: 'Casa 101 - Bloque A',
     visitReason: 'Visita familiar',
     documentAttached: false,
@@ -27,7 +24,7 @@ const pagina = (page: number, size: number, total: number): PaginaAutorizaciones
     visitorFullName: `Visitante ${page * size + i + 1}`,
     visitorEmail: 'v@example.com',
     vehiclePlate: '',
-    status: 'EXPIRED' as const,
+    isActive: true,
   })),
   page,
   size,
@@ -74,7 +71,7 @@ describe('MisAutorizaciones', () => {
     const req = http.expectOne((r) => r.url === URL);
     expect(req.request.params.get('page')).toBe('0');
     expect(req.request.params.get('size')).toBe('10');
-    expect(req.request.params.has('status')).toBe(false);
+    expect(req.request.params.has('isActive')).toBe(false);
     req.flush({ messages: [], responseSucceded: true, data: [pagina(0, 10, 23)] });
     await asentar();
 
@@ -122,11 +119,38 @@ describe('MisAutorizaciones', () => {
     expect(texto()).toContain('21–23 de 23');
   });
 
-  it('manda el estado elegido al backend (?estado=EXPIRED → status=EXPIRED)', async () => {
-    await arnes.navigateByUrl('/mis?estado=EXPIRED', MisAutorizaciones);
+  it('manda el filtro elegido al backend (?estado=CANCELADAS → isActive=false)', async () => {
+    await arnes.navigateByUrl('/mis?estado=CANCELADAS', MisAutorizaciones);
     const req = http.expectOne((r) => r.url === URL);
-    expect(req.request.params.get('status')).toBe('EXPIRED');
+    expect(req.request.params.get('isActive')).toBe('false');
     req.flush({ messages: [], responseSucceded: true, data: [pagina(0, 10, 2)] });
+  });
+
+  it('calcula la insignia con isActive y las fechas', async () => {
+    const hora = 3600_000;
+    const desde = (h: number) => new Date(Date.now() + h * hora).toISOString();
+    const base = pagina(0, 10, 4);
+    const [a, b, c, d] = base.content;
+    base.content = [
+      { ...a, visitorFullName: 'Programada', authorizationStartDate: desde(1), authorizationEndDate: desde(2) },
+      { ...b, visitorFullName: 'Vigente', authorizationStartDate: desde(-1), authorizationEndDate: desde(1) },
+      { ...c, visitorFullName: 'Vencida', authorizationStartDate: desde(-3), authorizationEndDate: desde(-2) },
+      { ...d, visitorFullName: 'Cancelada', isActive: false, authorizationStartDate: desde(-1), authorizationEndDate: desde(1) },
+    ];
+    await arnes.navigateByUrl('/mis', MisAutorizaciones);
+    await responder(base);
+
+    const chips = Array.from(
+      (arnes.routeNativeElement as HTMLElement).querySelectorAll('.estado-chip'),
+    ).map((chip) => chip.textContent!.trim());
+    expect(chips).toEqual(['Programada', 'Vigente', 'Vencida', 'Cancelada']);
+  });
+
+  it('manda isActive=true al elegir las activas (?estado=ACTIVAS)', async () => {
+    await arnes.navigateByUrl('/mis?estado=ACTIVAS', MisAutorizaciones);
+    const req = http.expectOne((r) => r.url === URL);
+    expect(req.request.params.get('isActive')).toBe('true');
+    req.flush({ messages: [], responseSucceded: true, data: [pagina(0, 10, 1)] });
   });
 
   it('muestra el mensaje del backend si falla', async () => {

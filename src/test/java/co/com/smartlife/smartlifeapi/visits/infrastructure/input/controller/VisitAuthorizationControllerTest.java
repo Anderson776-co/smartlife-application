@@ -20,10 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import co.com.smartlife.smartlifeapi.crosscutting.helper.UUIDHelper;
 import co.com.smartlife.smartlifeapi.crosscutting.session.CurrentUser;
 import co.com.smartlife.smartlifeapi.shared.infrastructure.input.controller.dto.Response;
-import co.com.smartlife.smartlifeapi.visits.domain.authorizevisit.VisitAuthorizationStatus;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.AttachedDocumentDtoRequest;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.AuthorizeVisitDtoRequest;
 import co.com.smartlife.smartlifeapi.visits.service.input.dto.request.VisitorDtoRequest;
@@ -45,10 +43,10 @@ class VisitAuthorizationControllerTest {
 	private static final CurrentUser USER = new CurrentUser(USER_ID, "maria@example.com", Set.of("RESIDENT"),
 			UUID.randomUUID());
 
-	private static final VisitAuthorizationStatus NO_STATUS = VisitAuthorizationStatus.UNSPECIFIED;
-	private static final Instant NO_LOWER_LIMIT = Instant.EPOCH;
-	private static final Instant NO_UPPER_LIMIT = Instant.MAX;
-	private static final UUID NO_PROPERTY = UUIDHelper.getUUIDHelper().getDefault();
+	private static final Boolean ANY_STATE = null;
+	private static final Instant NO_LOWER_LIMIT = null;
+	private static final Instant NO_UPPER_LIMIT = null;
+	private static final UUID NO_PROPERTY = null;
 	private static final MockMultipartFile NO_DOCUMENT = new MockMultipartFile("document", new byte[0]);
 
 	private AuthorizeVisitInputPort authorizePort;
@@ -65,9 +63,8 @@ class VisitAuthorizationControllerTest {
 	}
 
 	private static VisitAuthorizationSummaryDtoResponse summary() {
-		return new VisitAuthorizationSummaryDtoResponse(UUID.randomUUID(), FROM, TO, FROM, "", "qr",
-				"Apartamento 202 - Bloque B", "Visita familiar", false, "2001", "Luis Torres", "luis@example.com", "",
-				VisitAuthorizationStatus.UPCOMING);
+		return new VisitAuthorizationSummaryDtoResponse(UUID.randomUUID(), FROM, TO, "Apartamento 202 - Bloque B",
+				"Visita familiar", false, "2001", "Luis Torres", "luis@example.com", "", true);
 	}
 
 	private static AuthorizeVisitDtoRequest authorizeRequest() {
@@ -80,10 +77,10 @@ class VisitAuthorizationControllerTest {
 		final VisitAuthorizationSummaryDtoResponse summary = summary();
 		final VisitAuthorizationPageDtoResponse page = new VisitAuthorizationPageDtoResponse(List.of(summary), 0, 10, 1,
 				1);
-		when(listPort.execute(new ListVisitAuthorizationsDtoRequest(NO_STATUS, NO_LOWER_LIMIT, NO_UPPER_LIMIT, NO_PROPERTY, USER, 0, 10)))
+		when(listPort.execute(new ListVisitAuthorizationsDtoRequest(ANY_STATE, NO_LOWER_LIMIT, NO_UPPER_LIMIT, NO_PROPERTY, USER, 0, 10)))
 				.thenReturn(page);
 
-		final ResponseEntity<Response<VisitAuthorizationPageDtoResponse>> response = controller.list(NO_STATUS, NO_LOWER_LIMIT, NO_UPPER_LIMIT, NO_PROPERTY, 0, 10, USER);
+		final ResponseEntity<Response<VisitAuthorizationPageDtoResponse>> response = controller.list(ANY_STATE, NO_LOWER_LIMIT, NO_UPPER_LIMIT, NO_PROPERTY, 0, 10, USER);
 
 		assertEquals(200, response.getStatusCode().value());
 		assertTrue(response.getBody().isResponseSucceded());
@@ -97,12 +94,12 @@ class VisitAuthorizationControllerTest {
 		when(listPort.execute(org.mockito.ArgumentMatchers.any()))
 				.thenReturn(new VisitAuthorizationPageDtoResponse(List.of(), 2, 5, 0, 0));
 
-		controller.list(VisitAuthorizationStatus.CURRENT, FROM, TO, PROPERTY_ID, 2, 5, USER);
+		controller.list(true, FROM, TO, PROPERTY_ID, 2, 5, USER);
 
 		final ArgumentCaptor<ListVisitAuthorizationsDtoRequest> captor = ArgumentCaptor
 				.forClass(ListVisitAuthorizationsDtoRequest.class);
 		verify(listPort).execute(captor.capture());
-		assertEquals(new ListVisitAuthorizationsDtoRequest(VisitAuthorizationStatus.CURRENT, FROM, TO, PROPERTY_ID,
+		assertEquals(new ListVisitAuthorizationsDtoRequest(true, FROM, TO, PROPERTY_ID,
 				USER, 2, 5), captor.getValue());
 	}
 

@@ -5,7 +5,7 @@
         "users::events", "dwellings::events", "residents::events",
         "crosscutting::helper", "crosscutting::session", "crosscutting::exception",
         "crosscutting::specification-generics", "crosscutting::specification-core", "crosscutting::rules",
-        "crosscutting::parameters"
+        "crosscutting::parameters", "shared::criteria", "shared::criteriajpa"
     }
 )
 package co.com.smartlife.smartlifeapi.visits;

@@ -23,7 +23,7 @@ class MessageCatalogMapperTest {
 
 	@Test
 	void toDtoShouldCopyEveryField() {
-		MessageCatalogDTO result = mapper.toDTO(data);
+		MessageCatalogDTO result = mapper.toDto(data);
 
 		assertEquals("VISIT_AUTHORIZED", result.code());
 		assertEquals("Autorización registrada", result.title());
@@ -40,15 +40,15 @@ class MessageCatalogMapperTest {
 
 	@Test
 	void toDtoShouldMapAList() {
-		List<MessageCatalogDTO> result = mapper.toDTO(List.of(data));
+		List<MessageCatalogDTO> result = mapper.toDtoList(List.of(data));
 
 		assertEquals(List.of(dto), result);
 	}
 
 	@Test
 	void nullsShouldBeMappedToNull() {
-		assertNull(mapper.toDTO((StrapiMessageCatalogData) null));
+		assertNull(mapper.toDto((StrapiMessageCatalogData) null));
 		assertNull(mapper.toDomain(null));
-		assertNull(mapper.toDTO((List<StrapiMessageCatalogData>) null));
+		assertNull(mapper.toDtoList((List<StrapiMessageCatalogData>) null));
 	}
 }

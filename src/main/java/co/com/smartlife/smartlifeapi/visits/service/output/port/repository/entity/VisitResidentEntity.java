@@ -4,6 +4,8 @@ import java.util.UUID;
 
 public class VisitResidentEntity{
 	
+	public static final String RESIDENT_ID = "id";
+	
 	private final UUID id;
 	private final PropertyVisitEntity property;
 

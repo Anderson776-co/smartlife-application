@@ -1,17 +1,17 @@
 package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa.entity.VisitAuthorizationJpaEntity;
 
-public interface VisitAuthorizationJpaRepository extends JpaRepository<VisitAuthorizationJpaEntity, UUID>{
+public interface VisitAuthorizationJpaRepository extends JpaRepository<VisitAuthorizationJpaEntity, UUID>, JpaSpecificationExecutor<VisitAuthorizationJpaEntity>{
 
 	@Query("""
 			SELECT v FROM VisitAuthorizationJpaEntity v
@@ -32,8 +32,6 @@ public interface VisitAuthorizationJpaRepository extends JpaRepository<VisitAuth
 			""")
 	boolean existsOverlappingAuthorization(@Param("visitorId") UUID visitorId, @Param("propertyId") UUID propertyId,
 			@Param("startDate") Instant startDate, @Param("endDate") Instant endDate);
-
-	List<VisitAuthorizationJpaEntity> findByAuthorizatorIdOrderByAuthorizationStartDateDesc(UUID authorizatorId);
 
 	Optional<VisitAuthorizationJpaEntity> findByIdAndAuthorizatorId(UUID id, UUID authorizatorId);
 }

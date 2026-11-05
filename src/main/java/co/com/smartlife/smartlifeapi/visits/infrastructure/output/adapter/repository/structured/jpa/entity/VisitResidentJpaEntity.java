@@ -27,7 +27,7 @@ public class VisitResidentJpaEntity {
 	protected VisitResidentJpaEntity() {}
 	
 	public VisitResidentJpaEntity(final UUID id, final PropertyVisitJpaEntity property) {
-		this.id = id;
+		this.id  = id;
 		this.property = property;
 	}
 

@@ -2,6 +2,7 @@ package co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repos
 
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -11,6 +12,11 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+
+import co.com.smartlife.smartlifeapi.shared.repository.criteria.Criteria;
+import co.com.smartlife.smartlifeapi.shared.repository.criteria.Filter;
 
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa.VisitResidentJpaRepository;
 import co.com.smartlife.smartlifeapi.visits.infrastructure.output.adapter.repository.structured.jpa.entity.VisitResidentJpaEntity;
@@ -65,5 +71,25 @@ class VisitResidentJpaRepositoryAdapterTest {
 	@Test
 	void findByFilterShouldReturnAnEmptyListForNow() {
 		assertTrue(adapter.findByFilter(mock(VisitResidentEntity.class)).isEmpty());
+	}
+
+	@Test
+	@SuppressWarnings("unchecked")
+	void matchingShouldFilterWithTheCriteriaAndReturnTheMappedList() {
+		List<VisitResidentJpaEntity> jpaList = List.of(mock(VisitResidentJpaEntity.class));
+		List<VisitResidentEntity> entities = List.of(mock(VisitResidentEntity.class));
+		when(repository.findAll(any(Specification.class), any(Sort.class))).thenReturn(jpaList);
+		when(mapper.toEntity(jpaList)).thenReturn(entities);
+
+		assertSame(entities, adapter.matching(Criteria.of(Filter.equal(VisitResidentEntity.RESIDENT_ID, UUID.randomUUID()))));
+	}
+
+	@Test
+	void residesInShouldAskTheRepositoryByResidentAndProperty() {
+		UUID residentId = UUID.randomUUID();
+		UUID propertyId = UUID.randomUUID();
+		when(repository.existsByIdAndPropertyId(residentId, propertyId)).thenReturn(true);
+
+		assertTrue(adapter.residesIn(residentId, propertyId));
 	}
 }

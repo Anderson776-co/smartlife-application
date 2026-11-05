@@ -7,7 +7,7 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 import { Encabezado } from '../../../shared/encabezado/encabezado';
 import { Pie } from '../../../shared/pie/pie';
-import { MOTIVOS, PROPIEDADES } from '../catalogos';
+import { MOTIVOS, Opcion } from '../catalogos';
 import {
   AutorizacionCreada,
   SolicitudAutorizacion,
@@ -28,7 +28,10 @@ export class AutorizarVisita {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
 
-  protected readonly propiedades = PROPIEDADES;
+  /** Solo las viviendas del usuario en sesión, pedidas al backend. */
+  protected readonly propiedades = signal<Opcion[]>([]);
+  /** true cuando el backend respondió y el usuario no tiene ninguna vivienda sobre la que autorizar. */
+  protected readonly sinPropiedades = signal(false);
   protected readonly motivos = MOTIVOS;
 
   protected readonly cargando = signal(false);
@@ -75,7 +78,7 @@ export class AutorizarVisita {
       .filter((parte) => parte.length > 0)
       .join(' ');
     return {
-      propiedad: PROPIEDADES.find((p) => p.id === v.propiedadId)?.nombre ?? null,
+      propiedad: this.propiedades().find((p) => p.id === v.propiedadId)?.nombre ?? null,
       motivo: MOTIVOS.find((m) => m.id === v.motivoId)?.nombre ?? null,
       inicio: this.formatoLegible(v.inicio),
       fin: this.formatoLegible(v.fin),
@@ -111,6 +114,21 @@ export class AutorizarVisita {
 
   constructor() {
     this.formulario.patchValue(this.fechasIniciales());
+    void this.cargarPropiedades();
+  }
+
+  private async cargarPropiedades(): Promise<void> {
+    try {
+      const propiedades = await this.servicio.listarPropiedades();
+      this.propiedades.set(propiedades.map((p) => ({ id: p.propertyId, nombre: p.location })));
+      this.sinPropiedades.set(propiedades.length === 0);
+      // Si solo tiene una vivienda, queda elegida
+      if (propiedades.length === 1) {
+        this.formulario.controls.propiedadId.setValue(propiedades[0].propertyId);
+      }
+    } catch (e) {
+      this.error.set(this.mensajeDeError(e));
+    }
   }
 
   protected elegirArchivo(evento: Event): void {

@@ -102,13 +102,13 @@ class AuthorizeVisitUseCaseImplTest {
 				registerAuthorization, notifier, telemetry, Clock.fixed(NOW, ZoneOffset.UTC),
 				Mappers.getMapper(VisitAuthorizationMapperUseCase.class));
 
-		authorizator = new AuthorizatorDomain(authorizatorId, urbanizationId, Set.of("OWNER"));
+		authorizator = new AuthorizatorDomain(authorizatorId, urbanizationId, Set.of("RESIDENT"));
 		newVisitor = new VisitorEntity(UUID.randomUUID(), "Luis", "", "Torres", "", "2001", "luis@example.com", null);
 
 		when(authorizatorRepository.findById(authorizatorId)).thenReturn(
 				Optional.of(new AuthorizatorEntity(authorizatorId, "Ana Ruiz", true, urbanizationId)));
 		when(propertyVisitRepository.findById(propertyId))
-				.thenReturn(Optional.of(new PropertyVisitEntity(propertyId, "Torre 1 - 101", authorizatorId)));
+				.thenReturn(Optional.of(new PropertyVisitEntity(propertyId, "Torre 1 - 101")));
 		when(visitReasonRepository.findById(familyReasonId))
 				.thenReturn(Optional.of(new VisitReasonEntity(familyReasonId, "Visita familiar", false)));
 		when(visitReasonRepository.findById(technicalReasonId))
